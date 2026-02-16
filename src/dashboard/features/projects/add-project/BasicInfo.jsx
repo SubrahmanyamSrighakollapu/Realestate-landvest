@@ -29,6 +29,13 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
   };
 
   const handleFileUpload = (type, file) => {
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file && file.size > maxSize) {
+      toastService.error(`File size must be less than 5MB. Selected file is ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
+      return;
+    }
+    
     if (type === 'banner') setBannerImage(file);
     if (type === 'thumbnail') setThumbnailImage(file);
     if (type === 'content') setContentImage(file);
@@ -66,7 +73,11 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
         onNext();
       }
     } catch (error) {
-      toastService.error(error.response?.data?.message || 'Failed to save project');
+      if (error.response?.status === 413) {
+        toastService.error('File size too large. Please reduce image sizes and try again.');
+      } else {
+        toastService.error(error.response?.data?.message || 'Failed to save project');
+      }
     } finally {
       setLoading(false);
     }

@@ -19,39 +19,73 @@ const Signup = () => {
     aadharNumber: ''
   });
   const [loading, setLoading] = useState(false);
-  const [employees, setEmployees] = useState([]);
-  const [employeeSearch, setEmployeeSearch] = useState('');
+  const [employeeCode, setEmployeeCode] = useState('');
+  const [employeeInfo, setEmployeeInfo] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState('');
   const [showEmployeeDropdown, setShowEmployeeDropdown] = useState(false);
+  const [roles, setRoles] = useState([]);
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const employeeRef = useRef(null);
+  const roleRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (employeeRef.current && !employeeRef.current.contains(event.target)) {
         setShowEmployeeDropdown(false);
       }
+      if (roleRef.current && !roleRef.current.contains(event.target)) {
+        setShowRoleDropdown(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchEmployees = async (search) => {
+  const fetchEmployeeInfo = async (code) => {
     try {
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/admin/employees/list', { search });
+      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/employeeinfo', { code });
       if (response.data.success) {
-        setEmployees(response.data.data);
+        setEmployeeInfo(response.data.data);
+        setShowEmployeeDropdown(true);
       }
     } catch (error) {
-      console.error('Error fetching employees:', error);
+      toastService.error('Invalid employee code');
+      setEmployeeInfo(null);
     }
   };
 
-  const handleEmployeeSearch = (value) => {
-    setEmployeeSearch(value);
-    if (value.trim()) {
-      fetchEmployees(value);
+  const handleEmployeeCodeChange = (value) => {
+    setEmployeeCode(value);
+    setSelectedEmployee('');
+    if (value.length === 9 && value.startsWith('EMP')) {
+      fetchEmployeeInfo(value);
     } else {
-      setEmployees([]);
+      setEmployeeInfo(null);
+      setShowEmployeeDropdown(false);
+      setRoles([]);
+      setSelectedRole('');
+    }
+  };
+
+  const fetchRoles = async (roleId) => {
+    try {
+      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/roles/list', { parent: roleId });
+      if (response.data.success) {
+        setRoles(response.data.data);
+      }
+    } catch (error) {
+      toastService.error('Failed to fetch roles');
+    }
+  };
+
+  const handleEmployeeSelect = () => {
+    if (employeeInfo) {
+      setFormData({ ...formData, referedBy: employeeInfo.code });
+      setSelectedEmployee(employeeInfo.name);
+      setShowEmployeeDropdown(false);
+      fetchRoles(employeeInfo.role._id);
     }
   };
 
@@ -85,8 +119,22 @@ const Signup = () => {
 
       const response = await authService.signup(formDataToSend);
       if (response.success) {
-        toastService.success('Signup successful!');
-        navigate('/auth/otp-verification');
+        toastService.success(response.message || 'Employee Signup successfully!, Please wait for admin approval.');
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          password: '',
+          role: '',
+          referedBy: '',
+          aadharNumber: ''
+        });
+        setEmployeeCode('');
+        setSelectedEmployee('');
+        setSelectedRole('');
+        setRoles([]);
+        setEmployeeInfo(null);
       }
     } catch (err) {
       toastService.error(err.response?.data?.message || 'Signup failed. Please try again.');
@@ -274,117 +322,6 @@ const Signup = () => {
               </div>
             </div>
 
-            {/* Role Input */}
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '0',
-                  width: '50px',
-                  height: '50px',
-                  backgroundColor: 'rgba(31, 111, 84, 1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '1px 0 0 1px',
-                  zIndex: 1
-                }}>
-                  <User size={20} color="#ffffff" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Role"
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '15px 15px 15px 65px',
-                    border: 'none',
-                    backgroundColor: 'rgba(31, 111, 84, 0.15)',
-                    borderRadius: '1px',
-                    fontSize: '15px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Sponsored By Dropdown */}
-            <div style={{ marginBottom: '20px', position: 'relative' }} ref={employeeRef}>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <div style={{
-                  position: 'absolute',
-                  left: '0',
-                  width: '50px',
-                  height: '50px',
-                  backgroundColor: 'rgba(31, 111, 84, 1)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '1px 0 0 1px',
-                  zIndex: 1
-                }}>
-                  <User size={20} color="#ffffff" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Sponsored By"
-                  value={employeeSearch}
-                  onChange={(e) => handleEmployeeSearch(e.target.value)}
-                  onFocus={() => setShowEmployeeDropdown(true)}
-                  required={!formData.referedBy}
-                  style={{
-                    width: '100%',
-                    padding: '15px 15px 15px 65px',
-                    border: 'none',
-                    backgroundColor: 'rgba(31, 111, 84, 0.15)',
-                    borderRadius: '1px',
-                    fontSize: '15px',
-                    outline: 'none'
-                  }}
-                />
-                <ChevronDown size={18} style={{ position: 'absolute', right: '15px', color: '#6b7280' }} />
-              </div>
-              {showEmployeeDropdown && employees.length > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  backgroundColor: '#fff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '4px',
-                  maxHeight: '200px',
-                  overflowY: 'auto',
-                  zIndex: 10,
-                  marginTop: '4px',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                }}>
-                  {employees.map((emp) => (
-                    <div
-                      key={emp._id}
-                      onMouseDown={() => {
-                        setFormData({ ...formData, referedBy: emp.code });
-                        setEmployeeSearch(`${emp.name} (${emp.code})`);
-                        setShowEmployeeDropdown(false);
-                      }}
-                      style={{
-                        padding: '10px 15px',
-                        cursor: 'pointer',
-                        borderBottom: '1px solid #f3f4f6',
-                        fontSize: '14px'
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#fff'}
-                    >
-                      {emp.name} ({emp.code})
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Aadhar Number (Optional) */}
             <div style={{ marginBottom: '20px' }}>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
@@ -467,6 +404,147 @@ const Signup = () => {
                   {showPassword ? <EyeOff size={18} color="#6b7280" /> : <Eye size={18} color="#6b7280" />}
                 </div>
               </div>
+            </div>
+
+
+                        {/* Sponsored By - Employee Code Input */}
+            <div style={{ marginBottom: '20px', position: 'relative' }} ref={employeeRef}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '0',
+                  width: '50px',
+                  height: '50px',
+                  backgroundColor: 'rgba(31, 111, 84, 1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '1px 0 0 1px',
+                  zIndex: 1
+                }}>
+                  <User size={20} color="#ffffff" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Employee Code (e.g., EMP000003)"
+                  value={selectedEmployee || employeeCode}
+                  onChange={(e) => handleEmployeeCodeChange(e.target.value.toUpperCase())}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '15px 15px 15px 65px',
+                    border: 'none',
+                    backgroundColor: 'rgba(31, 111, 84, 0.15)',
+                    borderRadius: '1px',
+                    fontSize: '15px',
+                    outline: 'none'
+                  }}
+                />
+                <ChevronDown size={18} style={{ position: 'absolute', right: '15px', color: '#6b7280' }} />
+              </div>
+              {showEmployeeDropdown && employeeInfo && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  backgroundColor: '#fff',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '4px',
+                  zIndex: 10,
+                  marginTop: '4px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }}>
+                  <div
+                    onMouseDown={handleEmployeeSelect}
+                    style={{
+                      padding: '10px 15px',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#fff'}
+                  >
+                    {employeeInfo.name}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Role Dropdown */}
+            <div style={{ marginBottom: '20px', position: 'relative' }} ref={roleRef}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '0',
+                  width: '50px',
+                  height: '50px',
+                  backgroundColor: 'rgba(31, 111, 84, 1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '1px 0 0 1px',
+                  zIndex: 1
+                }}>
+                  <User size={20} color="#ffffff" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Select Role"
+                  value={selectedRole}
+                  onFocus={() => roles.length > 0 && setShowRoleDropdown(true)}
+                  readOnly
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '15px 15px 15px 65px',
+                    border: 'none',
+                    backgroundColor: 'rgba(31, 111, 84, 0.15)',
+                    borderRadius: '1px',
+                    fontSize: '15px',
+                    outline: 'none',
+                    cursor: roles.length > 0 ? 'pointer' : 'not-allowed'
+                  }}
+                />
+                <ChevronDown size={18} style={{ position: 'absolute', right: '15px', color: '#6b7280' }} />
+              </div>
+              {showRoleDropdown && roles.length > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  backgroundColor: '#fff',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '4px',
+                  maxHeight: '200px',
+                  overflowY: 'auto',
+                  zIndex: 10,
+                  marginTop: '4px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }}>
+                  {roles.map((role) => (
+                    <div
+                      key={role._id}
+                      onMouseDown={() => {
+                        setFormData({ ...formData, role: role._id });
+                        setSelectedRole(role.name);
+                        setShowRoleDropdown(false);
+                      }}
+                      style={{
+                        padding: '10px 15px',
+                        cursor: 'pointer',
+                        borderBottom: '1px solid #f3f4f6',
+                        fontSize: '14px'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#fff'}
+                    >
+                      {role.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <button

@@ -2,11 +2,7 @@ import apiClient from './apiClient';
 
 export const projectService = {
   addProject: async (formData) => {
-    const response = await apiClient.post('/admin/project/add', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    const response = await apiClient.post('/admin/project/add', formData);
     return response.data;
   },
 
@@ -31,11 +27,7 @@ export const projectService = {
   },
 
   updateImages: async (formData) => {
-    const response = await apiClient.post('/admin/project/updateimages', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    const response = await apiClient.post('/admin/project/updateimages', formData);
     return response.data;
   },
 
