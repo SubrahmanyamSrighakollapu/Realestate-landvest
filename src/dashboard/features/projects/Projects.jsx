@@ -1,0 +1,563 @@
+import { Search, Download, Filter, FolderKanban, CheckCircle, XCircle, PlusCircle } from 'lucide-react';
+import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import '../../styles/global.css';
+
+const Projects = () => {
+  const statsCards = [
+    { icon: FolderKanban, label: 'Total Projects', value: '247', color: '#3b82f6' },
+    { icon: CheckCircle, label: 'Active Projects', value: '180', color: '#10b981' },
+    { icon: XCircle, label: 'In Active Projects', value: '13', color: '#ef4444' },
+    { icon: PlusCircle, label: 'New Projects', value: '13', color: '#8b5cf6' }
+  ];
+
+  const plotAvailabilityData = [
+    { name: 'Active', value: 50, color: '#3b82f6', label: 'Active (60%)', sublabel: 'Currently Active Plots' },
+    { name: 'Sold', value: 33.3, color: '#ef4444', label: 'Sold (33.3%)', sublabel: 'Sold Plots - 2 months' },
+    { name: 'Reserved', value: 16.7, color: '#f59e0b', label: 'Reserved (16.7%)', sublabel: 'Reserved Plots 2 months back' }
+  ];
+
+  const revenueData = [
+    { project: 'Metro Heights', value: 45000 },
+    { project: 'Green Valley', value: 55000 },
+    { project: 'Sunset Villas', value: 70000 },
+    { project: 'Lake View', value: 62000 }
+  ];
+
+  const monthlySalesData = [
+    { month: 'Jan', value: 50 },
+    { month: 'Feb', value: 65 },
+    { month: 'March', value: 70 },
+    { month: 'April', value: 55 },
+    { month: 'May', value: 30 },
+    { month: 'June', value: 45 },
+    { month: 'July', value: 65 }
+  ];
+
+  const projectCompletionData = [
+    { name: 'Metro Heights', plots: 120, sold: 82, color: '#10b981', percentage: 68 },
+    { name: 'Green Valley Estate', plots: 120, sold: 82, color: '#f59e0b', percentage: 68 },
+    { name: 'Sunset Villas', plots: 120, sold: 82, color: '#3b82f6', percentage: 68 }
+  ];
+
+    const newAssociatesData = [
+    { month: 'Jan', value: 20 },
+    { month: 'Feb', value: 35 },
+    { month: 'Mar', value: 45 },
+    { month: 'Apr', value: 25 },
+    { month: 'May', value: 30 },
+    { month: 'Jun', value: 40 }
+  ];
+
+  const trendData = [
+    { month: 'Jan', active: 150, inactive: 20 },
+    { month: 'Feb', active: 160, inactive: 18 },
+    { month: 'Mar', active: 170, inactive: 15 },
+    { month: 'Apr', active: 175, inactive: 14 },
+    { month: 'May', active: 180, inactive: 13 },
+    { month: 'Jun', active: 180, inactive: 13 }
+  ];
+
+  const transactions = [
+    { id: 'TXN001', name: 'Rajesh Kumar', project: 'Green Valley - Plot A12', amount: '₹4,50,000', date: '2026-01-25', status: 'Completed' },
+    { id: 'TXN002', name: 'Priya Sharma', project: 'Lake View - Plot C18', amount: '₹6,80,000', date: '2026-01-25', status: 'Pending' },
+    { id: 'TXN003', name: 'Rajesh Kumar', project: 'Green Valley - Plot A12', amount: '₹4,50,000', date: '2026-01-25', status: 'Completed' },
+    { id: 'TXN004', name: 'Priya Sharma', project: 'Lake View - Plot C18', amount: '₹6,80,000', date: '2026-01-25', status: 'Pending' }
+  ];
+
+  return (
+    <div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '24px' }}>
+        {statsCards.map((stat, index) => (
+          <div key={index} style={{
+            backgroundColor: '#fff',
+            padding: '20px',
+            borderRadius: '12px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '12px',
+              backgroundColor: `${stat.color}15`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <stat.icon size={24} color={stat.color} />
+            </div>
+            <div>
+              <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>{stat.label}</p>
+              <h3 style={{ fontSize: '28px', fontWeight: '700', color: '#1f2937', margin: '4px 0 0 0' }}>{stat.value}</h3>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+        <div style={{
+          backgroundColor: '#fff',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Plot Availability</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
+            <ResponsiveContainer width="50%" height={220}>
+              <PieChart>
+                <Pie data={plotAvailabilityData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ value }) => `${value}%`}>
+                  {plotAvailabilityData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div style={{ flex: 1 }}>
+              {plotAvailabilityData.map((item, index) => (
+                <div key={index} style={{ marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: item.color }}></div>
+                    <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>{item.label}</span>
+                  </div>
+                  <p style={{ fontSize: '12px', color: '#6b7280', marginLeft: '20px', margin: 0 }}>{item.sublabel}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div style={{
+          backgroundColor: '#fff',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>Revenue Distribution by Project</h3>
+          <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '20px' }}>Contribution to total revenue</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={revenueData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="project" tick={{ fontSize: 11 }} angle={-15} textAnchor="end" height={60} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#ef4444" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+        <div style={{
+          backgroundColor: '#fff',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Monthly Sales Trend</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={monthlySalesData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip />
+              <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444', r: 4 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div style={{
+          backgroundColor: '#fff',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Project Completion Status</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {projectCompletionData.map((project, index) => (
+              <div key={index}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>{project.name}</span>
+                  <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#6b7280' }}>
+                    <span>{project.plots} plots</span>
+                    <span>{project.sold} sold</span>
+                  </div>
+                </div>
+                <div style={{
+                  width: '100%',
+                  height: '12px',
+                  backgroundColor: '#e5e7eb',
+                  borderRadius: '6px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${project.percentage}%`,
+                    height: '100%',
+                    backgroundColor: project.color,
+                    borderRadius: '6px'
+                  }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+        <button style={{
+          padding: '10px 24px',
+          backgroundColor: 'var(--dashboard-primary)',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '14px',
+          fontWeight: '500',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          View All Projects
+        </button>
+      </div>
+
+      <div style={{
+        backgroundColor: '#fff',
+        padding: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Transaction Report</h3>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button style={{
+              padding: '8px 16px',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#374151'
+            }}>
+              <Filter size={16} />
+              Filters
+            </button>
+            <button style={{
+              padding: '8px 16px',
+              backgroundColor: 'var(--dashboard-primary)',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#fff'
+            }}>
+              <Download size={16} />
+              Export
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '16px', position: 'relative' }}>
+          <Search size={18} color="#9ca3af" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            placeholder="Search here..."
+            style={{
+              width: '90%',
+              padding: '10px 10px 10px 40px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              fontSize: '14px',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        <table className="dashboard-table">
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Associate Name</th>
+              <th>Project / Plot</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((txn, index) => (
+              <tr key={index}>
+                <td>{txn.id}</td>
+                <td>{txn.name}</td>
+                <td>{txn.project}</td>
+                <td>{txn.amount}</td>
+                <td>{txn.date}</td>
+                <td>
+                  <span className={`status-badge ${txn.status === 'Completed' ? 'status-completed' : 'status-pending'}`}>
+                    {txn.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '24px' }}>
+        <div style={{
+          backgroundColor: '#fff',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Top Performers</h3>
+          <table className="dashboard-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Sales Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Priya Sharma</td>
+                <td>Agent</td>
+                <td>₹6,80,000</td>
+              </tr>
+              <tr>
+                <td>Priya Sharma</td>
+                <td>Agent</td>
+                <td>₹6,80,000</td>
+              </tr>
+              <tr>
+                <td>Priya Sharma</td>
+                <td>Agent</td>
+                <td>₹6,80,000</td>
+              </tr>
+              <tr>
+                <td>Priya Sharma</td>
+                <td>Agent</td>
+                <td>₹6,80,000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{
+          backgroundColor: '#fff',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Recent Activity</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', marginTop: '6px', flexShrink: 0 }}></div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>Payment Received</span>
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>2 min ago</span>
+                </div>
+                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Received ₹6,80,000 for Plot A12 From Priya</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6', marginTop: '6px', flexShrink: 0 }}></div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>New Associate Added</span>
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>1 hour ago</span>
+                </div>
+                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Priya Sharma joined as Relationship Manager.</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8b5cf6', marginTop: '6px', flexShrink: 0 }}></div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>Project Updated</span>
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>3 hour ago</span>
+                </div>
+                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>New layout uploaded for Sunshine Valley project.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{
+        backgroundColor: '#fff',
+        padding: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        marginTop: '24px'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Associates Overview</h3>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button style={{
+              padding: '8px 16px',
+              backgroundColor: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#374151'
+            }}>
+              <Filter size={16} />
+              Filters
+            </button>
+            <button style={{
+              padding: '8px 16px',
+              backgroundColor: 'var(--dashboard-primary)',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#fff'
+            }}>
+              <Download size={16} />
+              Export
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: '16px', position: 'relative' }}>
+          <Search size={18} color="#9ca3af" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+          <input
+            type="text"
+            placeholder="Search here..."
+            style={{
+              width: '100%',
+              padding: '10px 10px 10px 40px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              fontSize: '14px',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        <table className="dashboard-table">
+          <thead>
+            <tr>
+              <th>Associate ID</th>
+              <th>Associate Name</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Total Sales</th>
+              <th>Total Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ASC001</td>
+              <td>Rajesh Kumar</td>
+              <td>Senior Associate</td>
+              <td><span className="status-badge status-completed">Active</span></td>
+              <td>34</td>
+              <td>₹4,50,000</td>
+            </tr>
+            <tr>
+              <td>ASC002</td>
+              <td>Priya Sharma</td>
+              <td>Associate</td>
+              <td><span className="status-badge status-pending">InActive</span></td>
+              <td>64</td>
+              <td>₹6,80,000</td>
+            </tr>
+            <tr>
+              <td>ASC003</td>
+              <td>Rajesh Kumar</td>
+              <td>Senior Associate</td>
+              <td><span className="status-badge status-completed">Active</span></td>
+              <td>14</td>
+              <td>₹4,50,000</td>
+            </tr>
+            <tr>
+              <td>ASC004</td>
+              <td>Priya Sharma</td>
+              <td>Associate</td>
+              <td><span className="status-badge status-pending">InActive</span></td>
+              <td>34</td>
+              <td>₹6,80,000</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style={{
+        backgroundColor: '#fff',
+        padding: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        marginTop: '24px'
+      }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Plot Availability</h3>
+        <table className="dashboard-table">
+          <thead>
+            <tr>
+              <th>Plot ID</th>
+              <th>Project Name</th>
+              <th>Location</th>
+              <th>Size</th>
+              <th>Price</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PLT001</td>
+              <td>Green Valley</td>
+              <td>Sector 21, Hyderabad</td>
+              <td>200 sq yd</td>
+              <td>₹4,50,000</td>
+              <td><span className="status-badge status-completed">Active</span></td>
+            </tr>
+            <tr>
+              <td>PLT002</td>
+              <td>Lake View</td>
+              <td>Sector 41, Hyderabad</td>
+              <td>180 sq yd</td>
+              <td>₹6,80,000</td>
+              <td><span className="status-badge status-pending">InActive</span></td>
+            </tr>
+            <tr>
+              <td>PLT003</td>
+              <td>Green Valley</td>
+              <td>Sector 21, Hyderabad</td>
+              <td>200 sq yd</td>
+              <td>₹4,50,000</td>
+              <td><span className="status-badge status-completed">Active</span></td>
+            </tr>
+            <tr>
+              <td>PLT004</td>
+              <td>Lake View</td>
+              <td>Sector 41, Hyderabad</td>
+              <td>180 sq yd</td>
+              <td>₹6,80,000</td>
+              <td><span className="status-badge status-pending">InActive</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default Projects;

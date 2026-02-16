@@ -1,0 +1,51 @@
+import apiClient from './apiClient';
+
+export const projectService = {
+  addProject: async (formData) => {
+    const response = await apiClient.post('/admin/project/add', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  getPricingList: async () => {
+    const response = await apiClient.post('/admin/project/pricinglist');
+    return response.data;
+  },
+
+  updatePricing: async (data) => {
+    const response = await apiClient.post('/admin/project/updatepricing', data);
+    return response.data;
+  },
+
+  updateHighlights: async (data) => {
+    const response = await apiClient.post('/admin/project/updatehighlights', data);
+    return response.data;
+  },
+
+  updateLocations: async (data) => {
+    const response = await apiClient.post('/admin/project/updatelocations', data);
+    return response.data;
+  },
+
+  updateImages: async (formData) => {
+    const response = await apiClient.post('/admin/project/updateimages', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return response.data;
+  },
+
+  addPricing: async (data) => {
+    const response = await apiClient.post('/admin/pricing/add', data);
+    return response.data;
+  },
+
+  updatePricingOption: async (data) => {
+    const response = await apiClient.post('/admin/pricing/update', data);
+    return response.data;
+  }
+};

@@ -1,0 +1,119 @@
+/* Dashboard Global Styles */
+:root {
+  --dashboard-primary: rgba(31, 111, 84, 1);
+  --dashboard-secondary: rgba(239, 255, 245, 1);
+  --dashboard-tertiary: rgba(244, 255, 248, 1);
+  --dashboard-button: #C9A24D;
+  --dashboard-text: #374151;
+  --dashboard-text-light: #6b7280;
+  --dashboard-border: #e5e7eb;
+  --dashboard-white: #ffffff;
+  --dashboard-background: #f9fafb;
+}
+
+.dashboard-container {
+  min-height: 100vh;
+  background-color: var(--dashboard-background);
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--dashboard-white);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.dashboard-table thead {
+  background-color: var(--dashboard-secondary);
+}
+
+.dashboard-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dashboard-text-light);
+  border-bottom: 1px solid var(--dashboard-border);
+}
+
+.dashboard-table td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--dashboard-text);
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dashboard-table tbody tr:hover {
+  background-color: var(--dashboard-tertiary);
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-pending {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-processing {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.dashboard-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dashboard-btn-primary {
+  background-color: var(--dashboard-primary);
+  color: var(--dashboard-white);
+}
+
+.dashboard-btn-primary:hover {
+  background-color: rgba(31, 111, 84, 0.9);
+}
+
+.dashboard-card {
+  background: var(--dashboard-white);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.dashboard-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.dashboard-input:focus {
+  outline: none;
+  border-color: var(--dashboard-primary);
+}
+
+.scroll-hidden {
+  overflow-y: auto;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE / Edge */
+}
+
+.scroll-hidden::-webkit-scrollbar {
+  display: none;                /* Chrome / Safari */
+}
