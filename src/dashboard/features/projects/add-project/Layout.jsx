@@ -1,17 +1,19 @@
 import React, { useRef, useState } from 'react';
-import dashboardColors from '../../../styles/colors'; // adjust path as needed
+import { X } from 'lucide-react';
+import dashboardColors from '../../../styles/colors';
+import { projectService } from '../../../../services/projectService';
+import { toastService } from '../../../../services/toastService';
 
-const Layout = ({ onNext, onPrevious, currentStep }) => {
+const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
   const fileInputRef = useRef(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [layouts, setLayouts] = useState([]);
   const [dragActive, setDragActive] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      // You can preview or upload here later
-      console.log('Selected file:', file.name);
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setLayouts(prev => [...prev, ...files]);
     }
   };
 
@@ -29,14 +31,50 @@ const Layout = ({ onNext, onPrevious, currentStep }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
-      console.log('Dropped file:', e.dataTransfer.files[0].name);
+    if (e.dataTransfer.files) {
+      const files = Array.from(e.dataTransfer.files);
+      setLayouts(prev => [...prev, ...files]);
     }
   };
 
+  const removeLayout = (index) => {
+    setLayouts(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleClick = () => {
-    fileInputRef.current?.click();
+  fileInputRef.current?.click();
+};
+
+  const handleSaveAndContinue = async () => {
+    if (layouts.length === 0) {
+      toastService.error('Please upload at least one layout');
+      return;
+    }
+
+    if (!projectData?._id || !projectData?.code) {
+      toastService.error('Project data is missing');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = new FormData();
+      data.append('id', projectData._id);
+      data.append('code', projectData.code);
+      layouts.forEach(layout => {
+        data.append('layouts', layout);
+      });
+
+      const response = await projectService.updateLayout(data);
+      if (response.success) {
+        toastService.success('Layout plans uploaded successfully!');
+        onNext();
+      }
+    } catch (error) {
+      toastService.error(error.response?.data?.message || 'Failed to upload layouts');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -54,8 +92,80 @@ const Layout = ({ onNext, onPrevious, currentStep }) => {
         color: dashboardColors.textLight,
         marginBottom: '32px',
       }}>
-        Upload a layout plan image to draw plots
+        Upload layout plan images to draw plots
       </p>
+
+      {/* Selected Layouts */}
+      {layouts.length > 0 && (
+        <div style={{ marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: dashboardColors.text, marginBottom: '16px' }}>
+            Selected Layouts ({layouts.length})
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '16px' }}>
+            {layouts.map((layout, index) => (
+              <div key={index} style={{
+                position: 'relative',
+                border: `1px solid ${dashboardColors.border}`,
+                borderRadius: '8px',
+                padding: '12px',
+                backgroundColor: dashboardColors.white
+              }}>
+                <button
+                  onClick={() => removeLayout(index)}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0
+                  }}
+                >
+                  <X size={14} />
+                </button>
+                <div style={{
+                  width: '100%',
+                  height: '100px',
+                  backgroundColor: dashboardColors.secondary,
+                  borderRadius: '6px',
+                  marginBottom: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '32px'
+                }}>
+                  📐
+                </div>
+                <p style={{
+                  fontSize: '12px',
+                  color: dashboardColors.text,
+                  margin: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {layout.name}
+                </p>
+                <p style={{
+                  fontSize: '11px',
+                  color: dashboardColors.textLight,
+                  margin: '4px 0 0 0'
+                }}>
+                  {Math.round(layout.size / 1024)} KB
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Upload Area */}
       <div style={{
@@ -79,6 +189,7 @@ const Layout = ({ onNext, onPrevious, currentStep }) => {
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          multiple
           onChange={handleFileChange}
           style={{ display: 'none' }}
         />
@@ -124,14 +235,23 @@ const Layout = ({ onNext, onPrevious, currentStep }) => {
           </p>
         </div>
 
-        {selectedFile ? (
-          <p style={{
-            fontSize: '14px',
-            color: dashboardColors.primary,
-            fontWeight: '500',
-          }}>
-            Selected: {selectedFile.name}
-          </p>
+        {layouts.length > 0 ? (
+          <button
+            type="button"
+            style={{
+              padding: '10px 24px',
+              backgroundColor: dashboardColors.primary,
+              color: dashboardColors.white,
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              marginTop: '12px',
+            }}
+          >
+            Add More Layouts
+          </button>
         ) : (
           <button
             type="button"
@@ -147,7 +267,7 @@ const Layout = ({ onNext, onPrevious, currentStep }) => {
               marginTop: '12px',
             }}
           >
-            Choose File
+            Choose Files
           </button>
         )}
       </div>
@@ -177,7 +297,8 @@ const Layout = ({ onNext, onPrevious, currentStep }) => {
         </button>
 
         <button
-          onClick={onNext}
+          onClick={handleSaveAndContinue}
+          disabled={loading}
           style={{
             padding: '12px 32px',
             backgroundColor: dashboardColors.primary,
@@ -186,10 +307,11 @@ const Layout = ({ onNext, onPrevious, currentStep }) => {
             borderRadius: '8px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.6 : 1
           }}
         >
-          Save & Continue
+          {loading ? 'Uploading...' : 'Save & Continue'}
         </button>
       </div>
     </div>

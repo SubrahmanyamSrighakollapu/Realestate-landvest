@@ -31,6 +31,10 @@ export const projectService = {
     return response.data;
   },
 
+  updateLayout: async (formData) => {
+    const response = await apiClient.post('/admin/project/updatelayout', formData);
+    return response.data;
+  },
   addPricing: async (data) => {
     const response = await apiClient.post('/admin/pricing/add', data);
     return response.data;
