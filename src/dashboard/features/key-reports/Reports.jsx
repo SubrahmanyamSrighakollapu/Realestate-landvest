@@ -41,17 +41,17 @@ const Reports = () => {
   ];
 
   const topPerformers = [
-    { rank: 'ASC001', name: 'Rajesh Kumar', role: 'Senior Associate', sales: '₹4,50,000', plots: 34, status: 'Active' },
+    { rank: 'ASC001', name: 'Arun Kumar', role: 'Senior Associate', sales: '₹4,50,000', plots: 34, status: 'Active' },
     { rank: 'ASC002', name: 'Priya Sharma', role: 'Associate', sales: '₹6,80,000', plots: 64, status: 'InActive' },
-    { rank: 'ASC003', name: 'Rajesh Kumar', role: 'Senior Associate', sales: '₹4,50,000', plots: 14, status: 'Active' },
+    { rank: 'ASC003', name: 'Arun Kumar', role: 'Senior Associate', sales: '₹4,50,000', plots: 14, status: 'Active' },
     { rank: 'ASC004', name: 'Priya Sharma', role: 'Associate', sales: '₹6,80,000', plots: 34, status: 'InActive' }
   ];
 
   const newJoinees = [
-    { bid: 'ASC001', name: 'Rajesh Kumar', role: 'Senior Associate', project: 'Metro Heights', date: '2026-01-25', sponsor: 'Priya Sharma', status: 'Active' },
-    { bid: 'ASC001', name: 'Rajesh Kumar', role: 'Senior Associate', project: 'Metro Heights', date: '2026-01-25', sponsor: 'Priya Sharma', status: 'Active' },
-    { bid: 'ASC001', name: 'Rajesh Kumar', role: 'Senior Associate', project: 'Metro Heights', date: '2026-01-25', sponsor: 'Priya Sharma', status: 'Active' },
-    { bid: 'ASC001', name: 'Rajesh Kumar', role: 'Senior Associate', project: 'Metro Heights', date: '2026-01-25', sponsor: 'Priya Sharma', status: 'Active' }
+    { bid: 'ASC001', name: 'Arun Kumar', role: 'Senior Associate', project: 'Metro Heights', date: '2026-01-25', sponsor: 'Priya Sharma', status: 'Active' },
+    { bid: 'ASC001', name: 'Arun Kumar', role: 'Senior Associate', project: 'Metro Heights', date: '2026-01-25', sponsor: 'Priya Sharma', status: 'Active' },
+    { bid: 'ASC001', name: 'Arun Kumar', role: 'Senior Associate', project: 'Metro Heights', date: '2026-01-25', sponsor: 'Priya Sharma', status: 'Active' },
+    { bid: 'ASC001', name: 'Arun Kumar', role: 'Senior Associate', project: 'Metro Heights', date: '2026-01-25', sponsor: 'Priya Sharma', status: 'Active' }
   ];
 
   return (

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, FolderKanban, Network, FileText, Award, BookOpen, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
 import { dashboardColors } from "../../styles/colors";
-import logo from '../../../assets/landvest-logo.png';
+import logo from '../../../assets/landvest-logo.jpeg';
 
 
 

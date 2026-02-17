@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ChevronDown } from 'lucide-react';
-import logo from '../../assets/landvest-logo.png';
+import logo from '../../assets/landvest-logo.jpeg';
 
 const Navbar = () => {
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
@@ -23,7 +23,7 @@ const Navbar = () => {
     fontWeight: '500',
     color: '#374151',
     textDecoration: 'none',
-    padding: '8px 12px',
+    padding: '8px 14px',
     borderRadius: '6px',
     transition: 'all 0.2s',
   };
@@ -41,39 +41,40 @@ const Navbar = () => {
     >
       <div
         style={{
-          maxWidth: '1200px',
+          maxWidth: '1280px',
           margin: '0 auto',
-          padding: '0 1rem',
+          padding: '0 2rem',
           height: '72px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '1rem',
+          gap: '2rem'
         }}
       >
-        <Link
-          to="/"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            textDecoration: 'none',
-            flexShrink: 0,
-          }}
-        >
-          <img 
-            src={logo} 
-            alt="Landvest Logo" 
-            style={{ height: '100px', width: 'auto' }}
-          />
-        </Link>
+        {/* LEFT SECTION - Logo */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Link
+            to="/"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              textDecoration: 'none',
+            }}
+          >
+            <img
+              src={logo}
+              alt="Landvest Logo"
+              style={{ height: '60px', width: 'auto' }}
+            />
+          </Link>
+        </div>
 
+        {/* CENTER SECTION - Navigation Links */}
         <div
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '1.5rem',
-            flex: 1,
-            justifyContent: 'center',
           }}
         >
           {['Home', 'About'].map((item) => (
@@ -103,7 +104,7 @@ const Navbar = () => {
                 border: 'none',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.25rem',
+                gap: '0.3rem',
                 cursor: 'pointer',
               }}
               onMouseEnter={(e) => {
@@ -134,32 +135,34 @@ const Navbar = () => {
                   zIndex: 1001,
                 }}
               >
-                {['ongoing', 'completed', 'upcoming'].map(
-                  (item) => (
-                    <Link
-                      key={item}
-                      to={`/projects/${item.toLowerCase()}`}
-                      onClick={() => setIsProjectsOpen(false)}
-                      style={{
-                        display: 'block',
-                        padding: '0.75rem 1.2rem',
-                        fontSize: '0.9rem',
-                        color: '#374151',
-                        textDecoration: 'none',
-                        transition: 'background 0.2s',
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                    >
-                      {item} Projects
-                    </Link>
-                  )
-                )}
+                {['ongoing', 'completed', 'upcoming'].map((item) => (
+                  <Link
+                    key={item}
+                    to={`/projects/${item}`}
+                    onClick={() => setIsProjectsOpen(false)}
+                    style={{
+                      display: 'block',
+                      padding: '0.75rem 1.2rem',
+                      fontSize: '0.9rem',
+                      color: '#374151',
+                      textDecoration: 'none',
+                      transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.target.style.backgroundColor = '#f3f4f6')
+                    }
+                    onMouseLeave={(e) =>
+                      (e.target.style.backgroundColor = 'transparent')
+                    }
+                  >
+                    {item} Projects
+                  </Link>
+                ))}
               </div>
             )}
           </div>
 
-          {['Blogs', 'Gallery'].map((item) => (
+          {[ 'Gallery'].map((item) => (
             <Link
               key={item}
               to={`/${item.toLowerCase()}`}
@@ -178,7 +181,14 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0 }}>
+        {/* RIGHT SECTION - Buttons */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+          }}
+        >
           <button
             aria-label="Search"
             style={{
@@ -193,18 +203,31 @@ const Navbar = () => {
           </button>
 
           <Link
+            to="/auth/signup"
+            style={{
+              backgroundColor: '#1F6F54',
+              color: '#ffffff',
+              padding: '0.55rem 1.4rem',
+              borderRadius: '5px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Associate Login
+          </Link>
+
+          <Link
             to="/contact"
             style={{
               backgroundColor: '#C9A24D',
               color: '#ffffff',
-              padding: '0.5rem 1.2rem',
-              borderRadius: '9999px',
-              border: 'none',
+              padding: '0.55rem 1.4rem',
+              borderRadius: '5px',
               fontSize: '0.9rem',
               fontWeight: '600',
-              cursor: 'pointer',
               textDecoration: 'none',
-              display: 'inline-block',
               whiteSpace: 'nowrap',
             }}
           >

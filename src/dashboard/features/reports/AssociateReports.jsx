@@ -31,7 +31,7 @@ const AssociateReports = () => {
   const associates = [
     { id: 'BID1001', designation: 'Senior Manager', name: 'Priya Sharma', date: '2026-01-25', email: 'rajesh@gmail.com', phone: '+91 98765 43210', sponsor: 'Priya Sharma' },
     { id: 'BID1002', designation: 'Associate', name: 'Priya Sharma', date: '2026-01-25', email: 'rajesh@gmail.com', phone: '+91 98765 43210', sponsor: 'Priya Sharma' },
-    { id: 'BID1003', designation: 'Senior Manager', name: 'Rajesh Kumar', date: '2026-01-25', email: 'rajesh@gmail.com', phone: '+91 98765 43210', sponsor: 'Rajesh Kumar' },
+    { id: 'BID1003', designation: 'Senior Manager', name: 'Arun Kumar', date: '2026-01-25', email: 'rajesh@gmail.com', phone: '+91 98765 43210', sponsor: 'Arun Kumar' },
     { id: 'BID1004', designation: 'Associate', name: 'Priya Sharma', date: '2026-01-25', email: '-', phone: '+91 98765 43210', sponsor: 'Priya Sharma' }
   ];
 

@@ -1,7 +1,14 @@
+import { useEffect, useState } from 'react';
 import heroImage from '../../../assets/hero-background.png';
 import { colors } from '../../colors';
 
 const Hero = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
+
   return (
     <section
       style={{
@@ -23,6 +30,9 @@ const Hero = () => {
           marginLeft: '3rem',
           marginTop: '6rem',
           textAlign: 'left',
+          opacity: isLoaded ? 1 : 0,
+          transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
+          transition: 'all 1s ease-out',
         }}
       >
         <h1
@@ -62,7 +72,10 @@ const Hero = () => {
               fontSize: '1rem',
               fontWeight: '600',
               cursor: 'pointer',
+              transition: 'transform 0.2s',
             }}
+            onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
           >
             View Projects
           </button>
@@ -77,7 +90,10 @@ const Hero = () => {
               fontSize: '1rem',
               fontWeight: '600',
               cursor: 'pointer',
+              transition: 'transform 0.2s',
             }}
+            onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
           >
             Talk to Expert
           </button>
@@ -95,7 +111,9 @@ const Hero = () => {
           position: 'absolute',
           bottom: '-75px',
           left: '50%',
-          transform: 'translateX(-50%)',
+          transform: isLoaded ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(30px)',
+          opacity: isLoaded ? 1 : 0,
+          transition: 'all 1s ease-out 0.3s',
         }}
       >
         <div

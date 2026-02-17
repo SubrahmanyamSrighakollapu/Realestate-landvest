@@ -7,11 +7,11 @@ const AssociateTeamTree = () => {
   const navigate = useNavigate();
 
   const teamMembers = [
-    { name: 'Rajesh kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Senior Associate', color: '#f97316' },
-    { name: 'Rajesh kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Senior Associate', color: '#ef4444' },
-    { name: 'Rajesh kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Associate', color: '#10b981' },
-    { name: 'Rajesh kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Junior Associate', color: '#3b82f6' },
-    { name: 'Rajesh kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Sale Director', color: '#ec4899' }
+    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Senior Associate', color: '#f97316' },
+    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Senior Associate', color: '#ef4444' },
+    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Associate', color: '#10b981' },
+    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Junior Associate', color: '#3b82f6' },
+    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Sale Director', color: '#ec4899' }
   ];
 
   return (

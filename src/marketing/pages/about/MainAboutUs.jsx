@@ -1,5 +1,53 @@
+import { useState, useEffect, useRef } from 'react';
 import aboutImage from '../../../assets/main-about-us-image.png';
 import { colors } from '../../colors';
+
+const AnimatedCounter = ({ end, duration = 2000, suffix = '' }) => {
+  const [count, setCount] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isVisible) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => {
+      if (ref.current) {
+        observer.unobserve(ref.current);
+      }
+    };
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible) return;
+
+    let startTime;
+    const animate = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      
+      setCount(Math.floor(progress * end));
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [isVisible, end, duration]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+};
 
 const MainAboutUs = () => {
   return (
@@ -64,7 +112,7 @@ const MainAboutUs = () => {
                 marginBottom: '1.2rem',
               }}
             >
-              Building Legacies on Solid Ground
+              Landvet Infra Developers Pvt. Ltd.
             </h2>
 
             <p
@@ -75,11 +123,7 @@ const MainAboutUs = () => {
                 marginBottom: '1.2rem',
               }}
             >
-              We curate the foundation for your future. It is a forward-thinking real
-              estate development company committed to making land ownership simple,
-              secure, and accessible for everyone. Built on integrity, transparency,
-              and customer-centric values, we focus on creating well-planned
-              developments that deliver long-term value and peace of mind.
+             Next-Level Open Plotting. Smart Investments. Strong Returns.
             </p>
 
             <p
@@ -90,9 +134,8 @@ const MainAboutUs = () => {
                 marginBottom: '1.2rem',
               }}
             >
-              With over 20 years of experience, our leadership CMD Mr. Chandra Shekhar
-              Ayyakari ED Mr. Arun Kumar Bidla drives the development of quality
-              infrastructure and high-value projects.
+              Landvest Infra Developers Pvt. Ltd. is a visionary real estate company focused on premium open plotting developments. With over 20 years of real estate and marketing expertise, our MD Mr. Arun Kumar Bitla leads with a mission to make land ownership secure, affordable, and rewarding for every individual.
+
             </p>
 
             <p
@@ -102,8 +145,8 @@ const MainAboutUs = () => {
                 color: '#4b5563',
               }}
             >
-              We specialize in legally compliant, well-planned developments that offer
-              long-term growth and peace of mind for our clients.
+              We develop legally clear, strategically located, and future-ready layouts designed for long-term appreciation and lifestyle growth.
+
             </p>
           </div>
         </div>
@@ -117,43 +160,43 @@ const MainAboutUs = () => {
             flexWrap: 'wrap',
           }}
         >
-          {[
-            { value: '260+', label: 'Projects Completed' },
-            { value: '10+', label: 'Years Of Trust' },
-            { value: '5k+', label: 'Happy Families' },
-          ].map((item) => (
-            <div
-              key={item.label}
-              style={{
-                backgroundColor: '#ffffff',
-                padding: '2rem 3rem',
-                borderRadius: '10px',
-                textAlign: 'center',
-                minWidth: '200px',
-                boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
-                border: '1px solid #e5e7eb',
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: '1.6rem',
-                  fontWeight: '700',
-                  color: '#111827',
-                  marginBottom: '0.4rem',
-                }}
-              >
-                {item.value}
-              </h3>
-              <p
-                style={{
-                  fontSize: '0.95rem',
-                  color: '#6b7280',
-                }}
-              >
-                {item.label}
-              </p>
-            </div>
-          ))}
+  {[
+    { value: 260, label: 'Projects Completed', suffix: '+' },
+    { value: 10, label: 'Years Of Trust', suffix: '+' },
+    { value: 5000, label: 'Happy Families', suffix: '+' },
+  ].map((item) => (
+    <div
+      key={item.label}
+      style={{
+        backgroundColor: '#ffffff',
+        padding: '2rem 3rem',
+        borderRadius: '10px',
+        textAlign: 'center',
+        minWidth: '200px',
+        boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+        border: '1px solid #e5e7eb',
+      }}
+    >
+      <h3
+        style={{
+          fontSize: '1.6rem',
+          fontWeight: '700',
+          color: '#111827',
+          marginBottom: '0.4rem',
+        }}
+      >
+        <AnimatedCounter end={item.value} suffix={item.suffix} />
+      </h3>
+      <p
+        style={{
+          fontSize: '0.95rem',
+          color: '#6b7280',
+        }}
+      >
+        {item.label}
+      </p>
+    </div>
+  ))}
         </div>
       </div>
     </section>

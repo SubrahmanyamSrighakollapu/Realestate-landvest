@@ -18,9 +18,9 @@ const OrganizationStructure = () => {
     setTimeout(() => setSelectedMember(null), 300);
   };
   const topLevelMembers = [
-    { name: 'Rajesh kumar', id: 'BID1000', role: 'Regional Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#f97316' },
-    { name: 'Rajesh kumar', id: 'BID1000', role: 'Regional Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#f97316' },
-    { name: 'Rajesh kumar', id: 'BID1000', role: 'Regional Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#f97316' }
+    { name: 'Arun Kumar', id: 'BID1000', role: 'Regional Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#f97316' },
+    { name: 'Arun Kumar', id: 'BID1000', role: 'Regional Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#f97316' },
+    { name: 'Arun Kumar', id: 'BID1000', role: 'Regional Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#f97316' }
   ];
 
   const secondLevelMembers = [

@@ -3,7 +3,7 @@ import testimonial1 from '../../../assets/testimonial-image1.png';
 const TestimonialsSection = () => {
   const testimonials = [
     {
-      name: "Rajesh Kumar",
+      name: "Arun Kumar",
       role: "Inventor, Hyderabad",
       text:
         "I bought a plot in Green Valley 3 years ago. The value has nearly doubled! The registration process was incredibly smooth and transparent.",

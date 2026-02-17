@@ -1,6 +1,6 @@
 import { Eye, Target } from 'lucide-react';
 import { colors } from '../../colors';
-import rajeshKumar from '../../../assets/rajesh-kumar.jpg';
+import rajeshKumar from '../../../assets/arun-kumar-2.jpeg';
 
 const CorePhilosophy = () => {
   return (
@@ -96,10 +96,7 @@ const CorePhilosophy = () => {
                 fontSize: '0.95rem',
               }}
             >
-              To be the region's most trusted developer, fostering long-term wealth
-              creation for our clients through strategic land acquisition and
-              sustainable community development. We aim to redefine land ownership
-              as a secure, transparent, and accessible journey for everyone.
+              To become a trusted real estate leader, transforming land ownership dreams into lasting financial success.
             </p>
           </div>
 
@@ -152,11 +149,7 @@ const CorePhilosophy = () => {
                 fontSize: '0.95rem',
               }}
             >
-              To ensure 100% legal clarity and zero-compromise quality in every
-              project. We are on a mission to eliminate the complexities of real
-              estate transactions by providing end-to-end support, ethical
-              practices, and clear titles that give our customers absolute peace
-              of mind.
+              To deliver high-quality open plot projects with transparency, modern infrastructure, and strong investment potential.
             </p>
           </div>
         </div>
@@ -176,7 +169,7 @@ const CorePhilosophy = () => {
         >
           <img
             src={rajeshKumar}
-            alt="Rajesh Kumar"
+            alt="Arun Kumar"
             style={{
               width: '200px',
               height: '200px',
@@ -208,7 +201,7 @@ const CorePhilosophy = () => {
                 marginBottom: '0.15rem',
               }}
             >
-              Rajesh Kumar
+              Arun Kumar
             </h4>
             <p
               style={{

@@ -1,4 +1,4 @@
-import { Phone, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 
 const QuickQuerySection = () => {
   const inputStyle = {
@@ -58,35 +58,10 @@ const QuickQuerySection = () => {
 
           <div
             style={{
-              display: "flex",
-              gap: "2.5rem",
-              flexWrap: "wrap",
+              display: 'flex',
+              justifyContent: 'flex-start',
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <div
-                style={{
-                  width: "44px",
-                  height: "44px",
-                  borderRadius: "50%",
-                  backgroundColor: "#EAF5F1",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Phone size={20} color="#1F6F54" />
-              </div>
-              <div>
-                <div style={{ fontSize: "0.9rem", opacity: 0.8 }}>
-                  Contact Us
-                </div>
-                <strong style={{ fontSize: "1rem" }}>
-                  +91 9876543212
-                </strong>
-              </div>
-            </div>
-
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
               <div
                 style={{
@@ -106,7 +81,7 @@ const QuickQuerySection = () => {
                   Email Us
                 </div>
                 <strong style={{ fontSize: "1rem" }}>
-                  realestate@gmail.com
+                  Landvest2026@gmail.com
                 </strong>
               </div>
             </div>

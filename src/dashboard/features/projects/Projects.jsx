@@ -58,9 +58,9 @@ const Projects = () => {
   ];
 
   const transactions = [
-    { id: 'TXN001', name: 'Rajesh Kumar', project: 'Green Valley - Plot A12', amount: '₹4,50,000', date: '2026-01-25', status: 'Completed' },
+    { id: 'TXN001', name: 'Arun Kumar', project: 'Green Valley - Plot A12', amount: '₹4,50,000', date: '2026-01-25', status: 'Completed' },
     { id: 'TXN002', name: 'Priya Sharma', project: 'Lake View - Plot C18', amount: '₹6,80,000', date: '2026-01-25', status: 'Pending' },
-    { id: 'TXN003', name: 'Rajesh Kumar', project: 'Green Valley - Plot A12', amount: '₹4,50,000', date: '2026-01-25', status: 'Completed' },
+    { id: 'TXN003', name: 'Arun Kumar', project: 'Green Valley - Plot A12', amount: '₹4,50,000', date: '2026-01-25', status: 'Completed' },
     { id: 'TXN004', name: 'Priya Sharma', project: 'Lake View - Plot C18', amount: '₹6,80,000', date: '2026-01-25', status: 'Pending' }
   ];
 
@@ -467,7 +467,7 @@ const Projects = () => {
           <tbody>
             <tr>
               <td>ASC001</td>
-              <td>Rajesh Kumar</td>
+              <td>Arun Kumar</td>
               <td>Senior Associate</td>
               <td><span className="status-badge status-completed">Active</span></td>
               <td>34</td>
@@ -483,7 +483,7 @@ const Projects = () => {
             </tr>
             <tr>
               <td>ASC003</td>
-              <td>Rajesh Kumar</td>
+              <td>Arun Kumar</td>
               <td>Senior Associate</td>
               <td><span className="status-badge status-completed">Active</span></td>
               <td>14</td>
