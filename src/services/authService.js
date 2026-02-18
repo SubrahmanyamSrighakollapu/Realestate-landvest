@@ -25,9 +25,12 @@ export const authService = {
       });
       if (response.data.success) {
         sessionStorage.setItem('employeeInfo', JSON.stringify(response.data.data));
+        console.log('Employee info saved:', response.data.data);
+        return response.data.data;
       }
     } catch (error) {
       console.error('Failed to fetch employee info:', error);
+      throw error;
     }
   },
 

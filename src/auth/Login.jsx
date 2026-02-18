@@ -17,10 +17,10 @@ const Login = () => {
     try {
       const response = await authService.login(formData.code, formData.password);
       if (response.success) {
+        // Fetch employee info before navigation
+        await authService.fetchEmployeeInfo(formData.code);
         toastService.success('Login successful!');
         navigate('/dashboard');
-        // Fetch employee info after navigation
-        authService.fetchEmployeeInfo(formData.code);
       }
     } catch (err) {
       toastService.error(err.response?.data?.message || 'Login failed. Please try again.');

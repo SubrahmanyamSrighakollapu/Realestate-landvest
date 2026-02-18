@@ -10,6 +10,7 @@ const AddLeads = () => {
   const [sources, setSources] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [pricingOptions, setPricingOptions] = useState([]);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [buyingPurposes, setBuyingPurposes] = useState([]);
   const [leadStatuses, setLeadStatuses] = useState([]);
@@ -49,6 +50,15 @@ const AddLeads = () => {
     }
   }, [sourceType]);
 
+  useEffect(() => {
+    if (formData.project) {
+      fetchPricingOptions(formData.project);
+    } else {
+      setPricingOptions([]);
+      setFormData(prev => ({ ...prev, pricingOption: '' }));
+    }
+  }, [formData.project]);
+
   const fetchInitialData = async () => {
     try {
       const [projectsRes, propertyTypesRes, buyingPurposesRes, leadStatusesRes] = await Promise.all([
@@ -75,6 +85,17 @@ const AddLeads = () => {
       }
     } catch (error) {
       toastService.error('Failed to load lead sources');
+    }
+  };
+
+  const fetchPricingOptions = async (projectId) => {
+    try {
+      const response = await leadService.getPricingOptions(projectId);
+      if (response.success && response.data.pricingOptions) {
+        setPricingOptions(response.data.pricingOptions);
+      }
+    } catch (error) {
+      toastService.error('Failed to load pricing options');
     }
   };
 
@@ -140,8 +161,33 @@ const AddLeads = () => {
 
       const response = await leadService.addLead(payload);
       if (response.success) {
-        toastService.success('Lead added successfully!');
-        // Reset form or navigate
+        toastService.success(response.message || 'Lead added successfully!');
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          mobile: '',
+          source: '',
+          sourceEmployee: '',
+          project: '',
+          propertyType: '',
+          pricingOption: '',
+          plotNo: '',
+          budgectFrom: '',
+          budgectTo: '',
+          buyingPurpose: '',
+          advanceAmount: '',
+          advanceDate: '',
+          nextActionDate: '',
+          nextActionType: 'call',
+          nextActionNote: '',
+          leadStatus: '',
+          assignedTo: ''
+        });
+        setEmployeeSearch('');
+        setPricingOptions([]);
+      } else {
+        toastService.error(response.message || 'Failed to add lead');
       }
     } catch (error) {
       toastService.error(error.response?.data?.message || 'Failed to add lead');
@@ -417,6 +463,34 @@ const AddLeads = () => {
                     <option value="">Select Project</option>
                     {projects.map(project => (
                       <option key={project._id} value={project._id}>{project.title}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                    Project Option
+                  </label>
+                  <select
+                    name="pricingOption"
+                    value={formData.pricingOption}
+                    onChange={handleInputChange}
+                    disabled={!formData.project}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: `1px solid ${dashboardColors.border}`,
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: !formData.project ? dashboardColors.tertiary : dashboardColors.white,
+                      cursor: !formData.project ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    <option value="">Select Option</option>
+                    {pricingOptions.map(option => (
+                      <option key={option.pricingOption._id} value={option.pricingOption._id}>
+                        {option.pricingOption.title}
+                      </option>
                     ))}
                   </select>
                 </div>

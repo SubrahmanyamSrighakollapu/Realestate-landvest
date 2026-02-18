@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import BasicInfo from './BasicInfo';
 import Pricing from './Pricing';
 import Highlights from './Highlights';
@@ -9,31 +9,47 @@ import Gallery from './Gallery';
 import Review from './Review';
 
 const AddProjectLayout = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [projectData, setProjectData] = useState({});
   const navigate = useNavigate();
+  const location = useLocation();
+  const [projectData, setProjectData] = useState({});
 
   const steps = [
-    { number: 1, label: 'Basic Info', component: BasicInfo },
-    { number: 2, label: 'Pricing', component: Pricing },
-    { number: 3, label: 'Highlights', component: Highlights },
-    { number: 4, label: 'Location', component: Location },
-    { number: 5, label: 'Layout', component: Layout },
-    { number: 6, label: 'Gallery', component: Gallery },
-    { number: 7, label: 'Review', component: Review }
+    { number: 1, label: 'Basic Info', component: BasicInfo, path: '/dashboard/projects/add/basic-info' },
+    { number: 2, label: 'Pricing', component: Pricing, path: '/dashboard/projects/add/pricing' },
+    { number: 3, label: 'Highlights', component: Highlights, path: '/dashboard/projects/add/highlights' },
+    { number: 4, label: 'Location', component: Location, path: '/dashboard/projects/add/location' },
+    { number: 5, label: 'Layout', component: Layout, path: '/dashboard/projects/add/layout' },
+    { number: 6, label: 'Gallery', component: Gallery, path: '/dashboard/projects/add/gallery' },
+    { number: 7, label: 'Review', component: Review, path: '/dashboard/projects/add/review' }
   ];
 
-  const CurrentStepComponent = steps[currentStep - 1].component;
+  // Determine current step from URL
+  const getCurrentStep = () => {
+    const currentPath = location.pathname;
+    const stepIndex = steps.findIndex(step => step.path === currentPath);
+    return stepIndex >= 0 ? stepIndex + 1 : 1;
+  };
+
+  const currentStep = getCurrentStep();
+
+  // Redirect to basic-info if on base /add route
+  useEffect(() => {
+    if (location.pathname === '/dashboard/projects/add') {
+      navigate('/dashboard/projects/add/basic-info', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
+  const CurrentStepComponent = steps[currentStep - 1]?.component || BasicInfo;
 
   const handleNext = () => {
     if (currentStep < 7) {
-      setCurrentStep(currentStep + 1);
+      navigate(steps[currentStep].path);
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      navigate(steps[currentStep - 2].path);
     }
   };
 

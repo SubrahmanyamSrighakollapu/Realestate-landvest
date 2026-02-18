@@ -11,9 +11,17 @@ const Navbar = () => {
   const profileRef = useRef(null);
 
   useEffect(() => {
-    const info = authService.getEmployeeData();
-    console.log('Employee Info:', info); // Debug log
-    setEmployeeInfo(info);
+    // Fetch employee data on mount and when it changes
+    const loadEmployeeInfo = () => {
+      const info = authService.getEmployeeData();
+      console.log('Employee Info:', info);
+      setEmployeeInfo(info);
+    };
+
+    loadEmployeeInfo();
+
+    // Listen for storage changes (in case data is updated)
+    window.addEventListener('storage', loadEmployeeInfo);
 
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
@@ -21,16 +29,18 @@ const Navbar = () => {
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+      window.removeEventListener('storage', loadEmployeeInfo);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleLogout = () => {
     authService.logout();
+    setEmployeeInfo(null);
     navigate('/auth/login');
   };
-
-  console.log('Show Dropdown:', showProfileDropdown); // Debug log
-  console.log('Employee Info State:', employeeInfo); // Debug log
 
   return (
     <nav style={{
@@ -38,8 +48,9 @@ const Navbar = () => {
       color: 'white',
       padding: '1rem 2rem',
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      position: 'relative',
-      zIndex: 100
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1400px', margin: '0 auto' }}>
         <Link to="/dashboard" style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold', textDecoration: 'none' }}>

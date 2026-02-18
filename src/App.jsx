@@ -74,7 +74,16 @@ function App() {
 
           {/* Projects */}
           <Route path="projects" element={<Projects />} />
-          <Route path="projects/add" element={<AddProjectLayout />} />
+          <Route path="projects/add" element={<AddProjectLayout />}>
+            <Route index element={<AddProjectLayout />} />
+            <Route path="basic-info" element={<AddProjectLayout />} />
+            <Route path="pricing" element={<AddProjectLayout />} />
+            <Route path="highlights" element={<AddProjectLayout />} />
+            <Route path="location" element={<AddProjectLayout />} />
+            <Route path="layout" element={<AddProjectLayout />} />
+            <Route path="gallery" element={<AddProjectLayout />} />
+            <Route path="review" element={<AddProjectLayout />} />
+          </Route>
           <Route path="projects/management" element={<ProjectManagement />} />
           <Route path="projects/edit/:id" element={<EditProject />} />
 

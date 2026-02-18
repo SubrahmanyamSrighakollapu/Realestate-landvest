@@ -1,29 +1,24 @@
 import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, CheckCircle } from 'lucide-react';
-import dashboardColors from '../../../styles/colors'; // adjust path as needed
+import { Calendar, CheckCircle, X, Upload } from 'lucide-react';
+import dashboardColors from '../../../styles/colors';
+import { projectService } from '../../../../services/projectService';
+import { toastService } from '../../../../services/toastService';
 
-const Review = ({ onPrevious, currentStep }) => {
+const Review = ({ onPrevious, currentStep, projectData }) => {
   const navigate = useNavigate();
-  const fileInputRef = useRef(null);
+  const userImageRef = useRef(null);
+  const fileRef = useRef(null);
 
-  // Form states
   const [userName, setUserName] = useState('');
   const [date, setDate] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [userImage, setUserImage] = useState(null);
+  const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
-
-  // Success modal
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      console.log('Selected image:', file.name);
-    }
-  };
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -32,42 +27,91 @@ const Review = ({ onPrevious, currentStep }) => {
     else if (e.type === 'dragleave') setDragActive(false);
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e, type) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedImage(e.dataTransfer.files[0]);
-      console.log('Dropped image:', e.dataTransfer.files[0].name);
+      if (type === 'userImage') setUserImage(e.dataTransfer.files[0]);
+      else if (type === 'file') setFile(e.dataTransfer.files[0]);
     }
   };
 
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleSubmit = () => {
-    // Basic validation (you can expand)
-    if (!userName.trim() || !description.trim()) {
-      alert('Please fill User Name and Description');
+  const handleAddTestimonial = () => {
+    if (!userName.trim()) {
+      toastService.error('User name is required');
+      return;
+    }
+    if (!date) {
+      toastService.error('Date is required');
+      return;
+    }
+    if (!description.trim()) {
+      toastService.error('Description is required');
       return;
     }
 
-    // Simulate submission
-    console.log('Testimonial submitted:', {
-      userName,
+    const testimonial = {
+      name: userName,
       date,
       description,
-      image: selectedImage?.name,
-    });
+      userImage,
+      file
+    };
 
-    // Show success modal
-    setShowSuccess(true);
+    setTestimonials(prev => [...prev, testimonial]);
+    
+    // Clear form
+    setUserName('');
+    setDate('');
+    setDescription('');
+    setUserImage(null);
+    setFile(null);
+    
+    toastService.success('Testimonial added! Click Submit to save all testimonials.');
+  };
+
+  const removeTestimonial = (index) => {
+    setTestimonials(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
+    if (testimonials.length === 0) {
+      toastService.error('Please add at least one testimonial');
+      return;
+    }
+
+    if (!projectData?._id || !projectData?.code) {
+      toastService.error('Project data is missing');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      for (const testimonial of testimonials) {
+        const data = new FormData();
+        data.append('id', projectData._id);
+        data.append('code', projectData.code);
+        data.append('name', testimonial.name);
+        data.append('date', testimonial.date);
+        data.append('description', testimonial.description);
+        if (testimonial.userImage) data.append('userImage', testimonial.userImage);
+        if (testimonial.file) data.append('file', testimonial.file);
+
+        await projectService.updateTestimonials(data);
+      }
+      
+      setShowSuccess(true);
+    } catch (error) {
+      toastService.error(error.response?.data?.message || 'Failed to submit testimonials');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSuccessClose = () => {
     setShowSuccess(false);
-    navigate('/dashboard/projects/management'); // or wherever you want
+    navigate('/dashboard/projects/management');
   };
 
   return (
@@ -93,9 +137,8 @@ const Review = ({ onPrevious, currentStep }) => {
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
         gap: '24px',
-        marginBottom: '40px',
+        marginBottom: '24px',
       }}>
-        {/* User Name */}
         <div>
           <label style={{
             display: 'block',
@@ -104,7 +147,7 @@ const Review = ({ onPrevious, currentStep }) => {
             color: dashboardColors.text,
             marginBottom: '8px',
           }}>
-            User Name
+            User Name *
           </label>
           <input
             type="text"
@@ -112,7 +155,7 @@ const Review = ({ onPrevious, currentStep }) => {
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
             style={{
-              width: '80%',
+              width: '90%',
               padding: '10px 14px',
               border: `1px solid ${dashboardColors.border}`,
               borderRadius: '6px',
@@ -122,7 +165,6 @@ const Review = ({ onPrevious, currentStep }) => {
           />
         </div>
 
-        {/* Date */}
         <div>
           <label style={{
             display: 'block',
@@ -131,148 +173,105 @@ const Review = ({ onPrevious, currentStep }) => {
             color: dashboardColors.text,
             marginBottom: '8px',
           }}>
-            Date
+            Date *
           </label>
-          <div style={{
-            position: 'relative',
-          }}>
-            <input
-              type="text"
-              placeholder="mm/dd/yy"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              style={{
-                width: '80%',
-                padding: '10px 14px 10px 14px',
-                border: `1px solid ${dashboardColors.border}`,
-                borderRadius: '6px',
-                fontSize: '14px',
-                outline: 'none',
-              }}
-            />
-            <Calendar
-              size={18}
-              color={dashboardColors.primary}
-              style={{
-                position: 'absolute',
-                right: '100px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-              }}
-            />
-          </div>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            style={{
+              width: '90%',
+              padding: '10px 14px',
+              border: `1px solid ${dashboardColors.border}`,
+              borderRadius: '6px',
+              fontSize: '14px',
+              outline: 'none',
+            }}
+          />
         </div>
       </div>
 
-      {/* User Image Upload */}
-      <div style={{ marginBottom: '40px' }}>
-        <label style={{
-          display: 'block',
-          fontSize: '14px',
-          fontWeight: '500',
-          color: dashboardColors.text,
-          marginBottom: '8px',
-        }}>
-          User Image
-        </label>
-        <div style={{
-          border: `2px dashed ${dashboardColors.border}`,
-          borderRadius: '12px',
-          padding: '60px 20px',
-          textAlign: 'center',
-          backgroundColor: dashboardColors.white,
-          position: 'relative',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          boxShadow: dragActive ? '0 0 0 3px rgba(31,111,84,0.15)' : 'none',
-        }}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={handleImageClick}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-          />
-
-          <div style={{
-            marginBottom: '16px',
+      {/* File Uploads */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        {/* User Image */}
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: dashboardColors.text,
+            marginBottom: '8px',
           }}>
-            <div style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 12px',
-              borderRadius: '50%',
-              backgroundColor: dashboardColors.secondary,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '32px',
-              color: dashboardColors.primary,
-            }}>
-              👤
-            </div>
-
-            <h3 style={{
-              fontSize: '16px',
-              fontWeight: '600',
-              color: dashboardColors.text,
-              margin: '0 0 4px 0',
-            }}>
-              User Image
-            </h3>
-            <p style={{
-              fontSize: '14px',
-              color: dashboardColors.textLight,
-              margin: '0 0 8px 0',
-            }}>
-              Drag & drop or click to upload
-            </p>
-            <p style={{
-              fontSize: '13px',
-              color: dashboardColors.textLight,
-            }}>
-              Recommended: 2014×513 px
+            User Image
+          </label>
+          <div style={{
+            border: `2px dashed ${dashboardColors.border}`,
+            borderRadius: '8px',
+            padding: '30px 20px',
+            textAlign: 'center',
+            cursor: 'pointer',
+          }}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={(e) => handleDrop(e, 'userImage')}
+            onClick={() => userImageRef.current?.click()}
+          >
+            <input
+              ref={userImageRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => setUserImage(e.target.files[0])}
+              style={{ display: 'none' }}
+            />
+            <Upload size={24} color={dashboardColors.primary} style={{ margin: '0 auto 8px' }} />
+            <p style={{ fontSize: '13px', color: dashboardColors.textLight, margin: 0 }}>
+              {userImage ? userImage.name : 'Click or drag image'}
             </p>
           </div>
+        </div>
 
-          {selectedImage ? (
-            <p style={{
-              fontSize: '14px',
-              color: dashboardColors.primary,
-              fontWeight: '500',
-              marginTop: '12px',
-            }}>
-              Selected: {selectedImage.name}
+        {/* File (Video/Image) */}
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: '14px',
+            fontWeight: '500',
+            color: dashboardColors.text,
+            marginBottom: '8px',
+          }}>
+            File (Video/Image)
+          </label>
+          <div style={{
+            border: `2px dashed ${dashboardColors.border}`,
+            borderRadius: '8px',
+            padding: '30px 20px',
+            textAlign: 'center',
+            cursor: 'pointer',
+          }}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={(e) => handleDrop(e, 'file')}
+            onClick={() => fileRef.current?.click()}
+          >
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*,video/*"
+              onChange={(e) => setFile(e.target.files[0])}
+              style={{ display: 'none' }}
+            />
+            <Upload size={24} color={dashboardColors.primary} style={{ margin: '0 auto 8px' }} />
+            <p style={{ fontSize: '13px', color: dashboardColors.textLight, margin: 0 }}>
+              {file ? file.name : 'Click or drag video/image'}
             </p>
-          ) : (
-            <button
-              type="button"
-              style={{
-                padding: '10px 24px',
-                backgroundColor: dashboardColors.primary,
-                color: dashboardColors.white,
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                marginTop: '12px',
-              }}
-            >
-              Choose File
-            </button>
-          )}
+          </div>
         </div>
       </div>
 
       {/* Description */}
-      <div style={{ marginBottom: '40px' }}>
+      <div style={{ marginBottom: '24px' }}>
         <label style={{
           display: 'block',
           fontSize: '14px',
@@ -280,24 +279,42 @@ const Review = ({ onPrevious, currentStep }) => {
           color: dashboardColors.text,
           marginBottom: '8px',
         }}>
-          Description
+          Description *
         </label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Enter Detailed information about your project"
-          rows={5}
+          placeholder="Enter testimonial description"
+          rows={4}
           style={{
-            width: '100%',
+            width: '98%',
             padding: '12px 16px',
             border: `1px solid ${dashboardColors.border}`,
             borderRadius: '8px',
             fontSize: '14px',
             resize: 'vertical',
             outline: 'none',
-            minHeight: '100px',
           }}
         />
+      </div>
+
+      {/* Add Testimonial Button */}
+      <div style={{ marginBottom: '40px', textAlign: 'right' }}>
+        <button
+          onClick={handleAddTestimonial}
+          style={{
+            padding: '10px 24px',
+            backgroundColor: dashboardColors.button,
+            color: dashboardColors.white,
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+          }}
+        >
+          + Add Testimonial
+        </button>
       </div>
 
       {/* All Testimonials Section */}
@@ -308,44 +325,79 @@ const Review = ({ onPrevious, currentStep }) => {
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         marginBottom: '40px',
       }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
+        <h3 style={{
+          fontSize: '16px',
+          fontWeight: '600',
+          color: dashboardColors.text,
           marginBottom: '16px',
         }}>
-          <h3 style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            color: dashboardColors.text,
-            margin: 0,
-          }}>
-            All Testimonials
-          </h3>
+          All Testimonials ({testimonials.length})
+        </h3>
 
-          <button style={{
-            padding: '10px 20px',
-            backgroundColor: dashboardColors.button, // gold/orange
-            color: dashboardColors.white,
-            border: 'none',
-            borderRadius: '6px',
+        {testimonials.length === 0 ? (
+          <p style={{
             fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer',
+            color: dashboardColors.textLight,
+            textAlign: 'center',
+            padding: '20px 0',
           }}>
-            +Add Testimonials
-          </button>
-        </div>
-
-        {/* Placeholder for testimonials list */}
-        <p style={{
-          fontSize: '14px',
-          color: dashboardColors.textLight,
-          textAlign: 'center',
-          padding: '20px 0',
-        }}>
-          No testimonials added yet
-        </p>
+            No testimonials added yet
+          </p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {testimonials.map((testimonial, index) => (
+              <div key={index} style={{
+                border: `1px solid ${dashboardColors.border}`,
+                borderRadius: '8px',
+                padding: '16px',
+                position: 'relative',
+              }}>
+                <button
+                  onClick={() => removeTestimonial(index)}
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0
+                  }}
+                >
+                  <X size={14} />
+                </button>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <strong style={{ fontSize: '14px' }}>Name:</strong> {testimonial.name}
+                  </div>
+                  <div>
+                    <strong style={{ fontSize: '14px' }}>Date:</strong> {testimonial.date}
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <strong style={{ fontSize: '14px' }}>Description:</strong> {testimonial.description}
+                  </div>
+                  {testimonial.userImage && (
+                    <div>
+                      <strong style={{ fontSize: '14px' }}>User Image:</strong> {testimonial.userImage.name}
+                    </div>
+                  )}
+                  {testimonial.file && (
+                    <div>
+                      <strong style={{ fontSize: '14px' }}>File:</strong> {testimonial.file.name}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Navigation Buttons */}
@@ -373,6 +425,7 @@ const Review = ({ onPrevious, currentStep }) => {
 
         <button
           onClick={handleSubmit}
+          disabled={testimonials.length === 0 || loading}
           style={{
             padding: '12px 32px',
             backgroundColor: dashboardColors.primary,
@@ -381,10 +434,11 @@ const Review = ({ onPrevious, currentStep }) => {
             borderRadius: '8px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: 'pointer',
+            cursor: testimonials.length === 0 || loading ? 'not-allowed' : 'pointer',
+            opacity: testimonials.length === 0 || loading ? 0.5 : 1
           }}
         >
-          Save & Submit
+          {loading ? 'Submitting...' : 'Submit'}
         </button>
       </div>
 
@@ -426,7 +480,7 @@ const Review = ({ onPrevious, currentStep }) => {
               color: dashboardColors.textLight,
               marginBottom: '24px',
             }}>
-              Testimonial added successfully!
+              All testimonials submitted successfully!
             </p>
             <button
               onClick={handleSuccessClose}
