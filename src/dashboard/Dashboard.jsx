@@ -4,7 +4,7 @@ import Associates from "./features/associates/Associates";
 import Projects from "./features/projects/Projects";
 import Users from "./features/users/Users";
 import { dashboardColors } from "./styles/colors";
-import { UserPlus, Users as UsersIcon } from 'lucide-react';
+import { UserPlus, Users as UsersIcon, UserCheck } from 'lucide-react';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -86,6 +86,26 @@ const Dashboard = () => {
                 }}
               />
             </div>
+
+            <button
+              onClick={() => navigate('/dashboard/leads/add')}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "10px 20px",
+                backgroundColor: dashboardColors.primary,
+                color: dashboardColors.white,
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "14px",
+                fontWeight: "500",
+                cursor: "pointer",
+              }}
+            >
+              <UserCheck size={18} />
+              Add Lead
+            </button>
 
             <button
               onClick={() => navigate('/dashboard/associates/create')}

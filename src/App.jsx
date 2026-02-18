@@ -24,6 +24,7 @@ import ProjectManagement from "./dashboard/features/projects/ProjectManagement";
 import DesignationManagement from "./dashboard/features/designations/DesignationManagement";
 import TeamAndRoles from "./dashboard/features/org-tree/TeamAndRoles";
 import Reports from "./dashboard/features/key-reports/Reports";
+import AddLeads from "./dashboard/features/leads/AddLeads";
 import Login from "./auth/Login";
 import Signup from "./auth/Signup";
 import OtpVerification from "./auth/OtpVerification";
@@ -56,6 +57,9 @@ function App() {
             element={<DesignationManagementLayout />}
           />
           
+
+          {/* Leads */}
+          <Route path="leads/add" element={<AddLeads />} />
 
           {/* Associates */}
           <Route path="associates" element={<Associates />} />

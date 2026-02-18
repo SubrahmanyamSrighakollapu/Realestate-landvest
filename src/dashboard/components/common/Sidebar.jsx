@@ -57,7 +57,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     src={logo}
     alt="Logo"
     style={{
-      height: '100px',
+      height: '50px',
       objectFit: 'contain'
     }}
   />
