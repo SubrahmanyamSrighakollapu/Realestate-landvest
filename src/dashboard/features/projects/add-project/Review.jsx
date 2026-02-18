@@ -27,15 +27,21 @@ const Review = ({ onPrevious, currentStep, projectData }) => {
     else if (e.type === 'dragleave') setDragActive(false);
   };
 
-  const handleDrop = (e, type) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      if (type === 'userImage') setUserImage(e.dataTransfer.files[0]);
-      else if (type === 'file') setFile(e.dataTransfer.files[0]);
-    }
-  };
+const handleDrop = (e, type) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setDragActive(false);
+
+  const droppedFile = e.dataTransfer.files?.[0];
+  if (!droppedFile) return;
+
+  if (!validateFileSize(droppedFile, type === 'userImage' ? 'User Image' : 'File')) {
+    return;
+  }
+
+  if (type === 'userImage') setUserImage(droppedFile);
+  else if (type === 'file') setFile(droppedFile);
+};
 
   const handleAddTestimonial = () => {
     if (!userName.trim()) {
@@ -113,6 +119,22 @@ const Review = ({ onPrevious, currentStep, projectData }) => {
     setShowSuccess(false);
     navigate('/dashboard/projects/management');
   };
+
+
+  const MAX_SIZE = 250 * 1024; // 250KB
+
+const validateFileSize = (file, label) => {
+  if (!file) return false;
+
+  if (file.size > MAX_SIZE) {
+    toastService.error(
+      `${label} must be less than 250KB. Selected file is ${(file.size / 1024).toFixed(2)}KB`
+    );
+    return false;
+  }
+
+  return true;
+};
 
   return (
     <div>
@@ -221,7 +243,12 @@ const Review = ({ onPrevious, currentStep, projectData }) => {
               ref={userImageRef}
               type="file"
               accept="image/*"
-              onChange={(e) => setUserImage(e.target.files[0])}
+              onChange={(e) => {
+  const selectedFile = e.target.files[0];
+  if (validateFileSize(selectedFile, 'User Image')) {
+    setUserImage(selectedFile);
+  }
+}}
               style={{ display: 'none' }}
             />
             <Upload size={24} color={dashboardColors.primary} style={{ margin: '0 auto 8px' }} />
@@ -259,7 +286,12 @@ const Review = ({ onPrevious, currentStep, projectData }) => {
               ref={fileRef}
               type="file"
               accept="image/*,video/*"
-              onChange={(e) => setFile(e.target.files[0])}
+              onChange={(e) => {
+  const selectedFile = e.target.files[0];
+  if (validateFileSize(selectedFile, 'File')) {
+    setFile(selectedFile);
+  }
+}}
               style={{ display: 'none' }}
             />
             <Upload size={24} color={dashboardColors.primary} style={{ margin: '0 auto 8px' }} />

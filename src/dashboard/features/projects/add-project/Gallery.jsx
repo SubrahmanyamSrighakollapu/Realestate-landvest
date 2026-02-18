@@ -12,9 +12,29 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      setImages(prev => [...prev, ...files]);
+
+    const maxSize = 250 * 1024; // 250KB
+
+     const validFiles = [];
+  const oversizedFiles = [];
+
+  files.forEach(file => {
+    if (file.size <= maxSize) {
+      validFiles.push(file);
+    } else {
+      oversizedFiles.push(file);
     }
+  });
+
+  if (oversizedFiles.length > 0) {
+    toastService.error(
+      `Each image must be less than 250KB. ${oversizedFiles.length} file(s) exceeded the limit.`
+    );
+  }
+
+if (validFiles.length > 0) {
+    setImages(prev => [...prev, ...validFiles]);
+  }
   };
 
   const handleDrag = (e) => {

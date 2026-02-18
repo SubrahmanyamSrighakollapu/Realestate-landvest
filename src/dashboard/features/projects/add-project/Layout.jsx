@@ -12,9 +12,30 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      setLayouts(prev => [...prev, ...files]);
+
+
+     const maxSize = 250 * 1024; // 250KB
+
+  const validFiles = [];
+  const oversizedFiles = [];
+
+  files.forEach(file => {
+    if (file.size <= maxSize) {
+      validFiles.push(file);
+    } else {
+      oversizedFiles.push(file);
     }
+  });
+
+  if (oversizedFiles.length > 0) {
+    toastService.error(
+      `Each layout must be less than 250KB. ${oversizedFiles.length} file(s) exceeded the limit.`
+    );
+  }
+
+     if (validFiles.length > 0) {
+    setLayouts(prev => [...prev, ...validFiles]);
+  }
   };
 
   const handleDrag = (e) => {
@@ -31,6 +52,8 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+
+
     if (e.dataTransfer.files) {
       const files = Array.from(e.dataTransfer.files);
       setLayouts(prev => [...prev, ...files]);
@@ -231,7 +254,7 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
             fontSize: '13px',
             color: dashboardColors.textLight,
           }}>
-            Recommended: 2014×513 px
+            Recommended: 2014×513 px • Max size: 250KB per image
           </p>
         </div>
 
