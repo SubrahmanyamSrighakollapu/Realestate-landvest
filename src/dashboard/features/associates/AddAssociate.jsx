@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import axios from 'axios';
 import dashboardColors from '../../styles/colors';
 import { employeeService } from '../../../services/employeeService';
 import { designationService } from '../../../services/designationService';
@@ -21,6 +22,7 @@ const AddAssociate = () => {
   const [timer, setTimer] = useState(0);
   const [otp, setOtp] = useState('');
   const [aadhaarNumber, setAadhaarNumber] = useState('');
+  const [loadingRoles, setLoadingRoles] = useState(false);
   
   const [formData, setFormData] = useState({
     name: employee?.name || '',
@@ -56,11 +58,13 @@ const AddAssociate = () => {
   });
 
   useEffect(() => {
-    fetchRoles();
     if (isEdit && employee) {
       setSelectedSponsor(employee.sponser);
       setSearchSponsor(employee.sponser?.name || '');
       setAadhaarNumber(employee.aadharNumber || '');
+      if (employee.sponser?.role?._id) {
+        fetchRolesBySponsor(employee.sponser.role._id);
+      }
     }
   }, []);
 
@@ -87,6 +91,23 @@ const AddAssociate = () => {
       }
     } catch (error) {
       console.error('Error fetching roles:', error);
+    }
+  };
+
+  const fetchRolesBySponsor = async (sponsorRoleId) => {
+    setLoadingRoles(true);
+    try {
+      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/roles/list', { 
+        parent: sponsorRoleId 
+      });
+      if (response.data.success) {
+        setDesignations(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching roles by sponsor:', error);
+      toastService.error('Failed to fetch roles');
+    } finally {
+      setLoadingRoles(false);
     }
   };
 
@@ -409,7 +430,11 @@ const AddAssociate = () => {
                               setSelectedSponsor(sponsor);
                               setSearchSponsor(sponsor.name);
                               setShowSponsorDropdown(false);
-                              setFormData(prev => ({ ...prev, sponser: sponsor._id }));
+                              setFormData(prev => ({ ...prev, sponser: sponsor._id, role: '' }));
+                              // Fetch roles based on selected sponsor's role
+                              if (sponsor.role?._id) {
+                                fetchRolesBySponsor(sponsor.role._id);
+                              }
                             }}
                             style={{
                               padding: '10px 14px',

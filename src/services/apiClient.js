@@ -23,4 +23,17 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// Response interceptor to handle 401 errors
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      authService.logout();
+      window.location.href = '/auth/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default apiClient;
