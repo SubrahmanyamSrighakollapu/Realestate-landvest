@@ -15,7 +15,7 @@ import Users from "./dashboard/features/users/Users";
 import CreateUser from "./dashboard/features/users/CreateUser";
 import OrganizationStructure from "./dashboard/features/org-tree/OrganizationStructure";
 import ChangeTeamRole from "./dashboard/features/org-tree/ChangeTeamRole";
-import UpgradeRole from "./dashboard/features/org-tree/UpgradeRole";
+import ChangeRole from "./dashboard/features/org-tree/ChangeRole";
 import DesignationManagementLayout from "./dashboard/features/designations/DesignationManagement";
 import AssociateReports from "./dashboard/features/reports/AssociateReports";
 import DirectoryManagement from "./dashboard/features/directory/DirectoryManagement";
@@ -30,7 +30,6 @@ import Signup from "./auth/Signup";
 import OtpVerification from "./auth/OtpVerification";
 import KycVerification from "./auth/KycVerification";
 import GoToDashboard from "./auth/GoToDashboard";
-import DowngradeRole from "./dashboard/features/org-tree/DowngradeRole";
 
 function App() {
   return (
@@ -96,9 +95,7 @@ function App() {
           {/* Org Tree */}
           <Route path="org-tree/management" element={<OrganizationStructure />} />
           <Route path="org-tree/teams-and-roles" element={<TeamAndRoles />} />
-          <Route path="org-tree/change-role/:id" element={<ChangeTeamRole />} />
-          <Route path="org-tree/upgrade-role" element={<UpgradeRole />} />
-          <Route path="org-tree/downgrade-role" element={<DowngradeRole />} />
+          <Route path="org-tree/change-role/:id" element={<ChangeRole />} />
 
           {/* Reports */}
           <Route path="reports/associate-reports" element={<AssociateReports />} />
