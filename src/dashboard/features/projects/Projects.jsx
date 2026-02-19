@@ -1,13 +1,45 @@
+import { useState, useEffect } from 'react';
 import { Search, Download, Filter, FolderKanban, CheckCircle, XCircle, PlusCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import axios from 'axios';
+import { authService } from '../../../services/authService';
 import '../../styles/global.css';
 
 const Projects = () => {
+  const [dashboardData, setDashboardData] = useState({
+    totalCount: 0,
+    activeCount: 0,
+    inactiveCount: 0,
+    newCount: 0
+  });
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.post(
+        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/projects',
+        { startDate: startDate, endDate: endDate },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setDashboardData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
+
   const statsCards = [
-    { icon: FolderKanban, label: 'Total Projects', value: '247', color: '#3b82f6' },
-    { icon: CheckCircle, label: 'Active Projects', value: '180', color: '#10b981' },
-    { icon: XCircle, label: 'In Active Projects', value: '13', color: '#ef4444' },
-    { icon: PlusCircle, label: 'New Projects', value: '13', color: '#8b5cf6' }
+    { icon: FolderKanban, label: 'Total Projects', value: dashboardData.totalCount, color: '#3b82f6' },
+    { icon: CheckCircle, label: 'Active Projects', value: dashboardData.activeCount, color: '#10b981' },
+    { icon: XCircle, label: 'In Active Projects', value: dashboardData.inactiveCount, color: '#ef4444' },
+    { icon: PlusCircle, label: 'New Projects', value: dashboardData.newCount, color: '#8b5cf6' }
   ];
 
   const plotAvailabilityData = [
@@ -66,6 +98,52 @@ const Projects = () => {
 
   return (
     <div>
+      {/* Date Filter */}
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div>
+          <label style={{ fontSize: '14px', color: '#6b7280', marginRight: '8px' }}>Start Date:</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: '14px', color: '#6b7280', marginRight: '8px' }}>End Date:</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+        <button
+          onClick={fetchDashboardData}
+          style={{
+            padding: '8px 20px',
+            backgroundColor: 'var(--dashboard-primary)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          Apply
+        </button>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '24px' }}>
         {statsCards.map((stat, index) => (
           <div key={index} style={{

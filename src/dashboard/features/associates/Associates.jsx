@@ -1,13 +1,45 @@
+import { useState, useEffect } from 'react';
 import { Users, UserCheck, UserX, UserPlus, Search, Filter, Download } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import axios from 'axios';
+import { authService } from '../../../services/authService';
 import '../../styles/global.css';
 
 const Associates = () => {
+  const [dashboardData, setDashboardData] = useState({
+    totalCount: 0,
+    activeCount: 0,
+    inactiveCount: 0,
+    newCount: 0
+  });
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.post(
+        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/employees',
+        { startDate: startDate, endDate: endDate },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setDashboardData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
+
   const statsCards = [
-    { icon: Users, label: 'Total Associates', value: '247', color: '#3b82f6' },
-    { icon: UserCheck, label: 'Active Associates', value: '180', color: '#10b981' },
-    { icon: UserX, label: 'In Active Associates', value: '13', color: '#ef4444' },
-    { icon: UserPlus, label: 'New Associates', value: '13', color: '#8b5cf6' }
+    { icon: Users, label: 'Total Associates', value: dashboardData.totalCount, color: '#3b82f6' },
+    { icon: UserCheck, label: 'Active Associates', value: dashboardData.activeCount, color: '#10b981' },
+    { icon: UserX, label: 'In Active Associates', value: dashboardData.inactiveCount, color: '#ef4444' },
+    { icon: UserPlus, label: 'New Associates', value: dashboardData.newCount, color: '#8b5cf6' }
   ];
 
   const topPerformingData = [
@@ -49,6 +81,52 @@ const Associates = () => {
 
   return (
     <div>
+      {/* Date Filter */}
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div>
+          <label style={{ fontSize: '14px', color: '#6b7280', marginRight: '8px' }}>Start Date:</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: '14px', color: '#6b7280', marginRight: '8px' }}>End Date:</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+        <button
+          onClick={fetchDashboardData}
+          style={{
+            padding: '8px 20px',
+            backgroundColor: 'var(--dashboard-primary)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          Apply
+        </button>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '24px' }}>
         {statsCards.map((stat, index) => (
           <div key={index} style={{

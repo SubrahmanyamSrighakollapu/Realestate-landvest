@@ -60,7 +60,7 @@ const Dashboard = () => {
           </div>
 
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <div style={{ display: "flex", gap: "8px" }}>
+            {/* <div style={{ display: "flex", gap: "8px" }}>
               <input
                 type="date"
                 value={startDate}
@@ -85,7 +85,7 @@ const Dashboard = () => {
                   outline: "none",
                 }}
               />
-            </div>
+            </div> */}
 
             <button
               onClick={() => navigate('/dashboard/leads/add')}
