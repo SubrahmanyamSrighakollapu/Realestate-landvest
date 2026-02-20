@@ -1,33 +1,83 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowUp, ArrowDown, CheckCircle, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowUp, ArrowDown, CheckCircle } from 'lucide-react';
 import dashboardColors from '../../styles/colors';
+import { employeeService } from '../../../services/employeeService';
+import { projectService } from '../../../services/projectService';
+import { toastService } from '../../../services/toastService';
 
 const ChangeRole = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [employee, setEmployee] = useState(null);
   const [actionType, setActionType] = useState(null);
+  const [roles, setRoles] = useState([]);
   const [selectedRole, setSelectedRole] = useState(null);
-  const [commissionType, setCommissionType] = useState('Fixed Percentage');
-  const [commissionValue, setCommissionValue] = useState('2.50 %');
-  const [effectiveDate, setEffectiveDate] = useState('11/01/2023');
 
-  const upgradeRoles = [
-    { id: 1, name: 'Sale Director', description: 'Enhanced commission structure', level: 'Level 7' },
-    { id: 2, name: 'Senior Sale Director', description: 'Enhanced commission structure', level: 'Level 8' },
-    { id: 3, name: 'Team Head', description: 'Enhanced commission structure', level: 'Level 9' },
-    { id: 4, name: 'Founder Head', description: 'Enhanced commission structure', level: 'Level 10' },
-    { id: 5, name: 'Chief director', description: 'Enhanced commission structure', level: 'Level 11' },
-    { id: 6, name: 'Vice president', description: 'Enhanced commission structure', level: 'Level 12' },
-    { id: 7, name: 'Company', description: 'Enhanced commission structure', level: 'Level 13' }
-  ];
+  useEffect(() => {
+    fetchEmployee();
+  }, [id]);
 
-  const downgradeRoles = [
-    { id: 8, name: 'Associate', description: 'Basic commission structure', level: 'Level 1' },
-    { id: 9, name: 'Junior Associate', description: 'Basic commission structure', level: 'Level 2' },
-    { id: 10, name: 'Sales Executive', description: 'Standard commission structure', level: 'Level 3' }
-  ];
+  const fetchEmployee = async () => {
+    try {
+      const response = await employeeService.listEmployees();
+      if (response.success) {
+        const emp = response.data.find(e => e._id === id);
+        setEmployee(emp);
+      }
+    } catch (error) {
+      toastService.error('Failed to load employee');
+    }
+  };
 
-  const roles = actionType === 'upgrade' ? upgradeRoles : actionType === 'downgrade' ? downgradeRoles : [];
+  const handleUpgrade = async () => {
+    if (!employee?.role?._id) return;
+    setActionType('upgrade');
+    setSelectedRole(null);
+    try {
+      const response = await projectService.getParentRoles(employee.role._id);
+      if (response.success) {
+        setRoles(response.data);
+      }
+    } catch (error) {
+      toastService.error('Failed to load upgrade roles');
+    }
+  };
+
+  const handleDowngrade = async () => {
+    if (!employee?.role?._id) return;
+    setActionType('downgrade');
+    setSelectedRole(null);
+    try {
+      const response = await projectService.getChildRoles(employee.role._id);
+      if (response.success) {
+        setRoles(response.data);
+      }
+    } catch (error) {
+      toastService.error('Failed to load downgrade roles');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!selectedRole) {
+      toastService.error('Please select a role');
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append('id', id);
+      formData.append('code', employee.code);
+      formData.append('role', selectedRole);
+      
+      const response = await employeeService.updateEmployee(formData);
+      if (response.success) {
+        toastService.success('Role updated successfully');
+        navigate('/dashboard/org-tree/teams-and-roles');
+      }
+    } catch (error) {
+      toastService.error('Failed to update role');
+    }
+  };
 
   return (
     <div style={{ padding: '24px', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
@@ -73,10 +123,10 @@ const ChangeRole = () => {
             }}>
               <div>
                 <div style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>
-                  Sales Manager
+                  {employee?.role?.name || 'N/A'}
                 </div>
                 <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                  Standard sales commissions
+                  Commission: {employee?.role?.percentage || 0}%
                 </div>
               </div>
               <CheckCircle size={24} color={dashboardColors.primary} />
@@ -91,7 +141,7 @@ const ChangeRole = () => {
             marginBottom: '24px'
           }}>
             <button 
-              onClick={() => { setActionType('upgrade'); setSelectedRole(null); }}
+              onClick={handleUpgrade}
               style={{
                 padding: '12px',
                 backgroundColor: actionType === 'upgrade' ? dashboardColors.primary : 'white',
@@ -112,7 +162,7 @@ const ChangeRole = () => {
               Upgrade
             </button>
             <button 
-              onClick={() => { setActionType('downgrade'); setSelectedRole(null); }}
+              onClick={handleDowngrade}
               style={{
                 padding: '12px',
                 backgroundColor: actionType === 'downgrade' ? '#ff9800' : 'white',
@@ -140,7 +190,7 @@ const ChangeRole = () => {
               <div style={{ marginBottom: '20px' }}>
                 {roles.map((role) => (
                   <label 
-                    key={role.id}
+                    key={role._id}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -150,12 +200,12 @@ const ChangeRole = () => {
                       border: '1px solid #e5e7eb',
                       borderRadius: '8px',
                       cursor: 'pointer',
-                      backgroundColor: selectedRole === role.id ? '#f9fafb' : 'white',
+                      backgroundColor: selectedRole === role._id ? '#f9fafb' : 'white',
                       transition: 'all 0.2s'
                     }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
                     onMouseLeave={(e) => {
-                      if (selectedRole !== role.id) {
+                      if (selectedRole !== role._id) {
                         e.currentTarget.style.backgroundColor = 'white';
                       }
                     }}
@@ -164,9 +214,9 @@ const ChangeRole = () => {
                       <input
                         type="radio"
                         name="role"
-                        value={role.id}
-                        checked={selectedRole === role.id}
-                        onChange={() => setSelectedRole(role.id)}
+                        value={role._id}
+                        checked={selectedRole === role._id}
+                        onChange={() => setSelectedRole(role._id)}
                         style={{ 
                           width: '18px', 
                           height: '18px',
@@ -179,7 +229,7 @@ const ChangeRole = () => {
                           {role.name}
                         </div>
                         <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                          {role.description}
+                          Commission: {role.percentage}%
                         </div>
                       </div>
                     </div>
@@ -191,7 +241,7 @@ const ChangeRole = () => {
                       fontWeight: '500',
                       color: '#6b7280'
                     }}>
-                      {role.level}
+                      Level {role.code}
                     </div>
                   </label>
                 ))}
@@ -208,140 +258,6 @@ const ChangeRole = () => {
                 <p style={{ fontSize: '13px', color: '#dc2626', margin: 0 }}>
                   Important: Role changes will affect commission rates and team goals. Changes take effect immediately
                 </p>
-              </div>
-
-              {/* Commission Configuration Section */}
-              <div style={{ marginBottom: '24px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '16px' }}>
-                  Commission Configuration
-                </h3>
-
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: '13px', 
-                    fontWeight: '500', 
-                    color: '#6b7280', 
-                    marginBottom: '8px' 
-                  }}>
-                    Commission Type
-                  </label>
-                  <select 
-                    value={commissionType}
-                    onChange={(e) => setCommissionType(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      outline: 'none',
-                      backgroundColor: 'white'
-                    }}
-                  >
-                    <option>Fixed Percentage</option>
-                    <option>Tiered Commission</option>
-                    <option>Flat Rate</option>
-                  </select>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <div>
-                    <label style={{ 
-                      display: 'block', 
-                      fontSize: '13px', 
-                      fontWeight: '500', 
-                      color: '#6b7280', 
-                      marginBottom: '8px' 
-                    }}>
-                      Value
-                    </label>
-                    <select 
-                      value={commissionValue}
-                      onChange={(e) => setCommissionValue(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '12px',
-                        border: '1px solid #d1d5db',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        outline: 'none',
-                        backgroundColor: 'white'
-                      }}
-                    >
-                      <option>2.50 %</option>
-                      <option>3.00 %</option>
-                      <option>3.50 %</option>
-                      <option>4.00 %</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ 
-                      display: 'block', 
-                      fontSize: '13px', 
-                      fontWeight: '500', 
-                      color: '#6b7280', 
-                      marginBottom: '8px' 
-                    }}>
-                      Effective From
-                    </label>
-                    <div style={{ position: 'relative' }}>
-                      <input 
-                        type="text"
-                        value={effectiveDate}
-                        onChange={(e) => setEffectiveDate(e.target.value)}
-                        style={{
-                          width: '100%',
-                          padding: '12px',
-                          paddingRight: '40px',
-                          border: '1px solid #d1d5db',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
-                      />
-                      <Calendar 
-                        size={18} 
-                        color="#6b7280"
-                        style={{
-                          position: 'absolute',
-                          right: '12px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          pointerEvents: 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Projected Earnings */}
-              <div style={{
-                backgroundColor: '#f9fafb',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                padding: '16px',
-                marginBottom: '24px'
-              }}>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center' 
-                }}>
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
-                      Projected Earnings
-                    </div>
-                    <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                      Est. Monthly Payout
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '24px', fontWeight: '700', color: dashboardColors.primary }}>
-                    ₹15,000
-                  </div>
-                </div>
               </div>
             </>
           )}
@@ -365,6 +281,7 @@ const ChangeRole = () => {
               Cancel
             </button>
             <button 
+              onClick={handleSave}
               disabled={!selectedRole}
               style={{
                 flex: 1,

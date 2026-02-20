@@ -1,15 +1,81 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowUp, ArrowDown, CheckCircle, Calendar } from 'lucide-react';
+import { ArrowUp, ArrowDown, CheckCircle } from 'lucide-react';
 import dashboardColors from '../../styles/colors';
+import { employeeService } from '../../../services/employeeService';
+import { projectService } from '../../../services/projectService';
+import { toastService } from '../../../services/toastService';
 
 const ChangeTeamRole = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [employee, setEmployee] = useState(null);
+  const [roles, setRoles] = useState([]);
+  const [selectedRole, setSelectedRole] = useState('');
+  const [roleType, setRoleType] = useState('');
 
-  const [commissionType, setCommissionType] = useState('Fixed Percentage');
-  const [commissionValue, setCommissionValue] = useState('2.50 %');
-  const [effectiveDate, setEffectiveDate] = useState('11/01/2023');
+  useEffect(() => {
+    fetchEmployee();
+  }, [id]);
+
+  const fetchEmployee = async () => {
+    try {
+      const response = await employeeService.listEmployees();
+      if (response.success) {
+        const emp = response.data.find(e => e._id === id);
+        setEmployee(emp);
+      }
+    } catch (error) {
+      toastService.error('Failed to load employee');
+    }
+  };
+
+  const handleUpgrade = async () => {
+    if (!employee?.role?._id) return;
+    setRoleType('upgrade');
+    try {
+      const response = await projectService.getParentRoles(employee.role._id);
+      if (response.success) {
+        setRoles(response.data);
+      }
+    } catch (error) {
+      toastService.error('Failed to load upgrade roles');
+    }
+  };
+
+  const handleDowngrade = async () => {
+    if (!employee?.role?._id) return;
+    setRoleType('downgrade');
+    try {
+      const response = await projectService.getChildRoles(employee.role._id);
+      if (response.success) {
+        setRoles(response.data);
+      }
+    } catch (error) {
+      toastService.error('Failed to load downgrade roles');
+    }
+  };
+
+  const handleSave = async () => {
+    if (!selectedRole) {
+      toastService.error('Please select a role');
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append('id', id);
+      formData.append('code', employee.code);
+      formData.append('role', selectedRole);
+      
+      const response = await employeeService.updateEmployee(formData);
+      if (response.success) {
+        toastService.success('Role updated successfully');
+        navigate('/dashboard/org-tree/teams-and-roles');
+      }
+    } catch (error) {
+      toastService.error('Failed to update role');
+    }
+  };
 
   return (
     <div style={{ padding: '24px', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
@@ -57,10 +123,10 @@ const ChangeTeamRole = () => {
             }}>
               <div>
                 <div style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '4px' }}>
-                  Sales Manager
+                  {employee?.role?.name || 'N/A'}
                 </div>
                 <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                  Standard sales commissions
+                  Commission: {employee?.role?.percentage || 0}%
                 </div>
               </div>
               <CheckCircle size={24} color={dashboardColors.primary} />
@@ -75,7 +141,7 @@ const ChangeTeamRole = () => {
             marginBottom: '20px'
           }}>
             <button 
-              onClick={() => navigate('/dashboard/org-tree/upgrade-role')}
+              onClick={handleUpgrade}
               style={{
               padding: '12px',
               backgroundColor: 'white',
@@ -104,7 +170,7 @@ const ChangeTeamRole = () => {
               Upgrade
             </button>
             <button 
-            onClick={() => navigate('/dashboard/org-tree/downgrade-role')}
+            onClick={handleDowngrade}
             style={{
               padding: '12px',
               backgroundColor: '#ff9800',
@@ -128,6 +194,41 @@ const ChangeTeamRole = () => {
             </button>
           </div>
 
+          {/* Role Selection */}
+          {roles.length > 0 && (
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ 
+                display: 'block', 
+                fontSize: '14px', 
+                fontWeight: '600', 
+                color: '#374151', 
+                marginBottom: '12px' 
+              }}>
+                Select New Role ({roleType})
+              </label>
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  backgroundColor: 'white'
+                }}
+              >
+                <option value="">Select Role</option>
+                {roles.map(role => (
+                  <option key={role._id} value={role._id}>
+                    {role.name} - {role.percentage}%
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Warning Message */}
           <div style={{
             backgroundColor: '#fef2f2',
@@ -139,141 +240,6 @@ const ChangeTeamRole = () => {
             <p style={{ fontSize: '13px', color: '#dc2626', margin: 0 }}>
               Important: Role changes will affect commission rates and team goals. Changes take effect immediately
             </p>
-          </div>
-
-          {/* Commission Configuration Section */}
-          <div style={{ marginBottom: '32px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>
-              Commission Configuration
-            </h3>
-
-            {/* Commission Type */}
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: '13px', 
-                fontWeight: '500', 
-                color: '#374151', 
-                marginBottom: '8px' 
-              }}>
-                Commission Type
-              </label>
-              <select 
-                value={commissionType}
-                onChange={(e) => setCommissionType(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  backgroundColor: 'white'
-                }}
-              >
-                <option>Fixed Percentage</option>
-                <option>Tiered Commission</option>
-                <option>Flat Rate</option>
-              </select>
-            </div>
-
-            {/* Value and Effective From */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '13px', 
-                  fontWeight: '500', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  Value
-                </label>
-                <select 
-                  value={commissionValue}
-                  onChange={(e) => setCommissionValue(e.target.value)}
-                  style={{
-                    width: '90%',
-                    padding: '12px',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    backgroundColor: 'white'
-                  }}
-                >
-                  <option>2.50 %</option>
-                  <option>3.00 %</option>
-                  <option>3.50 %</option>
-                  <option>4.00 %</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ 
-                  display: 'block', 
-                  fontSize: '13px', 
-                  fontWeight: '500', 
-                  color: '#374151', 
-                  marginBottom: '8px' 
-                }}>
-                  Effective From
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input 
-                    type="text"
-                    value={effectiveDate}
-                    onChange={(e) => setEffectiveDate(e.target.value)}
-                    style={{
-                      width: '90%',
-                      padding: '12px',
-                      paddingRight: '40px',
-                      border: '1px solid #d1d5db',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      outline: 'none'
-                    }}
-                  />
-                  <Calendar 
-                    size={18} 
-                    color="#6b7280"
-                    style={{
-                      position: 'absolute',
-                      right: '12px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      pointerEvents: 'none'
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Projected Earnings */}
-          <div style={{
-            backgroundColor: '#f9fafb',
-            border: '1px solid #e5e7eb',
-            borderRadius: '8px',
-            padding: '16px',
-            marginBottom: '32px'
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center' 
-            }}>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '4px' }}>
-                  Projected Earnings
-                </div>
-                <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                  Est. Monthly Payout
-                </div>
-              </div>
-              <div style={{ fontSize: '24px', fontWeight: '700', color: dashboardColors.primary }}>
-                ₹15,000
-              </div>
-            </div>
           </div>
 
           {/* Action Buttons */}
@@ -297,7 +263,9 @@ const ChangeTeamRole = () => {
             >
               Cancel
             </button>
-            <button style={{
+            <button 
+              onClick={handleSave}
+              style={{
               flex: 1,
               padding: '14px',
               backgroundColor: dashboardColors.primary,

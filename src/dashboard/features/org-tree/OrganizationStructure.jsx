@@ -1,12 +1,34 @@
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import profileImage from '../../assets/associate-profile.jpg';
 import OffCanvasProfile from './OffCanvasProfile';
+import { organizationService } from '../../../services/organizationService';
+import { toastService } from '../../../services/toastService';
 import '../../styles/global.css';
 
 const OrganizationStructure = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
+  const [orgData, setOrgData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchOrgTree();
+  }, []);
+
+  const fetchOrgTree = async () => {
+    setLoading(true);
+    try {
+      const response = await organizationService.getOrgTree();
+      if (response.success) {
+        setOrgData(response.data);
+      }
+    } catch (error) {
+      toastService.error('Failed to load organization tree');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCardClick = (member) => {
     setSelectedMember(member);
@@ -17,31 +39,8 @@ const OrganizationStructure = () => {
     setIsOffCanvasOpen(false);
     setTimeout(() => setSelectedMember(null), 300);
   };
-  const topLevelMembers = [
-    { name: 'Arun Kumar', id: 'BID1000', role: 'Regional Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#f97316' },
-    { name: 'Arun Kumar', id: 'BID1000', role: 'Regional Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#f97316' },
-    { name: 'Arun Kumar', id: 'BID1000', role: 'Regional Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#f97316' }
-  ];
 
-  const secondLevelMembers = [
-    { name: 'Sunita Reddy', id: 'BID1000', role: 'Senior Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#3b82f6' },
-    { name: 'Sunita Reddy', id: 'BID1000', role: 'Senior Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#3b82f6' },
-    { name: 'Sunita Reddy', id: 'BID1000', role: 'Senior Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#3b82f6' }
-  ];
-
-  const thirdLevelMembers = [
-    { name: 'Sunita Reddy', id: 'BID1000', role: 'Senior Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#8b5cf6' },
-    { name: 'Sunita Reddy', id: 'BID1000', role: 'Senior Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#8b5cf6' },
-    { name: 'Sunita Reddy', id: 'BID1000', role: 'Senior Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#8b5cf6' }
-  ];
-
-  const fourthLevelMembers = [
-    { name: 'Sunita Reddy', id: 'BID1000', role: 'Senior Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#8b5cf6' },
-    { name: 'Sunita Reddy', id: 'BID1000', role: 'Senior Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#8b5cf6' },
-    { name: 'Sunita Reddy', id: 'BID1000', role: 'Senior Manager', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000', color: '#8b5cf6' }
-  ];
-
-  const MemberCard = ({ member, showConnector = false }) => (
+  const MemberCard = ({ member, showConnector = false, color = '#3b82f6' }) => (
     <div 
       onClick={() => handleCardClick(member)}
       style={{ position: 'relative', flex: '0 0 auto', minWidth: '200px', cursor: 'pointer' }}>
@@ -61,7 +60,7 @@ const OrganizationStructure = () => {
         padding: '16px',
         borderRadius: '12px',
         boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-        borderTop: `3px solid ${member.color}`
+        borderTop: `3px solid ${color}`
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
           <img src={profileImage} alt={member.name} style={{
@@ -74,44 +73,54 @@ const OrganizationStructure = () => {
             <h5 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>
               {member.name}
             </h5>
-            <p style={{ fontSize: '11px', color: 'var(--dashboard-text-light)', margin: 0 }}>{member.id}</p>
+            <p style={{ fontSize: '11px', color: 'var(--dashboard-text-light)', margin: 0 }}>{member.code}</p>
           </div>
         </div>
         <div style={{
           fontSize: '11px',
           fontWeight: '500',
-          color: member.color,
-          backgroundColor: `${member.color}15`,
+          color: color,
+          backgroundColor: `${color}15`,
           padding: '4px 8px',
           borderRadius: '6px',
           textAlign: 'center',
           marginBottom: '12px'
         }}>
-          {member.role}
-        </div>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '8px',
-          paddingTop: '12px',
-          borderTop: '1px solid var(--dashboard-border)'
-        }}>
-          <div>
-            <p style={{ fontSize: '10px', color: 'var(--dashboard-text-light)', margin: '0 0 4px 0' }}>Team</p>
-            <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>{member.team}</p>
-          </div>
-          <div>
-            <p style={{ fontSize: '10px', color: 'var(--dashboard-text-light)', margin: '0 0 4px 0' }}>Sale</p>
-            <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>{member.sale}</p>
-          </div>
-          <div>
-            <p style={{ fontSize: '10px', color: 'var(--dashboard-text-light)', margin: '0 0 4px 0' }}>Comm</p>
-            <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>{member.comm}</p>
-          </div>
+          {member.role?.name || 'N/A'}
         </div>
       </div>
     </div>
   );
+
+  const renderTree = (nodes, level = 0) => {
+    if (!nodes || nodes.length === 0) return null;
+
+    const colors = ['#f97316', '#3b82f6', '#8b5cf6', '#10b981'];
+    const color = colors[level % colors.length];
+
+    return (
+      <div style={{ position: 'relative', marginBottom: '50px' }}>
+        {level > 0 && (
+          <div style={{
+            position: 'absolute',
+            top: '0',
+            left: '16.66%',
+            right: '16.66%',
+            height: '2px',
+            backgroundColor: 'var(--dashboard-border)'
+          }}></div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'space-around', gap: '20px', paddingTop: level > 0 ? '30px' : '0' }}>
+          {nodes.map((node, index) => (
+            <div key={node._id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <MemberCard member={node} showConnector={level > 0} color={color} />
+              {node.children && node.children.length > 0 && renderTree(node.children, level + 1)}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
@@ -148,144 +157,13 @@ const OrganizationStructure = () => {
       </div>
 
       <div style={{ overflowX: 'auto', paddingBottom: '40px' }}>
-        <div style={{ minWidth: '1200px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '50px', position: 'relative' }}>
-            <div 
-              onClick={() => handleCardClick({ name: 'Bhoodhana Infra', role: 'Developers', id: 'BID1000', team: 26, sale: '₹1.2Cr', comm: '₹1,00,000' })}
-              style={{
-              backgroundColor: 'var(--dashboard-white)',
-              padding: '20px',
-              borderRadius: '12px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              borderTop: '3px solid var(--dashboard-primary)',
-              minWidth: '280px',
-              position: 'relative',
-              cursor: 'pointer'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <img src={profileImage} alt="CEO" style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '50%',
-                  objectFit: 'cover'
-                }} />
-                <div>
-                  <h4 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>
-                    Bhoodhana Infra
-                  </h4>
-                  <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: 0 }}>Developers</p>
-                </div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-                <span style={{ fontSize: '13px', color: 'var(--dashboard-text-light)' }}>BID1000</span>
-                <span style={{
-                  fontSize: '12px',
-                  fontWeight: '500',
-                  color: 'var(--dashboard-primary)',
-                  backgroundColor: 'var(--dashboard-secondary)',
-                  padding: '4px 12px',
-                  borderRadius: '12px'
-                }}>
-                  Company
-                </span>
-              </div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '12px',
-                marginTop: '16px',
-                paddingTop: '16px',
-                borderTop: '1px solid var(--dashboard-border)'
-              }}>
-                <div>
-                  <p style={{ fontSize: '11px', color: 'var(--dashboard-text-light)', margin: '0 0 4px 0' }}>Team</p>
-                  <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>26</p>
-                </div>
-                <div>
-                  <p style={{ fontSize: '11px', color: 'var(--dashboard-text-light)', margin: '0 0 4px 0' }}>Sale</p>
-                  <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>₹1.2Cr</p>
-                </div>
-                <div>
-                  <p style={{ fontSize: '11px', color: 'var(--dashboard-text-light)', margin: '0 0 4px 0' }}>Comm</p>
-                  <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>₹1,00,000</p>
-                </div>
-              </div>
-              <div style={{
-                position: 'absolute',
-                bottom: '-30px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '2px',
-                height: '30px',
-                backgroundColor: 'var(--dashboard-border)'
-              }}></div>
-            </div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>
+        ) : (
+          <div style={{ minWidth: '1200px' }}>
+            {orgData.length > 0 && renderTree(orgData)}
           </div>
-
-          <div style={{ position: 'relative', marginBottom: '50px' }}>
-            <div style={{
-              position: 'absolute',
-              top: '0',
-              left: '16.66%',
-              right: '16.66%',
-              height: '2px',
-              backgroundColor: 'var(--dashboard-border)'
-            }}></div>
-            <div style={{ display: 'flex', justifyContent: 'space-around', gap: '20px', paddingTop: '30px' }}>
-              {topLevelMembers.map((member, index) => (
-                <MemberCard key={index} member={member} showConnector={true} />
-              ))}
-            </div>
-          </div>
-
-          <div style={{ position: 'relative', marginBottom: '50px' }}>
-            <div style={{
-              position: 'absolute',
-              top: '0',
-              left: '8.33%',
-              right: '8.33%',
-              height: '2px',
-              backgroundColor: 'var(--dashboard-border)'
-            }}></div>
-            <div style={{ display: 'flex', justifyContent: 'space-around', gap: '20px', paddingTop: '30px' }}>
-              {secondLevelMembers.map((member, index) => (
-                <MemberCard key={index} member={member} showConnector={true} />
-              ))}
-            </div>
-          </div>
-
-          <div style={{ position: 'relative', marginBottom: '50px' }}>
-            <div style={{
-              position: 'absolute',
-              top: '0',
-              left: '8.33%',
-              right: '8.33%',
-              height: '2px',
-              backgroundColor: 'var(--dashboard-border)'
-            }}></div>
-            <div style={{ display: 'flex', justifyContent: 'space-around', gap: '20px', paddingTop: '30px' }}>
-              {thirdLevelMembers.map((member, index) => (
-                <MemberCard key={index} member={member} showConnector={true} />
-              ))}
-            </div>
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <div style={{
-              position: 'absolute',
-              top: '0',
-              left: '8.33%',
-              right: '8.33%',
-              height: '2px',
-              backgroundColor: 'var(--dashboard-border)'
-            }}></div>
-            <div style={{ display: 'flex', justifyContent: 'space-around', gap: '20px', paddingTop: '30px' }}>
-              {fourthLevelMembers.map((member, index) => (
-                <MemberCard key={index} member={member} showConnector={true} />
-              ))}
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

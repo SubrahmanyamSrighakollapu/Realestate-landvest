@@ -25,6 +25,8 @@ import DesignationManagement from "./dashboard/features/designations/Designation
 import TeamAndRoles from "./dashboard/features/org-tree/TeamAndRoles";
 import Reports from "./dashboard/features/key-reports/Reports";
 import AddLeads from "./dashboard/features/leads/AddLeads";
+import LeadsManagement from "./dashboard/features/leads/LeadsManagement";
+import EditLead from "./dashboard/features/leads/EditLead";
 import Login from "./auth/Login";
 import Signup from "./auth/Signup";
 import OtpVerification from "./auth/OtpVerification";
@@ -59,6 +61,8 @@ function App() {
 
           {/* Leads */}
           <Route path="leads/add" element={<AddLeads />} />
+          <Route path="leads/management" element={<LeadsManagement />} />
+          <Route path="leads/edit/:id" element={<EditLead />} />
 
           {/* Associates */}
           <Route path="associates" element={<Associates />} />

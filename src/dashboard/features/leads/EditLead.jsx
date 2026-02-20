@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Phone, Car, Users } from 'lucide-react';
 import { dashboardColors } from '../../styles/colors';
 import { leadService } from '../../../services/leadService';
 import { employeeService } from '../../../services/employeeService';
 import { toastService } from '../../../services/toastService';
 
-const AddLeads = () => {
+const EditLead = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [sourceType, setSourceType] = useState('social');
   const [sources, setSources] = useState([]);
   const [employees, setEmployees] = useState([]);
@@ -16,10 +19,12 @@ const AddLeads = () => {
   const [leadStatuses, setLeadStatuses] = useState([]);
   const [employeeSearch, setEmployeeSearch] = useState('');
   const [loading, setLoading] = useState(false);
-
   const [selectedPricingMrp, setSelectedPricingMrp] = useState(0);
+  const [previousAdvanceAmount, setPreviousAdvanceAmount] = useState(0);
+  const [paymentHistory, setPaymentHistory] = useState([]);
 
   const [formData, setFormData] = useState({
+    code: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -39,7 +44,7 @@ const AddLeads = () => {
     advanceAmount: '',
     advanceDate: '',
     nextActionDate: '',
-    nextActionType: 'call',
+    nextActionType: 'Call',
     nextActionNote: '',
     leadStatus: '',
     assignedTo: ''
@@ -47,7 +52,8 @@ const AddLeads = () => {
 
   useEffect(() => {
     fetchInitialData();
-  }, []);
+    fetchLeadData();
+  }, [id]);
 
   useEffect(() => {
     if (sourceType === 'social') {
@@ -55,14 +61,55 @@ const AddLeads = () => {
     }
   }, [sourceType]);
 
-  useEffect(() => {
-    if (formData.project) {
-      fetchPricingOptions(formData.project);
-    } else {
-      setPricingOptions([]);
-      setFormData(prev => ({ ...prev, pricingOption: '' }));
+  const fetchLeadData = async () => {
+    try {
+      const response = await leadService.getLeadInfo(id);
+      if (response.success) {
+        const lead = response.data;
+        setSourceType(lead.sourceType);
+        setPreviousAdvanceAmount(lead.advanceAmount || 0);
+        setSelectedPricingMrp(lead.totalBalance || 0);
+        setPaymentHistory(lead.advanceInfo || []);
+        
+        if (lead.project && lead.project.pricingOptions) {
+          setPricingOptions(lead.project.pricingOptions);
+        }
+
+        setFormData({
+          code: lead.code || '',
+          firstName: lead.firstName || '',
+          lastName: lead.lastName || '',
+          email: lead.email || '',
+          mobile: lead.mobile || '',
+          source: lead.source?._id || '',
+          sourceEmployee: lead.sourceEmployee || '',
+          project: lead.project?._id || '',
+          propertyType: lead.propertyType?._id || '',
+          pricingOption: lead.pricingOption?._id || '',
+          plotNo: lead.plotNo || '',
+          requirements: lead.requirements || '',
+          plotSize: lead.plotSize || '',
+          approvedBy: lead.approvedBy || '',
+          budgectFrom: lead.budgectFrom || '',
+          budgectTo: lead.budgectTo || '',
+          buyingPurpose: lead.buyingPurpose?._id || '',
+          advanceAmount: '',
+          advanceDate: '',
+          nextActionDate: lead.nextActionDate ? lead.nextActionDate.slice(0, 16) : '',
+          nextActionType: lead.nextActionType || 'Call',
+          nextActionNote: lead.nextActionNote || '',
+          leadStatus: lead.leadStatus?._id || '',
+          assignedTo: lead.assignedTo?._id || ''
+        });
+
+        if (lead.sourceEmployee) {
+          setEmployeeSearch(`${lead.assignedTo?.code || ''} - ${lead.assignedTo?.name || ''}`);
+        }
+      }
+    } catch (error) {
+      toastService.error('Failed to load lead data');
     }
-  }, [formData.project]);
+  };
 
   const fetchInitialData = async () => {
     try {
@@ -93,17 +140,6 @@ const AddLeads = () => {
     }
   };
 
-  const fetchPricingOptions = async (projectId) => {
-    try {
-      const response = await leadService.getPricingOptions(projectId);
-      if (response.success && response.data.pricingOptions) {
-        setPricingOptions(response.data.pricingOptions);
-      }
-    } catch (error) {
-      toastService.error('Failed to load pricing options');
-    }
-  };
-
   const handleEmployeeSearch = async (search) => {
     setEmployeeSearch(search);
     if (search.length >= 2) {
@@ -125,27 +161,17 @@ const AddLeads = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePricingOptionChange = (e) => {
-    const selectedId = e.target.value;
-    setFormData(prev => ({ ...prev, pricingOption: selectedId }));
-    
-    const selectedOption = pricingOptions.find(opt => opt.pricingOption._id === selectedId);
-    if (selectedOption) {
-      setSelectedPricingMrp(selectedOption.mrp);
-    } else {
-      setSelectedPricingMrp(0);
-    }
-  };
-
   const calculateBalanceAmount = () => {
-    const advance = parseFloat(formData.advanceAmount) || 0;
-    return selectedPricingMrp - advance;
+    const newAdvance = parseFloat(formData.advanceAmount) || 0;
+    const totalPaid = previousAdvanceAmount + newAdvance;
+    return selectedPricingMrp - totalPaid;
   };
 
   const calculateProgress = () => {
     if (selectedPricingMrp === 0) return 0;
-    const advance = parseFloat(formData.advanceAmount) || 0;
-    return Math.min((advance / selectedPricingMrp) * 100, 100);
+    const newAdvance = parseFloat(formData.advanceAmount) || 0;
+    const totalPaid = previousAdvanceAmount + newAdvance;
+    return Math.min((totalPaid / selectedPricingMrp) * 100, 100);
   };
 
   const handleSubmit = async (e) => {
@@ -156,14 +182,11 @@ const AddLeads = () => {
       return;
     }
 
-    if (sourceType === 'sales' && !formData.sourceEmployee) {
-      toastService.error('Source Employee is required for sales source type');
-      return;
-    }
-
     setLoading(true);
     try {
       const payload = {
+        id: id,
+        code: formData.code,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -190,42 +213,15 @@ const AddLeads = () => {
         assignedTo: formData.assignedTo
       };
 
-      const response = await leadService.addLead(payload);
+      const response = await leadService.updateLead(payload);
       if (response.success) {
-        toastService.success(response.message || 'Lead added successfully!');
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          mobile: '',
-          source: '',
-          sourceEmployee: '',
-          project: '',
-          propertyType: '',
-          pricingOption: '',
-          plotNo: '',
-          requirements: '',
-          plotSize: '',
-          approvedBy: '',
-          budgectFrom: '',
-          budgectTo: '',
-          buyingPurpose: '',
-          advanceAmount: '',
-          advanceDate: '',
-          nextActionDate: '',
-          nextActionType: 'call',
-          nextActionNote: '',
-          leadStatus: '',
-          assignedTo: ''
-        });
-        setEmployeeSearch('');
-        setPricingOptions([]);
-        setSelectedPricingMrp(0);
+        toastService.success('Lead updated successfully!');
+        navigate('/dashboard/leads/management');
       } else {
-        toastService.error(response.message || 'Failed to add lead');
+        toastService.error(response.message || 'Failed to update lead');
       }
     } catch (error) {
-      toastService.error(error.response?.data?.message || 'Failed to add lead');
+      toastService.error(error.response?.data?.message || 'Failed to update lead');
     } finally {
       setLoading(false);
     }
@@ -235,10 +231,10 @@ const AddLeads = () => {
     <div style={{ padding: '24px', backgroundColor: dashboardColors.background }}>
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: '600', color: dashboardColors.text, margin: '0 0 8px 0' }}>
-          Add New Lead
+          Edit Lead
         </h1>
         <p style={{ fontSize: '14px', color: dashboardColors.textLight, margin: 0 }}>
-          Welcome back, Admin • Last login: Today at 9:30 AM
+          Lead Code: {formData.code}
         </p>
       </div>
 
@@ -484,7 +480,7 @@ const AddLeads = () => {
                   <select
                     name="project"
                     value={formData.project}
-                    onChange={handleInputChange}
+                    disabled
                     style={{
                       width: '100%',
                       padding: '10px 12px',
@@ -492,7 +488,8 @@ const AddLeads = () => {
                       borderRadius: '6px',
                       fontSize: '14px',
                       outline: 'none',
-                      backgroundColor: dashboardColors.white
+                      backgroundColor: dashboardColors.tertiary,
+                      cursor: 'not-allowed'
                     }}
                   >
                     <option value="">Select Project</option>
@@ -527,40 +524,32 @@ const AddLeads = () => {
                 </div>
               </div>
 
-              {/* Project Payment Plan - Dropdown Card */}
-              {formData.project && pricingOptions.length > 0 && (
+              {/* Project Payment Plan - Selected Card (Disabled) */}
+              {formData.project && formData.pricingOption && pricingOptions.length > 0 && (
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
                     Project Payment Plan
                   </label>
-                  <div style={{ position: 'relative' }}>
-                    <select
-                      name="pricingOption"
-                      value={formData.pricingOption}
-                      onChange={handlePricingOptionChange}
-                      style={{
-                        width: '100%',
+                  {(() => {
+                    const selectedOption = pricingOptions.find(opt => opt.pricingOption._id === formData.pricingOption);
+                    return selectedOption ? (
+                      <div style={{
                         padding: '16px',
                         border: `1px solid ${dashboardColors.border}`,
                         borderRadius: '8px',
-                        fontSize: '14px',
-                        outline: 'none',
-                        backgroundColor: dashboardColors.white,
-                        cursor: 'pointer',
-                        appearance: 'none',
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'right 16px center'
-                      }}
-                    >
-                      <option value="">Select Payment Plan</option>
-                      {pricingOptions.map(option => (
-                        <option key={option.pricingOption._id} value={option.pricingOption._id}>
-                          {option.pricingOption.title} - Base Price: ₹{option.mrp.toLocaleString('en-IN')} • {option.duration} Months • {option.installment} Installments
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                        backgroundColor: dashboardColors.tertiary,
+                        cursor: 'not-allowed',
+                        opacity: 0.7
+                      }}>
+                        <div style={{ fontSize: '15px', fontWeight: '600', color: dashboardColors.text, marginBottom: '4px' }}>
+                          {selectedOption.pricingOption.title}
+                        </div>
+                        <div style={{ fontSize: '13px', color: dashboardColors.textLight }}>
+                          Base Price: ₹{selectedOption.mrp.toLocaleString('en-IN')} • {selectedOption.pricingOption.duration} Months • {selectedOption.pricingOption.installments} Installments
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
               )}
 
@@ -754,11 +743,11 @@ const AddLeads = () => {
           </div>
 
           {/* Next Action */}
-          <div style={{ backgroundColor: dashboardColors.white, padding: '24px', borderRadius: '12px', border: `1px solid ${dashboardColors.border}` }}>
+          <div style={{ backgroundColor: dashboardColors.white, padding: '24px', borderRadius: '12px', border: `1px solid ${dashboardColors.border}`, display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h2 style={{ fontSize: '16px', fontWeight: '600', color: dashboardColors.text, marginBottom: '20px' }}>
               Next Action
             </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
                   Date & Time
@@ -854,7 +843,7 @@ const AddLeads = () => {
                   value={formData.nextActionNote}
                   onChange={handleInputChange}
                   placeholder="Any specific requirements or comments..."
-                  rows={4}
+                  rows={3}
                   style={{
                     width: '100%',
                     padding: '10px 12px',
@@ -868,6 +857,40 @@ const AddLeads = () => {
                   }}
                 />
               </div>
+
+              {/* Payment History */}
+              {/* {paymentHistory && paymentHistory.length > 0 && (
+                <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: `1px solid ${dashboardColors.border}` }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: dashboardColors.text, marginBottom: '12px' }}>
+                    Past Payment History
+                  </label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '200px', overflowY: 'auto' }}>
+                    {paymentHistory.map((payment, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: '12px',
+                          backgroundColor: dashboardColors.tertiary,
+                          borderRadius: '6px',
+                          border: `1px solid ${dashboardColors.border}`
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: '600', color: dashboardColors.text }}>
+                            Payment {index + 1}
+                          </span>
+                          <span style={{ fontSize: '13px', fontWeight: '600', color: dashboardColors.primary }}>
+                            ₹{payment.amount?.toLocaleString('en-IN') || '0'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '12px', color: dashboardColors.textLight }}>
+                          Date: {payment.date ? new Date(payment.date).toLocaleDateString('en-IN') : 'N/A'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )} */}
             </div>
           </div>
         </div>
@@ -883,7 +906,7 @@ const AddLeads = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ fontSize: '13px', fontWeight: '500', color: dashboardColors.text }}>Payment Progress</span>
                 <span style={{ fontSize: '13px', color: dashboardColors.textLight }}>
-                  ₹{(parseFloat(formData.advanceAmount) || 0).toLocaleString('en-IN')} of ₹{selectedPricingMrp.toLocaleString('en-IN')} paid
+                  ₹{(previousAdvanceAmount + (parseFloat(formData.advanceAmount) || 0)).toLocaleString('en-IN')} of ₹{selectedPricingMrp.toLocaleString('en-IN')} paid
                 </span>
               </div>
               <div style={{ width: '100%', height: '8px', backgroundColor: dashboardColors.tertiary, borderRadius: '4px', overflow: 'hidden' }}>
@@ -959,7 +982,7 @@ const AddLeads = () => {
                   name="advanceAmount"
                   value={formData.advanceAmount}
                   onChange={handleInputChange}
-                  placeholder="Enter amount"
+                  placeholder="Enter new advance amount"
                   style={{
                     width: '100%',
                     padding: '10px 12px 10px 28px',
@@ -999,6 +1022,7 @@ const AddLeads = () => {
         <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
           <button
             type="button"
+            onClick={() => navigate('/dashboard/leads/management')}
             style={{
               padding: '12px 32px',
               backgroundColor: dashboardColors.white,
@@ -1014,6 +1038,7 @@ const AddLeads = () => {
           </button>
           <button
             type="submit"
+            disabled={loading}
             style={{
               padding: '12px 32px',
               backgroundColor: dashboardColors.primary,
@@ -1022,10 +1047,11 @@ const AddLeads = () => {
               borderRadius: '6px',
               fontSize: '14px',
               fontWeight: '500',
-              cursor: 'pointer'
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.6 : 1
             }}
           >
-            Save
+            {loading ? 'Updating...' : 'Update Lead'}
           </button>
         </div>
       </form>
@@ -1033,4 +1059,4 @@ const AddLeads = () => {
   );
 };
 
-export default AddLeads;
+export default EditLead;
