@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, FolderKanban, Network, FileText, Award, BookOpen, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, Network, FileText, Award, BookOpen, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BarChart3, UserCog } from 'lucide-react';
 import { dashboardColors } from "../../styles/colors";
 import logo from '../../../assets/landvest-logo.jpeg';
 
@@ -13,6 +13,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Users, label: 'Associates', path: '/dashboard/associates/management' },
+    { icon: UserCog, label: 'Leads', path: '/dashboard/leads/management' },
     { icon: FolderKanban, label: 'Projects', path: '/dashboard/projects/management' },
     { 
       icon: Network, 

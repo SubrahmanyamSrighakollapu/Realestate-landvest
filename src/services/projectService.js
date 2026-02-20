@@ -48,5 +48,20 @@ export const projectService = {
   updatePricingOption: async (data) => {
     const response = await apiClient.post('/admin/pricing/update', data);
     return response.data;
+  },
+
+  listProjects: async () => {
+    const response = await apiClient.post('/admin/projects/list');
+    return response.data;
+  },
+
+  getChildRoles: async (roleId) => {
+    const response = await apiClient.post('/admin/roles/child', { role: roleId });
+    return response.data;
+  },
+
+  getParentRoles: async (roleId) => {
+    const response = await apiClient.post('/admin/roles/parent', { role: roleId });
+    return response.data;
   }
 };

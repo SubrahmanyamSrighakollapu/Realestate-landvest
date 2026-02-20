@@ -3,6 +3,9 @@ import { Users, UserCheck, UserX, UserPlus, Search, Filter, Download } from 'luc
 import { BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import { authService } from '../../../services/authService';
+import { organizationService } from '../../../services/organizationService';
+import { toastService } from '../../../services/toastService';
+import Pagination from '../../components/common/Pagination';
 import '../../styles/global.css';
 
 const Associates = () => {
@@ -14,9 +17,13 @@ const Associates = () => {
   });
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [associatesData, setAssociatesData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchDashboardData();
+    fetchAssociatesReport();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -33,6 +40,50 @@ const Associates = () => {
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     }
+  };
+
+  const fetchAssociatesReport = async () => {
+    try {
+      const response = await organizationService.getAssociatesReport(
+        1,
+        1000,
+        startDate,
+        endDate,
+        0
+      );
+      if (response.data.success) {
+        setAssociatesData(response.data.data);
+      }
+    } catch (error) {
+      toastService.error('Failed to load associates report');
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await organizationService.getAssociatesReport(
+        1,
+        1000,
+        startDate,
+        endDate,
+        1
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `associates-report-${new Date().getTime()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toastService.success('Report exported successfully');
+    } catch (error) {
+      toastService.error('Failed to export report');
+    }
+  };
+
+  const handleApplyFilter = () => {
+    fetchDashboardData();
+    fetchAssociatesReport();
   };
 
   const statsCards = [
@@ -112,7 +163,7 @@ const Associates = () => {
           />
         </div>
         <button
-          onClick={fetchDashboardData}
+          onClick={handleApplyFilter}
           style={{
             padding: '8px 20px',
             backgroundColor: 'var(--dashboard-primary)',
@@ -465,7 +516,9 @@ const Associates = () => {
               <Filter size={16} />
               Filters
             </button>
-            <button style={{
+            <button
+              onClick={handleExport}
+              style={{
               padding: '8px 16px',
               backgroundColor: 'var(--dashboard-primary)',
               border: 'none',
@@ -502,49 +555,52 @@ const Associates = () => {
         <table className="dashboard-table">
           <thead>
             <tr>
+              <th>S.No</th>
               <th>Associate ID</th>
               <th>Associate Name</th>
               <th>Role</th>
               <th>Status</th>
-              <th>Total Sales</th>
-              <th>Total Revenue</th>
+              <th>Leads Count</th>
+              <th>Sale Rs</th>
+              <th>Total Commission</th>
+              <th>Team Size</th>
+              <th>Team Sales</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>ASC001</td>
-              <td>Arun Kumar</td>
-              <td>Senior Associate</td>
-              <td><span className="status-badge status-completed">Active</span></td>
-              <td>34</td>
-              <td>₹4,50,000</td>
-            </tr>
-            <tr>
-              <td>ASC002</td>
-              <td>Priya Sharma</td>
-              <td>Associate</td>
-              <td><span className="status-badge status-pending">InActive</span></td>
-              <td>64</td>
-              <td>₹6,80,000</td>
-            </tr>
-            <tr>
-              <td>ASC003</td>
-              <td>Arun Kumar</td>
-              <td>Senior Associate</td>
-              <td><span className="status-badge status-completed">Active</span></td>
-              <td>14</td>
-              <td>₹4,50,000</td>
-            </tr>
-            <tr>
-              <td>ASC004</td>
-              <td>Priya Sharma</td>
-              <td>Associate</td>
-              <td><span className="status-badge status-pending">InActive</span></td>
-              <td>34</td>
-              <td>₹6,80,000</td>
-            </tr>
+            {associatesData.length === 0 ? (
+              <tr>
+                <td colSpan="10" style={{ textAlign: 'center', padding: '40px' }}>No data available</td>
+              </tr>
+            ) : (
+              associatesData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((associate) => (
+                <tr key={associate._id}>
+                  <td>{associate.sno}</td>
+                  <td>{associate.code}</td>
+                  <td>{associate.name}</td>
+                  <td>{associate.role?.name || 'N/A'}</td>
+                  <td>
+                    <span className={`status-badge ${associate.status === 'active' ? 'status-completed' : 'status-pending'}`}>
+                      {associate.status === 'active' ? 'Active' : 'InActive'}
+                    </span>
+                  </td>
+                  <td>{associate.leadsCount}</td>
+                  <td>₹{associate.saleRs?.toLocaleString('en-IN') || 0}</td>
+                  <td>₹{associate.totalCommitioN?.toLocaleString('en-IN') || 0}</td>
+                  <td>{associate.teamSize}</td>
+                  <td>{associate.teamSales}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={associatesData.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       <div style={{

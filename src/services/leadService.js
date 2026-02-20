@@ -34,5 +34,20 @@ export const leadService = {
   getPricingOptions: async (projectId) => {
     const response = await apiClient.post('/admin/project/pricinginfo', { id: projectId });
     return response.data;
+  },
+
+  listLeads: async (page = 1, limit = 10) => {
+    const response = await apiClient.post('/admin/leads/list', { page, limit });
+    return response.data;
+  },
+
+  getLeadInfo: async (id) => {
+    const response = await apiClient.post('/admin/leads/info', { id });
+    return response.data;
+  },
+
+  updateLead: async (data) => {
+    const response = await apiClient.post('/admin/leads/update', data);
+    return response.data;
   }
 };

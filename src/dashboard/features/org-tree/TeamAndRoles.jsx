@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Download, Pencil, Trash2 } from 'lucide-react';
-import dashboardColors from '../../styles/colors'; // adjust path as needed
+import dashboardColors from '../../styles/colors';
 import Pagination from '../../components/common/Pagination';
+import { employeeService } from '../../../services/employeeService';
+import { toastService } from '../../../services/toastService';
 
 
 const TeamAndRoles = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-  const totalItems = 245;
+  const [teamMembers, setTeamMembers] = useState([]);
+  const itemsPerPage = 5;
 
-  // Mock data – replace with real API data later
-  const teamMembers = [
-    { name: 'Alex Rivers', role: 'Senior Associate', commission: '2.50%', status: 'Active' },
-    { name: 'Sarah Chen', role: 'Sales Manager', commission: '2.00%', status: 'On Leave' },
-    { name: 'Alex Rivers', role: 'Senior Associate', commission: '2.50%', status: 'Active' },
-    { name: 'Sarah Chen', role: 'Associate', commission: '2.00%', status: 'On Leave' },
-    // ... more rows
-  ];
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await employeeService.listEmployees();
+      if (response.success) {
+        setTeamMembers(response.data);
+      }
+    } catch (error) {
+      toastService.error('Failed to load employees');
+    }
+  };
 
   return (
     <div style={{ padding: '24px' }}>
@@ -197,14 +205,19 @@ const TeamAndRoles = () => {
               </tr>
             </thead>
             <tbody>
-              {teamMembers.map((member, idx) => (
-                <tr key={idx}>
+              {teamMembers.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '40px' }}>No employees found</td>
+                </tr>
+              ) : (
+                teamMembers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((member) => (
+                <tr key={member._id}>
                   <td>{member.name}</td>
-                  <td>{member.role}</td>
-                  <td>{member.commission}</td>
+                  <td>{member.role?.name || 'N/A'}</td>
+                  <td>{member.role?.percentage || 0}%</td>
                   <td>
-                    <span className={`status-badge ${member.status === 'Active' ? 'status-completed' : 'status-pending'}`}>
-                      {member.status}
+                    <span className={`status-badge ${member.status === 'active' ? 'status-completed' : 'status-pending'}`}>
+                      {member.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td>
@@ -217,7 +230,7 @@ const TeamAndRoles = () => {
                           cursor: 'pointer',
                           color: dashboardColors.primary,
                         }}
-                        onClick={() => navigate(`/dashboard/org-tree/change-role/${idx + 1}`)}
+                        onClick={() => navigate(`/dashboard/org-tree/change-role/${member._id}`)}
                       >
                         <Pencil size={18} />
                       </button>
@@ -231,7 +244,6 @@ const TeamAndRoles = () => {
                         }}
                         onClick={() => {
                           if (window.confirm(`Remove ${member.name}?`)) {
-                            // TODO: delete logic
                             console.log('Delete', member.name);
                           }
                         }}
@@ -241,15 +253,14 @@ const TeamAndRoles = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
         <Pagination
           currentPage={currentPage}
-          totalItems={totalItems}
+          totalItems={teamMembers.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

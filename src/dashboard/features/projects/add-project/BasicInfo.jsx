@@ -11,6 +11,10 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
     status: projectData?.status || 'active',
     location: projectData?.location || '',
     date: projectData?.date || '',
+    approvedBy: projectData?.approvedBy || '',
+    startingPrice: projectData?.startingPrice || '',
+    plotSize: projectData?.plotSize || '',
+    totalPlots: projectData?.totalPlots || '',
     description: projectData?.description || '',
     contentImageCaption: projectData?.contentImageCaption || '',
     metaTitle: projectData?.metaTitle || '',
@@ -57,6 +61,10 @@ if (file && file.size > maxSize) {
       if (formData.thumbnailTitle) data.append('thumbnailTitle', formData.thumbnailTitle);
       if (formData.location) data.append('location', formData.location);
       if (formData.date) data.append('date', formData.date);
+      if (formData.approvedBy) data.append('approvedBy', formData.approvedBy);
+      if (formData.startingPrice) data.append('startingPrice', formData.startingPrice);
+      if (formData.plotSize) data.append('plotSize', formData.plotSize);
+      if (formData.totalPlots) data.append('totalPlots', formData.totalPlots);
       if (formData.description) data.append('description', formData.description);
       if (formData.contentImageCaption) data.append('contentImageCaption', formData.contentImageCaption);
       if (formData.metaTitle) data.append('metaTitle', formData.metaTitle);
@@ -326,6 +334,90 @@ if (file && file.size > maxSize) {
             name="date"
             value={formData.date}
             onChange={handleInputChange}
+            style={{
+              width: '90%',
+              padding: '12px',
+              border: '1px solid var(--dashboard-border)',
+              borderRadius: '8px',
+              fontSize: '14px',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--dashboard-text)', marginBottom: '8px' }}>
+            Approved By
+          </label>
+          <input
+            type="text"
+            name="approvedBy"
+            value={formData.approvedBy}
+            onChange={handleInputChange}
+            placeholder="Enter Approver Name"
+            style={{
+              width: '90%',
+              padding: '12px',
+              border: '1px solid var(--dashboard-border)',
+              borderRadius: '8px',
+              fontSize: '14px',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--dashboard-text)', marginBottom: '8px' }}>
+            Starting Price
+          </label>
+          <input
+            type="text"
+            name="startingPrice"
+            value={formData.startingPrice}
+            onChange={handleInputChange}
+            placeholder="Enter Starting Price"
+            style={{
+              width: '90%',
+              padding: '12px',
+              border: '1px solid var(--dashboard-border)',
+              borderRadius: '8px',
+              fontSize: '14px',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--dashboard-text)', marginBottom: '8px' }}>
+            Plot Size
+          </label>
+          <input
+            type="text"
+            name="plotSize"
+            value={formData.plotSize}
+            onChange={handleInputChange}
+            placeholder="Enter Plot Size"
+            style={{
+              width: '90%',
+              padding: '12px',
+              border: '1px solid var(--dashboard-border)',
+              borderRadius: '8px',
+              fontSize: '14px',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        <div>
+          <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--dashboard-text)', marginBottom: '8px' }}>
+            Total Plots
+          </label>
+          <input
+            type="text"
+            name="totalPlots"
+            value={formData.totalPlots}
+            onChange={handleInputChange}
+            placeholder="Enter Total Plots"
             style={{
               width: '90%',
               padding: '12px',
