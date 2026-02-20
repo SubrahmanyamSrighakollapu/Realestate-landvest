@@ -29,9 +29,11 @@ import LeadsManagement from "./dashboard/features/leads/LeadsManagement";
 import EditLead from "./dashboard/features/leads/EditLead";
 import Login from "./auth/Login";
 import Signup from "./auth/Signup";
+import ApprovalPending from "./auth/ApprovalPending";
 import OtpVerification from "./auth/OtpVerification";
 import KycVerification from "./auth/KycVerification";
 import GoToDashboard from "./auth/GoToDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -41,6 +43,7 @@ function App() {
         {/* Auth Routes */}
         <Route path="/auth/login" element={<Login />} />
         <Route path="/auth/signup" element={<Signup />} />
+        <Route path="/auth/approval-pending" element={<ApprovalPending />} />
         <Route path="/auth/otp-verification" element={<OtpVerification />} />
         <Route path="/auth/kyc-verification" element={<KycVerification />} />
         <Route path="/auth/go-to-dashboard" element={<GoToDashboard />} />
@@ -49,7 +52,7 @@ function App() {
         <Route path="/*" element={<Marketing />} />
 
         {/* Dashboard Routes */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
           <Route path="users" element={<Users />} />
           <Route path="users/create" element={<CreateUser />} />

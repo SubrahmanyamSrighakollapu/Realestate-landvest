@@ -120,21 +120,7 @@ const Signup = () => {
       const response = await authService.signup(formDataToSend);
       if (response.success) {
         toastService.success(response.message || 'Employee Signup successfully!, Please wait for admin approval.');
-        // Reset form
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          password: '',
-          role: '',
-          referedBy: '',
-          aadharNumber: ''
-        });
-        setEmployeeCode('');
-        setSelectedEmployee('');
-        setSelectedRole('');
-        setRoles([]);
-        setEmployeeInfo(null);
+        navigate('/auth/approval-pending');
       }
     } catch (err) {
       toastService.error(err.response?.data?.message || 'Signup failed. Please try again.');
