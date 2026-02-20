@@ -325,6 +325,113 @@ const AssociateProfile = () => {
         </div>
       </div>
 
+      {/* Offer Letter and ID Card Section - Only for Active Associates */}
+      {employee.status === 'active' && (
+        <div style={{
+          backgroundColor: 'var(--dashboard-white)',
+          padding: '24px',
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          marginBottom: '24px'
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            {/* Offer Letter Card */}
+            <div style={{
+              border: '1px solid var(--dashboard-border)',
+              borderRadius: '8px',
+              padding: '20px'
+            }}>
+              <h4 style={{ fontSize: '15px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 4px 0' }}>
+                Offer Letter
+              </h4>
+              <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
+                Employment offer documentation
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => navigate(`/dashboard/associates/${id}/offer-letter`, { state: { employee } })}
+                  style={{
+                    flex: 1,
+                    padding: '8px 16px',
+                    backgroundColor: 'var(--dashboard-white)',
+                    border: '1px solid var(--dashboard-border)',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    fontWeight: '500'
+                  }}
+                >
+                  View
+                </button>
+                <button
+                  onClick={() => window.open(`/dashboard/associates/${id}/offer-letter`, '_blank')}
+                  style={{
+                    flex: 1,
+                    padding: '8px 16px',
+                    backgroundColor: 'var(--dashboard-primary)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    color: 'var(--dashboard-white)',
+                    cursor: 'pointer',
+                    fontWeight: '500'
+                  }}
+                >
+                  Download
+                </button>
+              </div>
+            </div>
+
+            {/* ID Card */}
+            <div style={{
+              border: '1px solid var(--dashboard-border)',
+              borderRadius: '8px',
+              padding: '20px'
+            }}>
+              <h4 style={{ fontSize: '15px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 4px 0' }}>
+                ID Card
+              </h4>
+              <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
+                Professional Employee ID card design
+              </p>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => navigate(`/dashboard/associates/${id}/id-card`, { state: { employee } })}
+                  style={{
+                    flex: 1,
+                    padding: '8px 16px',
+                    backgroundColor: 'var(--dashboard-white)',
+                    border: '1px solid var(--dashboard-border)',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    fontWeight: '500'
+                  }}
+                >
+                  View
+                </button>
+                <button
+                  onClick={() => window.open(`/dashboard/associates/${id}/id-card`, '_blank')}
+                  style={{
+                    flex: 1,
+                    padding: '8px 16px',
+                    backgroundColor: 'var(--dashboard-primary)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    color: 'var(--dashboard-white)',
+                    cursor: 'pointer',
+                    fontWeight: '500'
+                  }}
+                >
+                  Download
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '24px' }}>
         <div style={{
           backgroundColor: 'var(--dashboard-white)',

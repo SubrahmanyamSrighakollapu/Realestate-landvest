@@ -11,6 +11,8 @@ import Associates from "./dashboard/features/associates/Associates";
 import AddAssociate from "./dashboard/features/associates/AddAssociate";
 import AssociateProfile from "./dashboard/features/associates/AssociateProfile";
 import AssociateTeamTree from "./dashboard/features/associates/AssociateTeamTree";
+import OfferLetter from "./dashboard/features/employeepersonaldetails/OfferLetter";
+import IDCard from "./dashboard/features/employeepersonaldetails/IDCard";
 import Users from "./dashboard/features/users/Users";
 import CreateUser from "./dashboard/features/users/CreateUser";
 import OrganizationStructure from "./dashboard/features/org-tree/OrganizationStructure";
@@ -69,6 +71,8 @@ function App() {
           <Route path="associates/edit" element={<AddAssociate />} />
           <Route path="associates/:id" element={<AssociateProfile />} />
           <Route path="associates/:id/team-tree" element={<AssociateTeamTree />} />
+          <Route path="associates/:id/offer-letter" element={<OfferLetter />} />
+          <Route path="associates/:id/id-card" element={<IDCard />} />
           <Route
             path="associates/management"
             element={<AssociatesManagement />}
