@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, User, Edit, TrendingUp, X } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, MapPin, Calendar, User, Edit, TrendingUp, X, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import profileImage from '../../assets/associate-profile.jpg';
 import { employeeService } from '../../../services/employeeService';
@@ -14,6 +14,15 @@ const AssociateProfile = () => {
   const [loading, setLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingStatus, setPendingStatus] = useState(null);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [resetPasswordData, setResetPasswordData] = useState({
+    username: '',
+    employeeId: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     fetchEmployeeInfo();
@@ -52,6 +61,19 @@ const AssociateProfile = () => {
       console.error('Error updating status:', error);
     }
   };
+
+
+  const closeResetPasswordModal = () => {
+  setShowResetPasswordModal(false);
+  setResetPasswordData({
+    username: '',
+    employeeId: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  setShowNewPassword(false);
+  setShowConfirmPassword(false);
+};
 
   const monthlySalesData = [
     { month: 'Jan', value: 40 },
@@ -156,7 +178,7 @@ const AssociateProfile = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-end' }}>
             <div style={{
               backgroundColor: 'var(--dashboard-tertiary)',
               padding: '16px',
@@ -201,24 +223,46 @@ const AssociateProfile = () => {
               </div>
             </div>
 
-            <button 
-              onClick={() => navigate('/dashboard/associates/edit', { state: { employee, isEdit: true } })}
-              style={{
-              padding: '10px 20px',
-              backgroundColor: 'var(--dashboard-primary)',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '14px',
-              color: 'var(--dashboard-white)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              fontWeight: '500'
-            }}>
-              <Edit size={16} />
-              Edit profile
-            </button>
+            {/* Buttons Row */}
+<div style={{ display: 'flex', gap: '12px' }}>
+  <button 
+    onClick={() => navigate('/dashboard/associates/edit', { state: { employee, isEdit: true } })}
+    style={{
+      padding: '10px 20px',
+      backgroundColor: 'var(--dashboard-primary)',
+      border: 'none',
+      borderRadius: '6px',
+      fontSize: '14px',
+      color: 'var(--dashboard-white)',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      fontWeight: '500'
+    }}>
+    <Edit size={16} />
+    Edit Profile
+  </button>
+
+  <button 
+    onClick={() => setShowResetPasswordModal(true)}
+    style={{
+      padding: '10px 20px',
+      backgroundColor: 'var(--dashboard-primary)',
+      border: 'none',
+      borderRadius: '6px',
+      fontSize: '14px',
+      color: 'var(--dashboard-white)',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      fontWeight: '500'
+    }}>
+    <Lock size={16} />
+    Forgot Password
+  </button>
+</div>
           </div>
         </div>
 
@@ -423,6 +467,227 @@ const AssociateProfile = () => {
           </div>
         </div>
       </div>
+
+      {showResetPasswordModal && (
+        <div 
+          onClick={closeResetPasswordModal}
+          style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '40px',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+            position: 'relative'
+          }}>
+            <X
+              size={24}
+              onClick={closeResetPasswordModal}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                cursor: 'pointer',
+                color: '#6b7280'
+              }}
+            />
+            <h3 style={{ fontSize: '24px', fontWeight: '600', color: 'var(--dashboard-primary)', textAlign: 'center', marginBottom: '32px' }}>Reset Password</h3>
+            
+            {/* Username/Email */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', border: '1px solid #d1d5db', borderRadius: '6px' }}>
+                <div style={{
+                  width: '50px',
+                  height: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRight: '1px solid #d1d5db'
+                }}>
+                  <User size={18} color="#6b7280" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="User name / Email"
+                  value={resetPasswordData.username}
+                  onChange={(e) => setResetPasswordData({ ...resetPasswordData, username: e.target.value })}
+                  style={{
+                    flex: 1,
+                    padding: '15px',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Employee ID */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', border: '1px solid #d1d5db', borderRadius: '6px' }}>
+                <div style={{
+                  width: '50px',
+                  height: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRight: '1px solid #d1d5db'
+                }}>
+                  <Lock size={18} color="#6b7280" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Employee ID"
+                  value={resetPasswordData.employeeId}
+                  onChange={(e) => setResetPasswordData({ ...resetPasswordData, employeeId: e.target.value })}
+                  style={{
+                    flex: 1,
+                    padding: '15px',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* New Password */}
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', border: '1px solid #d1d5db', borderRadius: '6px', overflow: 'hidden' }}>
+                <div style={{
+                  width: '50px',
+                  height: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRight: '1px solid #d1d5db',
+                  flexShrink: 0
+                }}>
+                  <Lock size={18} color="#6b7280" />
+                </div>
+                <input
+                  type={showNewPassword ? 'text' : 'password'}
+                  placeholder="New Password"
+                  value={resetPasswordData.newPassword}
+                  onChange={(e) => setResetPasswordData({ ...resetPasswordData, newPassword: e.target.value })}
+                  style={{
+                    flex: 1,
+                    padding: '15px',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '14px',
+                    minWidth: 0,
+                    WebkitTextSecurity: showNewPassword ? 'none' : 'disc'
+                  }}
+                  autoComplete="new-password"
+                />
+                <div
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    flexShrink: 0
+                  }}
+                >
+                  {showNewPassword ? <EyeOff size={18} color="#6b7280" /> : <Eye size={18} color="#6b7280" />}
+                </div>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center', border: '1px solid #d1d5db', borderRadius: '6px', overflow: 'hidden' }}>
+                <div style={{
+                  width: '50px',
+                  height: '50px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRight: '1px solid #d1d5db',
+                  flexShrink: 0
+                }}>
+                  <Lock size={18} color="#6b7280" />
+                </div>
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  placeholder="Confirm Password"
+                  value={resetPasswordData.confirmPassword}
+                  onChange={(e) => setResetPasswordData({ ...resetPasswordData, confirmPassword: e.target.value })}
+                  style={{
+                    flex: 1,
+                    padding: '15px',
+                    border: 'none',
+                    outline: 'none',
+                    fontSize: '14px',
+                    minWidth: 0,
+                    WebkitTextSecurity: showConfirmPassword ? 'none' : 'disc'
+                  }}
+                  autoComplete="new-password"
+                />
+                {resetPasswordData.newPassword && resetPasswordData.confirmPassword && resetPasswordData.newPassword === resetPasswordData.confirmPassword && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingRight: '8px',
+                    flexShrink: 0
+                  }}>
+                    <CheckCircle size={18} color="#10b981" />
+                  </div>
+                )}
+                <div
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{
+                    width: '50px',
+                    height: '50px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    flexShrink: 0
+                  }}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} color="#6b7280" /> : <Eye size={18} color="#6b7280" />}
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={closeResetPasswordModal}
+              style={{
+                width: '100%',
+                padding: '14px',
+                backgroundColor: 'var(--dashboard-primary)',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '16px',
+                color: 'white',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              Reset password
+            </button>
+          </div>
+        </div>
+      )}
 
       {showConfirmModal && (
         <div style={{

@@ -4,6 +4,7 @@ import { User, Lock } from 'lucide-react';
 import { authService } from '../services/authService';
 import { toastService } from '../services/toastService';
 import LoginBgImage from '../../src/assets/login-bg.png'
+import LandvestLogo from '../assets/landvest-logo.jpeg';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -89,6 +90,20 @@ const Login = () => {
       }}>
         <div style={{ maxWidth: '450px', width: '100%' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+
+            {/* Logo */}
+            <div style={{ marginBottom: '50px' }}>
+              <img
+                src={LandvestLogo}
+                alt="Landvest Logo"
+                style={{
+                  width: '250px',
+                  height: 'auto',
+                }}
+              />
+            </div>
+
+
             <h1 style={{
               fontSize: '32px',
               fontWeight: '600',
