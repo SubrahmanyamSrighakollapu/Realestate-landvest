@@ -44,9 +44,7 @@ const Home = () => {
       <AnimatedSection direction="up">
         <WhyInvestUsSection />
       </AnimatedSection>
-      <AnimatedSection direction="up">
         <OurProjectsSection />
-      </AnimatedSection>
       <AnimatedSection direction="up">
         <SmartInvestmentPathSection />
       </AnimatedSection>

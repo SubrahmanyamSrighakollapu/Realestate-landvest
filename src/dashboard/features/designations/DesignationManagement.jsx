@@ -191,40 +191,58 @@ const DesignationManagement = () => {
               return (
                 <div key={desig._id} style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px 16px',
-                  backgroundColor: dashboardColors.secondary,
-                  borderRadius: '8px',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '14px 18px',
+    backgroundColor: '#fff', // light grey background
+    borderRadius: '14px',
+    border: '1px solid #E5E7EB',
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                     <div style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
-                      backgroundColor: dashboardColors.primary,
-                      color: dashboardColors.white,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
+                       width: '42px',
+        height: '42px',
+        borderRadius: '50%',
+        backgroundColor: '#D1FAE5',
+        color: '#065F46',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '14px',
+        fontWeight: '600',
                     }}>
                       {acronym}
                     </div>
                     <div>
-                      <div style={{ fontSize: '14px', fontWeight: '500', color: dashboardColors.text }}>
+                      <div style={{ fontSize: '15px', fontWeight: '600', color: dashboardColors.text }}>
                         {desig.name}
                       </div>
-                      <div style={{ fontSize: '12px', color: dashboardColors.textLight }}>
+                      <div style={{ fontSize: '13px', color: dashboardColors.textLight }}>
                         Code: {desig.code}
                       </div>
+                      {/* <span style={{
+                        display: 'inline-block',
+                        marginTop: '4px',
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        backgroundColor: desig.status === 'active' ? '#d4edda' : '#f8d7da',
+                        color: desig.status === 'active' ? '#155724' : '#721c24'
+                      }}>
+                        ● {desig.status === 'active' ? 'Active' : 'Inactive'}
+                      </span> */}
                     </div>
                   </div>
                   <div style={{
-                    fontSize: '15px',
-                    fontWeight: '600',
-                    color: dashboardColors.primary,
+                     backgroundColor: '#fff',
+      padding: '4px 10px',
+      borderRadius: '10px',
+      fontSize: '13px',
+      fontWeight: '600',
+      color: '#374151',
+          border: '1px solid #E5E7EB',
+
                   }}>
                     {desig.percentage}%
                   </div>

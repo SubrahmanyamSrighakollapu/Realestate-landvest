@@ -5,16 +5,22 @@ import dashboardColors from '../../styles/colors';
 import Pagination from '../../components/common/Pagination';
 import { employeeService } from '../../../services/employeeService';
 import { toastService } from '../../../services/toastService';
+import { authService } from '../../../services/authService';
 
 
 const TeamAndRoles = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const itemsPerPage = 5;
 
   useEffect(() => {
     fetchEmployees();
+    const employeeInfo = authService.getEmployeeData();
+    if (employeeInfo && employeeInfo.role && employeeInfo.role.name === 'Admin') {
+      setIsAdmin(true);
+    }
   }, []);
 
   const fetchEmployees = async () => {
@@ -201,13 +207,13 @@ const TeamAndRoles = () => {
                 <th>Current Role</th>
                 <th>Commission %</th>
                 <th>Status</th>
-                <th>Action</th>
+                {isAdmin && <th>Action</th>}
               </tr>
             </thead>
             <tbody>
               {teamMembers.length === 0 ? (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '40px' }}>No employees found</td>
+                  <td colSpan={isAdmin ? "5" : "4"} style={{ textAlign: 'center', padding: '40px' }}>No employees found</td>
                 </tr>
               ) : (
                 teamMembers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((member) => (
@@ -220,38 +226,40 @@ const TeamAndRoles = () => {
                       {member.status === 'active' ? 'Active' : 'Inactive'}
                     </span>
                   </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      <button
-                        title="Edit"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: dashboardColors.primary,
-                        }}
-                        onClick={() => navigate(`/dashboard/org-tree/change-role/${member._id}`)}
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        title="Delete"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: '#ef4444',
-                        }}
-                        onClick={() => {
-                          if (window.confirm(`Remove ${member.name}?`)) {
-                            console.log('Delete', member.name);
-                          }
-                        }}
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
+                  {isAdmin && (
+                    <td>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <button
+                          title="Edit"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: dashboardColors.primary,
+                          }}
+                          onClick={() => navigate(`/dashboard/org-tree/change-role/${member._id}`)}
+                        >
+                          <Pencil size={18} />
+                        </button>
+                        <button
+                          title="Delete"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#ef4444',
+                          }}
+                          onClick={() => {
+                            if (window.confirm(`Remove ${member.name}?`)) {
+                              console.log('Delete', member.name);
+                            }
+                          }}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               )))}
             </tbody>

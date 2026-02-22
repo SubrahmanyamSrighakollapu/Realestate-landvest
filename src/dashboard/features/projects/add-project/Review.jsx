@@ -512,7 +512,7 @@ const validateFileSize = (file, label) => {
               color: dashboardColors.textLight,
               marginBottom: '24px',
             }}>
-              All testimonials submitted successfully!
+              Project created Successfully!
             </p>
             <button
               onClick={handleSuccessClose}

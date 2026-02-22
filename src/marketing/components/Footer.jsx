@@ -7,7 +7,7 @@ const Footer = () => {
     <footer style={{
       backgroundColor: '#f8f9fa',
       color: '#2d3748',
-      padding: '4rem 0 0',
+      padding: '3rem 0 0',
       marginTop: '4rem',
       width: '100%',
       borderTop: '1px solid #e2e8f0'
@@ -15,41 +15,41 @@ const Footer = () => {
       <div style={{
         maxWidth: '1200px',
         margin: '0 auto',
-        padding: '0 2rem'
+        padding: '0 1rem'
       }}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '3rem',
-          marginBottom: '3rem'
+          gap: '2rem',
+          marginBottom: '2rem'
         }}>
           <div>
-            <img src={logo} alt="Landvest Logo" style={{ height: '80px', marginBottom: '1rem' }} />
-            <p style={{ color: '#64748b', lineHeight: '1.7', fontSize: '0.95rem' }}>
+            <img src={logo} alt="Landvest Logo" style={{ height: '70px', marginBottom: '1rem' }} />
+            <p style={{ color: '#64748b', lineHeight: '1.7', fontSize: '0.9rem' }}>
               We develop legally clear, strategically located, and future-ready layouts designed for long-term appreciation and lifestyle growth.
             </p>
           </div>
           
           <div>
-            <h4 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: '600', color: '#1F6F54' }}>Quick Links</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <a href="/" style={{ color: '#64748b', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = '#1F6F54'} onMouseLeave={(e) => e.target.style.color = '#64748b'}>Home</a>
-              <a href="/about" style={{ color: '#64748b', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = '#1F6F54'} onMouseLeave={(e) => e.target.style.color = '#64748b'}>About Us</a>
-              <a href="/projects/ongoing" style={{ color: '#64748b', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = '#1F6F54'} onMouseLeave={(e) => e.target.style.color = '#64748b'}>Projects</a>
-              <a href="/gallery" style={{ color: '#64748b', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = '#1F6F54'} onMouseLeave={(e) => e.target.style.color = '#64748b'}>Gallery</a>
+            <h4 style={{ marginBottom: '1.25rem', fontSize: '1rem', fontWeight: '600', color: '#1F6F54' }}>Quick Links</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <a href="/" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.9rem', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = '#1F6F54'} onMouseLeave={(e) => e.target.style.color = '#64748b'}>Home</a>
+              <a href="/about" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.9rem', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = '#1F6F54'} onMouseLeave={(e) => e.target.style.color = '#64748b'}>About Us</a>
+              <a href="/projects/ongoing" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.9rem', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = '#1F6F54'} onMouseLeave={(e) => e.target.style.color = '#64748b'}>Projects</a>
+              <a href="/gallery" style={{ color: '#64748b', textDecoration: 'none', fontSize: '0.9rem', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = '#1F6F54'} onMouseLeave={(e) => e.target.style.color = '#64748b'}>Gallery</a>
             </div>
           </div>
           
           <div>
-            <h4 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: '600', color: '#1F6F54' }}>Contact Info</h4>
-            <div style={{ color: '#64748b', lineHeight: '1.8', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <h4 style={{ marginBottom: '1.25rem', fontSize: '1rem', fontWeight: '600', color: '#1F6F54' }}>Contact Info</h4>
+            <div style={{ color: '#64748b', lineHeight: '1.8', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                 <Mail size={18} color="#1F6F54" />
-                <span>Landvest2026@gmail.com</span>
+                <span style={{ fontSize: '0.9rem' }}>Landvest2026@gmail.com</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                <MapPin size={18} color="#1F6F54" style={{ marginTop: '2px' }} />
-                <span>123 Business Street, City, State 12345</span>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
+                <MapPin size={18} color="#1F6F54" style={{ marginTop: '2px', flexShrink: 0 }} />
+                <span style={{ fontSize: '0.9rem' }}>123 Business Street, City, State 12345</span>
               </div>
             </div>
           </div>
@@ -57,20 +57,33 @@ const Footer = () => {
         
         <div style={{
           borderTop: '1px solid #e2e8f0',
-          paddingTop: '1.5rem',
-          paddingBottom: '1.5rem',
+          paddingTop: '1.25rem',
+          paddingBottom: '1.25rem',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: '1rem',
+          gap: '0.75rem',
           color: '#64748b',
-          fontSize: '0.9rem'
+          fontSize: '0.85rem'
         }}>
           <p style={{ margin: 0 }}>&copy; 2024 Landvest. All rights reserved.</p>
           <p style={{ margin: 0 }}>Designed & Developed by <a href="https://vividuss.com" target="_blank" rel="noopener noreferrer" style={{ color: '#1F6F54', textDecoration: 'none', fontWeight: '600', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = '#C9A24D'} onMouseLeave={(e) => e.target.style.color = '#1F6F54'}>vividuss.com</a></p>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 640px) {
+          footer > div > div:first-child {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+          }
+          footer > div > div:last-child {
+            flex-direction: column;
+            text-align: center;
+          }
+        }
+      `}</style>
     </footer>
   );
 };

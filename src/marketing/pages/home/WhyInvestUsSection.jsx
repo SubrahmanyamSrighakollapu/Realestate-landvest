@@ -56,7 +56,7 @@ const WhyInvestUsSection = () => {
   return (
     <section
       style={{
-        marginTop: '3rem',
+        marginTop: '8rem',
         padding: '5rem 0',
         backgroundColor: colors.backgroundLight,
         width: '100%',
@@ -98,8 +98,8 @@ const WhyInvestUsSection = () => {
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '2.5rem',
-            marginBottom: '4.5rem',
+            gap: '2rem',
+            marginBottom: '4rem',
           }}
         >
           {features.map((feature, index) => {
@@ -149,14 +149,15 @@ const WhyInvestUsSection = () => {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '3rem',
+            gridTemplateColumns: '1fr',
+            gap: '2.5rem',
             alignItems: 'center',
           }}
+          className="why-invest-grid"
         >
           <div
             style={{
-              height: '420px',
+              height: '350px',
               borderRadius: '12px',
               backgroundImage: `url(${whyInvestImage})`,
               backgroundSize: 'cover',
@@ -164,7 +165,7 @@ const WhyInvestUsSection = () => {
             }}
           />
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             {benefits.map((benefit, index) => (
               <div
                 key={index}
@@ -199,6 +200,15 @@ const WhyInvestUsSection = () => {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .why-invest-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 3rem !important;
+          }
+        }
+      `}</style>
     </section>
   );
 };

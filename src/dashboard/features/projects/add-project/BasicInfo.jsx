@@ -298,9 +298,9 @@ if (file && file.size > maxSize) {
               backgroundColor: 'var(--dashboard-white)'
             }}
           >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="pending">Pending</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+            <option value="upcoming">Upcoming</option>
           </select>
         </div>
 

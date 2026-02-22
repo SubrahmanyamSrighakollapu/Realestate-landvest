@@ -1,27 +1,58 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
+import idCardTemplate from '../../assets/Real estate ID.jpeg';
+import html2canvas from 'html2canvas';
 
 const IDCard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const employee = location.state?.employee;
+  const autoDownload = location.state?.autoDownload;
   const cardRef = useRef(null);
+
+  useEffect(() => {
+    if (autoDownload && employee) {
+      const timer = setTimeout(() => handleDownload(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [autoDownload, employee]);
 
   if (!employee) {
     return <div>No employee data available</div>;
   }
 
-  const getInitials = (name) => {
-    const names = name.split(' ');
-    if (names.length >= 2) {
-      return names[0][0] + names[names.length - 1][0];
-    }
-    return name.substring(0, 2);
-  };
+  const handleDownload = async () => {
+    const element = cardRef.current;
+    if (!element) return;
 
-  const handleDownload = () => {
-    window.print();
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 3,
+        useCORS: true,
+        logging: false,
+        backgroundColor: null
+      });
+
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `IDCard_${employee.name.replace(/\s+/g, '_')}_${employee.code}.png`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        if (autoDownload) {
+          setTimeout(() => navigate(-1), 1000);
+        }
+      });
+    } catch (error) {
+      console.error('Error generating download:', error);
+    }
   };
 
   return (
@@ -53,103 +84,43 @@ const IDCard = () => {
         <div ref={cardRef} style={{
           position: 'relative',
           width: '400px',
-          height: '550px',
-          backgroundColor: '#fff',
+          height: '600px',
+          backgroundImage: `url(${idCardTemplate})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           borderRadius: '20px',
-          border: '12px solid rgba(31, 111, 84, 1)',
-          padding: '30px',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
           overflow: 'hidden'
         }}>
-          {/* Corner decorations */}
-          <div style={{
-            position: 'absolute',
-            top: '-5px',
-            left: '-5px',
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(135deg, #F4D03F 0%, #C9A24D 100%)',
-            borderRadius: '0 0 100% 0'
-          }}></div>
-          <div style={{
-            position: 'absolute',
-            top: '-5px',
-            right: '-5px',
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(225deg, #F4D03F 0%, #C9A24D 100%)',
-            borderRadius: '0 0 0 100%'
-          }}></div>
-          <div style={{
-            position: 'absolute',
-            bottom: '-5px',
-            left: '-5px',
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(45deg, #F4D03F 0%, #C9A24D 100%)',
-            borderRadius: '0 100% 0 0'
-          }}></div>
-          <div style={{
-            position: 'absolute',
-            bottom: '-5px',
-            right: '-5px',
-            width: '60px',
-            height: '60px',
-            background: 'linear-gradient(315deg, #F4D03F 0%, #C9A24D 100%)',
-            borderRadius: '100% 0 0 0'
-          }}></div>
-
-          {/* Logo and Company Name */}
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <div style={{
-              display: 'inline-block',
-              padding: '8px 16px',
-              border: '2px solid #C9A24D',
-              borderRadius: '4px',
-              marginBottom: '8px'
-            }}>
-              <span style={{ fontSize: '28px', fontWeight: '700', color: '#C9A24D' }}>L</span>
-              <span style={{ fontSize: '20px', fontWeight: '700', color: 'rgba(31, 111, 84, 1)', marginLeft: '8px' }}>LANDVEST</span>
-            </div>
-            <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600', letterSpacing: '0.5px' }}>
-              SMART ESTATE BUSINESS
-            </div>
-            <div style={{ fontSize: '10px', color: '#9ca3af', marginTop: '2px' }}>
-              HMDA | DTCP| FARMLANDS
-            </div>
-          </div>
-
-          {/* Profile Image with Initials */}
-          <div style={{
-            width: '160px',
-            height: '160px',
-            margin: '0 auto 20px',
-            borderRadius: '50%',
-            border: '6px solid rgba(31, 111, 84, 1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(31, 111, 84, 0.1)',
-            fontSize: '48px',
-            fontWeight: '700',
-            color: 'rgba(31, 111, 84, 1)'
-          }}>
-            {getInitials(employee.name).toUpperCase()}
-          </div>
-
           {/* Employee Name */}
-          <h3 style={{
-            textAlign: 'center',
-            fontSize: '22px',
-            fontWeight: '700',
-            color: '#1f2937',
-            margin: '0 0 24px 0'
+          <div style={{
+            position: 'absolute',
+            top: '340px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '90%',
+            textAlign: 'center'
           }}>
-            {employee.name}
-          </h3>
+            <h3 style={{
+              fontSize: '12px',
+              fontWeight: '700',
+              color: '#fff',
+              margin: 0,
+              textTransform: 'uppercase'
+            }}>
+              {employee.name}
+            </h3>
+          </div>
 
           {/* Employee Details */}
-          <div style={{ fontSize: '13px', lineHeight: '2' }}>
+          <div style={{
+            position: 'absolute',
+            top: '390px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '85%',
+            fontSize: '13px',
+            lineHeight: '2'
+          }}>
             <div style={{ display: 'flex', marginBottom: '8px' }}>
               <span style={{ fontWeight: '600', color: '#374151', minWidth: '140px' }}>POSITION</span>
               <span style={{ margin: '0 8px' }}>:</span>

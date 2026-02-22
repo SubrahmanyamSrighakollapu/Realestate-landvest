@@ -36,10 +36,10 @@ const Projects = () => {
   };
 
   const statsCards = [
-    { icon: FolderKanban, label: 'Total Projects', value: dashboardData.totalCount, color: '#3b82f6' },
-    { icon: CheckCircle, label: 'Active Projects', value: dashboardData.activeCount, color: '#10b981' },
-    { icon: XCircle, label: 'In Active Projects', value: dashboardData.inactiveCount, color: '#ef4444' },
-    { icon: PlusCircle, label: 'New Projects', value: dashboardData.newCount, color: '#8b5cf6' }
+    { icon: FolderKanban, label: 'Total Projects', value: dashboardData.totalCount },
+    { icon: CheckCircle, label: 'Active Projects', value: dashboardData.activeCount },
+    { icon: XCircle, label: 'In Active Projects', value: dashboardData.inactiveCount },
+    { icon: PlusCircle, label: 'New Projects', value: dashboardData.newCount }
   ];
 
   const plotAvailabilityData = [
@@ -159,22 +159,22 @@ const Projects = () => {
               width: '48px',
               height: '48px',
               borderRadius: '12px',
-              backgroundColor: `${stat.color}15`,
+              backgroundColor: 'var(--dashboard-secondary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <stat.icon size={24} color={stat.color} />
+              <stat.icon size={24} color="var(--dashboard-primary)" />
             </div>
             <div>
               <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>{stat.label}</p>
-              <h3 style={{ fontSize: '28px', fontWeight: '700', color: '#1f2937', margin: '4px 0 0 0' }}>{stat.value}</h3>
+              <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: '4px 0 0 0' }}>{stat.value}</h3>
             </div>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+      {/* <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
         <div style={{
           backgroundColor: '#fff',
           padding: '24px',
@@ -224,7 +224,7 @@ const Projects = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </div> */}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
         <div style={{
@@ -472,7 +472,7 @@ const Projects = () => {
         </div>
       </div>
 
-      <div style={{
+      {/* <div style={{
         backgroundColor: '#fff',
         padding: '24px',
         borderRadius: '12px',
@@ -577,9 +577,9 @@ const Projects = () => {
             </tr>
           </tbody>
         </table>
-      </div>
+      </div> */}
 
-      <div style={{
+      {/* <div style={{
         backgroundColor: '#fff',
         padding: '24px',
         borderRadius: '12px',
@@ -633,7 +633,7 @@ const Projects = () => {
             </tr>
           </tbody>
         </table>
-      </div>
+      </div> */}
     </div>
   );
 };

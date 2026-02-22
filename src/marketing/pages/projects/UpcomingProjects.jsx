@@ -1,48 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { colors } from '../../colors';
 import MainBgImage from '../../../assets/projects-completed-bg.png';
-import gallery1 from '../../../assets/gallery1.png';
-import gallery2 from '../../../assets/gallery2.jpg';
-import gallery3 from '../../../assets/gallery3.jpg';
-import gallery4 from '../../../assets/gallery4.jpg';
-import gallery5 from '../../../assets/gallery5.jpg';
-import gallery6 from '../../../assets/gallery6.jpg';
-
+import { publicProjectService } from '../../../services/publicProjectService';
 
 const UpcomingProjects = () => {
-  const galleryImages = [gallery1, gallery2, gallery3, gallery4, gallery5, gallery6];
-  
-  const projects = [
-    {
-      name: 'Greenwood Estates - Phase 2',
-      location: 'Shadnagar, Hyderabad',
-      status: 'Up Coming',
-      plotSizes: '150-400 Sq Yds',
-      approval: 'HMDA Approved',
-      price: '₹25 Lakhs',
-      launchStatus: 'Pre-Launch',
-      image: gallery1,
-    },
-    ...Array(5).fill(null).map((_, i) => ({
-      name: 'Greenwood Estates - Phase 2',
-      location: 'Shadnagar, Hyderabad',
-      status: 'Up Coming',
-      plotSizes: '150-400 Sq Yds',
-      approval: 'HMDA Approved',
-      price: '₹25 Lakhs',
-      launchStatus: 'Pre-Launch',
-      image: galleryImages[(i + 1) % galleryImages.length],
-    })),
-  ];
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const response = await publicProjectService.getProjects();
+      if (response.success) {
+        const upcomingProjects = response.data.filter(p => p.status === 'upcoming');
+        setProjects(upcomingProjects);
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
       {/* Hero Section */}
       <div
+        className="hero-section"
         style={{
           position: 'relative',
-          height: '500px',
+          height: '400px',
           backgroundImage: `url(${MainBgImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -65,8 +56,9 @@ const UpcomingProjects = () => {
         {/* Content */}
         <div style={{ position: 'relative', zIndex: 2, maxWidth: '900px', padding: '20px' }}>
           <h1
+            className="hero-title"
             style={{
-              fontSize: '42px',
+              fontSize: '2rem',
               fontWeight: '700',
               marginBottom: '16px',
               textShadow: '0 2px 10px rgba(0,0,0,0.4)',
@@ -75,8 +67,9 @@ const UpcomingProjects = () => {
             Upcoming Projects – Be the First to Invest
           </h1>
           <p
+            className="hero-subtitle"
             style={{
-              fontSize: '18px',
+              fontSize: '1rem',
               maxWidth: '720px',
               margin: '0 auto',
               lineHeight: 1.6,
@@ -89,11 +82,12 @@ const UpcomingProjects = () => {
 
       {/* Filter Bar */}
       <div
+        className="filter-bar"
         style={{
           backgroundColor: '#ffffff',
-          padding: '24px 40px',
+          padding: '20px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-          margin: '-80px auto 40px',
+          margin: '-60px auto 40px',
           maxWidth: '1200px',
           borderRadius: '12px',
           position: 'relative',
@@ -213,111 +207,137 @@ const UpcomingProjects = () => {
             textAlign: 'center',
           }}
         >
-          Showing 6 Projects
+          {loading ? 'Loading...' : `Showing ${projects.length} Projects`}
         </p>
 
         <div
+          className="projects-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-            gap: '24px',
+            gap: '20px',
           }}
         >
-          {projects.map((project, idx) => (
+          {projects.map((project) => (
             <div
-              key={idx}
+              key={project._id}
               style={{
                 backgroundColor: '#ffffff',
-                borderRadius: '12px',
+                borderRadius: '16px',
                 overflow: 'hidden',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                transition: 'transform 0.2s, box-shadow 0.2s',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                border: '1px solid #f0f0f0',
                 cursor: 'pointer',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-8px)';
-                e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)';
               }}
             >
               {/* Project Image */}
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: 'relative', overflow: 'hidden' }}>
                 <img
-                  src={project.image}
-                  alt={project.name}
-                  style={{ width: '100%', height: '220px', objectFit: 'cover' }}
+                  src={`https://realestate.vsahasoft.com${project.thumbnnailImage}`}
+                  alt={project.title}
+                  style={{ width: '100%', height: '240px', objectFit: 'cover' }}
                 />
+                <div style={{
+                  position: 'absolute',
+                  top: '0',
+                  left: '0',
+                  right: '0',
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 50%)',
+                  height: '80px'
+                }} />
                 <span
                   style={{
                     position: 'absolute',
                     top: '16px',
                     left: '16px',
-                    backgroundColor: '#a855f7', // purple tone for "Up Coming"
+                    backgroundColor: '#a855f7',
                     color: '#ffffff',
-                    padding: '6px 16px',
-                    borderRadius: '20px',
-                    fontSize: '13px',
-                    fontWeight: '600',
+                    padding: '8px 16px',
+                    borderRadius: '24px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
                   }}
                 >
-                  {project.status}
+                  Upcoming
                 </span>
               </div>
 
               {/* Content */}
-              <div style={{ padding: '20px' }}>
+              <div style={{ padding: '24px' }}>
                 <h3
                   style={{
-                    fontSize: '18px',
-                    fontWeight: '600',
+                    fontSize: '20px',
+                    fontWeight: '700',
                     color: colors.text,
                     margin: '0 0 8px 0',
+                    lineHeight: '1.3'
                   }}
                 >
-                  {project.name}
+                  {project.title}
                 </h3>
                 <p
                   style={{
                     fontSize: '14px',
                     color: colors.textLight,
-                    margin: '0 0 16px 0',
+                    margin: '0 0 20px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                 >
-                  {project.location}
+                  <span style={{ color: colors.primary }}>📍</span> {project.location}
                 </p>
 
-                {/* Details */}
+                {/* Coming Soon Badge */}
+                <div style={{
+                  backgroundColor: '#fef3c7',
+                  border: '1px solid #fbbf24',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  marginBottom: '20px',
+                  textAlign: 'center'
+                }}>
+                  <span style={{
+                    fontSize: '12px',
+                    color: '#92400e',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}>
+                    ✨ Coming Soon - Pre-Launch Offers Available
+                  </span>
+                </div>
+
+                {/* Details Grid */}
                 <div
                   style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr 1fr',
-                    gap: '12px',
-                    marginBottom: '20px',
-                    fontSize: '14px',
+                    gap: '16px',
+                    marginBottom: '24px',
+                    padding: '16px',
+                    backgroundColor: '#f8fafc',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0'
                   }}
                 >
                   <div>
-                    <span style={{ color: colors.textLight }}>Plot Sizes</span>
-                    <br />
-                    {project.plotSizes}
+                    <span style={{ fontSize: '12px', color: colors.textLight, fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Plot Sizes</span>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text, marginTop: '4px' }}>{project.plotSize}</div>
                   </div>
                   <div>
-                    <span style={{ color: colors.textLight }}>Approval</span>
-                    <br />
-                    {project.approval}
+                    <span style={{ fontSize: '12px', color: colors.textLight, fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Approval</span>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: colors.primary, marginTop: '4px' }}>{project.approvedBy}</div>
                   </div>
                   <div>
-                    <span style={{ color: colors.textLight }}>Starts From</span>
-                    <br />
-                    {project.price}
+                    <span style={{ fontSize: '12px', color: colors.textLight, fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Starts From</span>
+                    <div style={{ fontSize: '16px', fontWeight: '700', color: '#e74c3c', marginTop: '4px' }}>₹{project.startingPrice}</div>
                   </div>
                   <div>
-                    <span style={{ color: colors.textLight }}>Status</span>
-                    <br />
-                    {project.launchStatus}
+                    <span style={{ fontSize: '12px', color: colors.textLight, fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Plots</span>
+                    <div style={{ fontSize: '14px', fontWeight: '600', color: colors.text, marginTop: '4px' }}>{project.totalPlots}</div>
                   </div>
                 </div>
 
@@ -325,14 +345,17 @@ const UpcomingProjects = () => {
                 <button
                   style={{
                     width: '100%',
-                    padding: '12px',
-                    backgroundColor: colors.button, // gold/orange
+                    padding: '14px',
+                    backgroundColor: colors.button,
                     color: '#ffffff',
                     border: 'none',
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     fontSize: '15px',
                     fontWeight: '600',
                     cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                   }}
                 >
                   Get Early Access
@@ -342,6 +365,45 @@ const UpcomingProjects = () => {
           ))}
         </div>
       </div>
+
+      <style>{`
+        .projects-grid {
+          grid-template-columns: 1fr;
+        }
+        @media (min-width: 640px) {
+          .projects-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .hero-section {
+            height: 450px !important;
+          }
+          .hero-title {
+            font-size: 2.5rem !important;
+          }
+          .hero-subtitle {
+            font-size: 1.1rem !important;
+          }
+          .filter-bar {
+            padding: 24px 40px !important;
+            margin: -80px auto 40px !important;
+          }
+        }
+        @media (min-width: 1024px) {
+          .projects-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px !important;
+          }
+          .hero-section {
+            height: 500px !important;
+          }
+          .hero-title {
+            font-size: 42px !important;
+          }
+          .hero-subtitle {
+            font-size: 18px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

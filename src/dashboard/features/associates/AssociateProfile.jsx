@@ -5,6 +5,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import profileImage from '../../assets/associate-profile.jpg';
 import { employeeService } from '../../../services/employeeService';
 import { ProfileShimmer } from '../../../components/loaders/ShimmerLoader';
+import { permissionService } from '../../../services/permissionService';
 import '../../styles/global.css';
 
 const AssociateProfile = () => {
@@ -23,9 +24,12 @@ const AssociateProfile = () => {
   });
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
 
   useEffect(() => {
     fetchEmployeeInfo();
+    const isAdmin = permissionService.isAdmin();
+    setCanEdit(isAdmin || permissionService.canEdit('Associates'));
   }, [id]);
 
   const fetchEmployeeInfo = async () => {
@@ -225,24 +229,26 @@ const AssociateProfile = () => {
 
             {/* Buttons Row */}
 <div style={{ display: 'flex', gap: '12px' }}>
-  <button 
-    onClick={() => navigate('/dashboard/associates/edit', { state: { employee, isEdit: true } })}
-    style={{
-      padding: '10px 20px',
-      backgroundColor: 'var(--dashboard-primary)',
-      border: 'none',
-      borderRadius: '6px',
-      fontSize: '14px',
-      color: 'var(--dashboard-white)',
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '6px',
-      fontWeight: '500'
-    }}>
-    <Edit size={16} />
-    Edit Profile
-  </button>
+  {canEdit && (
+    <button 
+      onClick={() => navigate('/dashboard/associates/edit', { state: { employee, isEdit: true } })}
+      style={{
+        padding: '10px 20px',
+        backgroundColor: 'var(--dashboard-primary)',
+        border: 'none',
+        borderRadius: '6px',
+        fontSize: '14px',
+        color: 'var(--dashboard-white)',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        fontWeight: '500'
+      }}>
+      <Edit size={16} />
+      Edit Profile
+    </button>
+  )}
 
   <button 
     onClick={() => setShowResetPasswordModal(true)}
@@ -364,7 +370,7 @@ const AssociateProfile = () => {
                   View
                 </button>
                 <button
-                  onClick={() => window.open(`/dashboard/associates/${id}/offer-letter`, '_blank')}
+                  onClick={() => navigate(`/dashboard/associates/${id}/offer-letter`, { state: { employee, autoDownload: true } })}
                   style={{
                     flex: 1,
                     padding: '8px 16px',
@@ -411,7 +417,7 @@ const AssociateProfile = () => {
                   View
                 </button>
                 <button
-                  onClick={() => window.open(`/dashboard/associates/${id}/id-card`, '_blank')}
+                  onClick={() => navigate(`/dashboard/associates/${id}/id-card`, { state: { employee, autoDownload: true } })}
                   style={{
                     flex: 1,
                     padding: '8px 16px',

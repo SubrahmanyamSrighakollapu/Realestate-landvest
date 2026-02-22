@@ -40,11 +40,11 @@ const CorePhilosophy = () => {
         </div>
 
         <div
+          className="philosophy-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
-            gap: '2.5rem',
-            marginBottom: '4rem',
+            gap: '2rem',
+            marginBottom: '3rem',
           }}
         >
           <div
@@ -155,13 +155,14 @@ const CorePhilosophy = () => {
         </div>
 
         <div
+          className="founder-card"
           style={{
             backgroundColor: colors.background,
             borderRadius: '12px',
-            padding: '2.2rem 2.5rem',
+            padding: '2rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '2rem',
+            gap: '1.5rem',
             border: `1px solid ${colors.primary}`,
             boxShadow: '0 6px 18px rgba(0,0,0,0.06)',
             flexWrap: 'wrap',
@@ -170,9 +171,10 @@ const CorePhilosophy = () => {
           <img
             src={rajeshKumar}
             alt="Arun Kumar"
+            className="founder-image"
             style={{
-              width: '200px',
-              height: '200px',
+              width: '150px',
+              height: '150px',
               borderRadius: '50%',
               objectFit: 'cover',
               objectPosition: 'center 15%'
@@ -214,6 +216,33 @@ const CorePhilosophy = () => {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .philosophy-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 2.5rem !important;
+            margin-bottom: 4rem !important;
+          }
+          .founder-card {
+            padding: 2.2rem 2.5rem !important;
+            gap: 2rem !important;
+          }
+          .founder-image {
+            width: 200px !important;
+            height: 200px !important;
+          }
+        }
+        @media (max-width: 767px) {
+          .founder-card {
+            justify-content: center;
+            text-align: center;
+          }
+          .founder-image {
+            margin: 0 auto;
+          }
+        }
+      `}</style>
     </section>
   );
 };

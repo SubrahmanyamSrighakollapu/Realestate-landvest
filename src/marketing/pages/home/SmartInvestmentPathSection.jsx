@@ -3,26 +3,27 @@ import { Shield, Clock, MapPin, TrendingUp } from 'lucide-react';
 const SmartInvestmentPathSection = () => {
   return (
     <section style={{
-      padding: '6rem 2rem',
+      padding: '4rem 1rem',
       backgroundColor: '#f8fffe',
       width: '100%',
     }}>
-      <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-        <h2 style={{ fontSize: '2.4rem', fontWeight: 700, color: '#1F6F54', marginBottom: '1rem' }}>
+      <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <h2 style={{ fontSize: '2rem', fontWeight: 700, color: '#1F6F54', marginBottom: '1rem' }}>
           Your Smart Investment Path
         </h2>
-        <p style={{ color: '#6B7C73', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
+        <p style={{ color: '#6B7C73', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6, fontSize: '0.95rem', padding: '0 1rem' }}>
           A proven 4-step strategy designed for security and high appreciation.<br/>
           We guide you through every milestone.
         </p>
       </div>
 
-      <div style={{
+      {/* Desktop Layout */}
+      <div className="desktop-investment" style={{
         position: 'relative',
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '0 1rem',
-        display: 'grid',
+        display: 'none',
         gridTemplateColumns: '1fr 1fr',
         gridTemplateRows: '1fr 1fr',
         gap: '10rem',
@@ -211,6 +212,35 @@ const SmartInvestmentPathSection = () => {
           </p>
         </div>
       </div>
+
+      {/* Mobile Layout */}
+      <div className="mobile-investment" style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', padding: '0 1rem' }}>
+        {[
+          { bg: '#FFFEF4', color: '#B8860B', icon: Shield, title: 'Secure Start', desc: 'Begin your investment journey with legally verified and trusted properties.', num: '01' },
+          { bg: '#F0FFF4', color: '#1F6F54', icon: Clock, title: 'Smart Timing', desc: 'Invest at the right stage to maximize future value and growth potential.', num: '02' },
+          { bg: '#EEF1FF', color: '#4F46E5', icon: MapPin, title: 'Prime Location', desc: 'Choose locations with high demand, connectivity, and development potential.', num: '03' },
+          { bg: '#FFEBEB', color: '#DC2626', icon: TrendingUp, title: 'Growth Focused', desc: 'Build long-term wealth with plots designed for steady market appreciation.', num: '04' }
+        ].map((item, idx) => {
+          const Icon = item.icon;
+          return (
+            <div key={idx} style={{ backgroundColor: item.bg, padding: '1.5rem', borderRadius: '5px', boxShadow: '0 4px 15px rgba(0,0,0,0.08)', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontSize: '1rem', fontWeight: 600, color: item.color }}>{item.num}</div>
+              <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: item.color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem' }}>
+                <Icon size={20} color="white" />
+              </div>
+              <h4 style={{ margin: '0 0 0.5rem', fontWeight: 700, color: '#333', fontSize: '1.05rem' }}>{item.title}</h4>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: '#6B7C73', lineHeight: 1.4 }}>{item.desc}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <style>{`
+        @media (min-width: 1024px) {
+          .desktop-investment { display: grid !important; }
+          .mobile-investment { display: none !important; }
+        }
+      `}</style>
     </section>
   );
 };

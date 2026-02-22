@@ -22,6 +22,14 @@ const EditLead = () => {
   const [selectedPricingMrp, setSelectedPricingMrp] = useState(0);
   const [previousAdvanceAmount, setPreviousAdvanceAmount] = useState(0);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [showAdvanceCard, setShowAdvanceCard] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [paymentCollectionData, setPaymentCollectionData] = useState({
+    amount: '',
+    date: '',
+    note: ''
+  });
 
   const [formData, setFormData] = useState({
     code: '',
@@ -38,11 +46,14 @@ const EditLead = () => {
     requirements: '',
     plotSize: '',
     approvedBy: '',
+    facingPreference: '',
     budgectFrom: '',
     budgectTo: '',
     buyingPurpose: '',
     advanceAmount: '',
     advanceDate: '',
+    nextPayAmount: '',
+    nextPayDate: '',
     nextActionDate: '',
     nextActionType: 'Call',
     nextActionNote: '',
@@ -71,6 +82,11 @@ const EditLead = () => {
         setSelectedPricingMrp(lead.totalBalance || 0);
         setPaymentHistory(lead.advanceInfo || []);
         
+        // Hide advance card if there's at least one payment record
+        if (lead.advanceInfo && lead.advanceInfo.length > 0) {
+          setShowAdvanceCard(false);
+        }
+        
         if (lead.project && lead.project.pricingOptions) {
           setPricingOptions(lead.project.pricingOptions);
         }
@@ -90,11 +106,14 @@ const EditLead = () => {
           requirements: lead.requirements || '',
           plotSize: lead.plotSize || '',
           approvedBy: lead.approvedBy || '',
+          facingPreference: lead.facingPreference || '',
           budgectFrom: lead.budgectFrom || '',
           budgectTo: lead.budgectTo || '',
           buyingPurpose: lead.buyingPurpose?._id || '',
           advanceAmount: '',
           advanceDate: '',
+          nextPayAmount: '',
+          nextPayDate: '',
           nextActionDate: lead.nextActionDate ? lead.nextActionDate.slice(0, 16) : '',
           nextActionType: lead.nextActionType || 'Call',
           nextActionNote: lead.nextActionNote || '',
@@ -174,6 +193,35 @@ const EditLead = () => {
     return Math.min((totalPaid / selectedPricingMrp) * 100, 100);
   };
 
+  const handleCollectPayment = async () => {
+    if (!paymentCollectionData.amount || !paymentCollectionData.date) {
+      toastService.error('Amount and Date are required');
+      return;
+    }
+
+    try {
+      const payload = {
+        leadId: id,
+        code: formData.code,
+        id: selectedPayment._id,
+        collectedAmount: paymentCollectionData.amount,
+        collectedDate: paymentCollectionData.date,
+        note: paymentCollectionData.note
+      };
+
+      const response = await leadService.collectPayment(payload);
+      if (response.success) {
+        toastService.success('Payment collected successfully!');
+        setShowPaymentModal(false);
+        fetchLeadData(); // Refresh lead data
+      } else {
+        toastService.error(response.message || 'Failed to collect payment');
+      }
+    } catch (error) {
+      toastService.error(error.response?.data?.message || 'Failed to collect payment');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -184,36 +232,37 @@ const EditLead = () => {
 
     setLoading(true);
     try {
-      const payload = {
-        id: id,
-        code: formData.code,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        mobile: formData.mobile,
-        sourceType: sourceType,
-        source: sourceType === 'social' ? formData.source : '',
-        sourceEmployee: sourceType === 'sales' ? formData.sourceEmployee : '',
-        project: formData.project,
-        propertyType: formData.propertyType,
-        pricingOption: formData.pricingOption,
-        plotNo: formData.plotNo,
-        requirements: formData.requirements,
-        plotSize: formData.plotSize,
-        approvedBy: formData.approvedBy,
-        budgectFrom: formData.budgectFrom,
-        budgectTo: formData.budgectTo,
-        buyingPurpose: formData.buyingPurpose,
-        advanceAmount: formData.advanceAmount,
-        advanceDate: formData.advanceDate,
-        nextActionDate: formData.nextActionDate,
-        nextActionType: formData.nextActionType,
-        nextActionNote: formData.nextActionNote,
-        leadStatus: formData.leadStatus,
-        assignedTo: formData.assignedTo
-      };
+      const formDataToSend = new FormData();
+      
+      formDataToSend.append('id', id);
+      formDataToSend.append('code', formData.code);
+      formDataToSend.append('firstName', formData.firstName);
+      formDataToSend.append('lastName', formData.lastName);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('mobile', formData.mobile);
+      formDataToSend.append('sourceType', sourceType);
+      formDataToSend.append('source', sourceType === 'social' ? formData.source : '');
+      formDataToSend.append('sourceEmployee', sourceType === 'sales' ? formData.sourceEmployee : '');
+      formDataToSend.append('project', formData.project);
+      formDataToSend.append('propertyType', formData.propertyType);
+      formDataToSend.append('pricingOption', formData.pricingOption);
+      formDataToSend.append('plotNo', formData.plotNo);
+      formDataToSend.append('requirements', formData.requirements);
+      formDataToSend.append('plotSize', formData.plotSize);
+      formDataToSend.append('approvedBy', formData.approvedBy);
+      formDataToSend.append('facingPreference', formData.facingPreference);
+      formDataToSend.append('budgectFrom', formData.budgectFrom);
+      formDataToSend.append('budgectTo', formData.budgectTo);
+      formDataToSend.append('buyingPurpose', formData.buyingPurpose);
+      formDataToSend.append('nextPayAmount', formData.nextPayAmount);
+      formDataToSend.append('nextPayDate', formData.nextPayDate);
+      formDataToSend.append('nextActionDate', formData.nextActionDate);
+      formDataToSend.append('nextActionType', formData.nextActionType);
+      formDataToSend.append('nextActionNote', formData.nextActionNote);
+      formDataToSend.append('leadStatus', formData.leadStatus);
+      formDataToSend.append('assignedTo', formData.assignedTo);
 
-      const response = await leadService.updateLead(payload);
+      const response = await leadService.updateLead(formDataToSend);
       if (response.success) {
         toastService.success('Lead updated successfully!');
         navigate('/dashboard/leads/management');
@@ -545,7 +594,7 @@ const EditLead = () => {
                           {selectedOption.pricingOption.title}
                         </div>
                         <div style={{ fontSize: '13px', color: dashboardColors.textLight }}>
-                          Base Price: ₹{selectedOption.mrp.toLocaleString('en-IN')} • {selectedOption.pricingOption.duration} Months • {selectedOption.pricingOption.installments} Installments
+                          Base Price: ₹{selectedOption.mrp.toLocaleString('en-IN')} • {selectedOption.duration} Months • {selectedOption.installment} Installments
                         </div>
                       </div>
                     ) : null;
@@ -970,52 +1019,137 @@ const EditLead = () => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
-                Advance Amount Paid
-              </label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: dashboardColors.textLight }}>₹</span>
+          {/* Next Due Date Card - Always show */}
+          <div style={{ backgroundColor: dashboardColors.tertiary, padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '600', color: dashboardColors.text, marginBottom: '16px' }}>
+              Next Due Date
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                  Due Amount
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: dashboardColors.textLight }}>₹</span>
+                  <input
+                    type="number"
+                    name="nextPayAmount"
+                    value={formData.nextPayAmount}
+                    onChange={handleInputChange}
+                    placeholder="Enter amount"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 28px',
+                      border: `1px solid ${dashboardColors.border}`,
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      backgroundColor: dashboardColors.white
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                  Payment Date
+                </label>
                 <input
-                  type="number"
-                  name="advanceAmount"
-                  value={formData.advanceAmount}
+                  type="date"
+                  name="nextPayDate"
+                  value={formData.nextPayDate}
                   onChange={handleInputChange}
-                  placeholder="Enter new advance amount"
                   style={{
                     width: '100%',
-                    padding: '10px 12px 10px 28px',
+                    padding: '10px 12px',
                     border: `1px solid ${dashboardColors.border}`,
                     borderRadius: '6px',
                     fontSize: '14px',
                     outline: 'none',
-                    boxSizing: 'border-box'
+                    boxSizing: 'border-box',
+                    backgroundColor: dashboardColors.white
                   }}
                 />
               </div>
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
-                Payment Date
-              </label>
-              <input
-                type="date"
-                name="advanceDate"
-                value={formData.advanceDate}
-                onChange={handleInputChange}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: `1px solid ${dashboardColors.border}`,
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
           </div>
+
+          {/* Payment History Cards */}
+          {paymentHistory && paymentHistory.length > 0 && (
+            <div>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', color: dashboardColors.text, marginBottom: '16px' }}>
+                Payment History
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {paymentHistory.map((payment, index) => (
+                  <div
+                    key={payment._id || index}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '16px',
+                      backgroundColor: dashboardColors.white,
+                      border: `1px solid ${dashboardColors.border}`,
+                      borderRadius: '8px'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '15px', fontWeight: '600', color: dashboardColors.text, marginBottom: '4px' }}>
+                        {index + 1}{index === 0 ? 'st' : index === 1 ? 'nd' : 'rd'} Installment - ₹{(payment.advanceAmount || payment.nextPayAmount || 0).toLocaleString('en-IN')}
+                      </div>
+                      <div style={{ fontSize: '13px', color: dashboardColors.textLight }}>
+                        {payment.advanceDate || payment.nextPayDate ? new Date(payment.advanceDate || payment.nextPayDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'} • Bank Transfer
+                      </div>
+                    </div>
+                    {payment.status === 'paid' ? (
+                      <button
+                        disabled
+                        style={{
+                          padding: '8px 20px',
+                          backgroundColor: '#10b981',
+                          color: dashboardColors.white,
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          cursor: 'not-allowed',
+                          opacity: 0.8
+                        }}
+                      >
+                        Paid
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedPayment(payment);
+                          setPaymentCollectionData({
+                            amount: payment.nextPayAmount || '',
+                            date: payment.nextPayDate ? payment.nextPayDate.slice(0, 10) : '',
+                            note: ''
+                          });
+                          setShowPaymentModal(true);
+                        }}
+                        style={{
+                          padding: '8px 20px',
+                          backgroundColor: '#f59e0b',
+                          color: dashboardColors.white,
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Collect Amount
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action Buttons */}
@@ -1055,6 +1189,149 @@ const EditLead = () => {
           </button>
         </div>
       </form>
+
+      {/* Payment Collection Modal */}
+      {showPaymentModal && (
+        <div
+          onClick={() => setShowPaymentModal(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: dashboardColors.white,
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '600px',
+              width: '90%',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+            }}
+          >
+            <h2 style={{ fontSize: '20px', fontWeight: '600', color: dashboardColors.text, marginBottom: '24px' }}>
+              Payment Collection
+            </h2>
+
+            {/* <div style={{ backgroundColor: '#e0f2fe', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid #0ea5e9' }}>
+              <div style={{ fontSize: '13px', color: '#0369a1', marginBottom: '4px' }}>Amount to collect</div>
+              <div style={{ fontSize: '14px', fontWeight: '500', color: '#0c4a6e' }}>Total amount to collect</div>
+            </div> */}
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                  Amount to Collect
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: dashboardColors.textLight }}>₹</span>
+                  <input
+                    type="number"
+                    value={paymentCollectionData.amount}
+                    onChange={(e) => setPaymentCollectionData(prev => ({ ...prev, amount: e.target.value }))}
+                    placeholder="4,50,000"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 28px',
+                      border: `1px solid ${dashboardColors.border}`,
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                  Payment Date
+                </label>
+                <input
+                  type="date"
+                  value={paymentCollectionData.date}
+                  onChange={(e) => setPaymentCollectionData(prev => ({ ...prev, date: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: `1px solid ${dashboardColors.border}`,
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                Note (Optional)
+              </label>
+              <textarea
+                value={paymentCollectionData.note}
+                onChange={(e) => setPaymentCollectionData(prev => ({ ...prev, note: e.target.value }))}
+                placeholder="Enter any notes or comments..."
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: `1px solid ${dashboardColors.border}`,
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  outline: 'none',
+                  resize: 'vertical',
+                  boxSizing: 'border-box',
+                  fontFamily: 'inherit'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setShowPaymentModal(false)}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: dashboardColors.white,
+                  color: dashboardColors.text,
+                  border: `1px solid ${dashboardColors.border}`,
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleCollectPayment}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: '#10b981',
+                  color: dashboardColors.white,
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Proceed To collect
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

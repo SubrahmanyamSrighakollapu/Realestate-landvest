@@ -1,17 +1,56 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useEffect } from 'react';
+import html2canvas from 'html2canvas';
 
 const OfferLetter = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const employee = location.state?.employee;
+  const autoDownload = location.state?.autoDownload;
+
+  useEffect(() => {
+    if (autoDownload && employee) {
+      const timer = setTimeout(() => handleDownload(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [autoDownload, employee]);
 
   if (!employee) {
     return <div>No employee data available</div>;
   }
 
-  const handleDownload = () => {
-    window.print();
+  const handleDownload = async () => {
+    const element = document.getElementById('offer-letter-content');
+    if (!element) return;
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `OfferLetter_${employee.name.replace(/\s+/g, '_')}_${employee.code}.png`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        if (autoDownload) {
+          setTimeout(() => navigate(-1), 1000);
+        }
+      });
+    } catch (error) {
+      console.error('Error generating download:', error);
+    }
   };
 
   return (
@@ -48,7 +87,7 @@ const OfferLetter = () => {
         </button>
       </div>
 
-      <div style={{
+      <div id="offer-letter-content" style={{
         backgroundColor: '#fff',
         padding: '60px',
         borderRadius: '8px',
@@ -88,7 +127,7 @@ const OfferLetter = () => {
 
         <p style={{ fontSize: '13px', lineHeight: '1.8', marginBottom: '16px', textAlign: 'justify' }}>
           This is with reference to your application, the Management is pleased to appoint you as MD to sell the plots/
-          farmlands/villas/apartments on the following terms and conditions with effect from {new Date().toLocaleDateString('en-GB')}
+          farmlands/villas/apartments on the following terms and conditions with effect from {new Date(employee.doj).toLocaleDateString('en-GB')}
         </p>
 
         <div style={{ fontSize: '13px', lineHeight: '1.8', marginBottom: '24px', textAlign: 'justify' }}>

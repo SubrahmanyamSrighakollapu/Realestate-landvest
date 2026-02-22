@@ -5,20 +5,22 @@ const SiteGallery = () => {
     <section
       style={{
         position: 'relative',
-        height: '85vh',
-        minHeight: '620px',
+        height: '70vh',
+        minHeight: '500px',
         backgroundImage: `url(${galleryImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-start', // left align container
+        justifyContent: 'flex-start',
         color: 'white',
-        textAlign: 'left', // left align text
+        textAlign: 'left',
         width: '100%',
-        paddingLeft: '6%', // space from left
+        paddingLeft: '4%',
+        paddingRight: '4%',
       }}
+      className="gallery-hero"
     >
       <div
         style={{
@@ -67,6 +69,16 @@ const SiteGallery = () => {
           progress through our lens.
         </p>
       </div>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .gallery-hero {
+            height: 85vh !important;
+            min-height: 620px !important;
+            padding-left: 6% !important;
+          }
+        }
+      `}</style>
     </section>
   );
 };

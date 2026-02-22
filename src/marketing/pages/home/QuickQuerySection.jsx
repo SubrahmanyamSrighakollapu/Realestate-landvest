@@ -14,7 +14,7 @@ const QuickQuerySection = () => {
     <section
       style={{
         backgroundColor: "#1F6F54",
-        padding: "5rem 0",
+        padding: "4rem 1rem",
         width: "100%",
       }}
     >
@@ -22,32 +22,32 @@ const QuickQuerySection = () => {
         style={{
           maxWidth: "1200px",
           margin: "0 auto",
-          padding: "0 1rem",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          gap: "4rem",
+          justifyContent: "center",
+          gap: "3rem",
           flexWrap: "wrap",
         }}
       >
-        <div style={{ flex: 1, color: "#FFFFFF", minWidth: "320px" }}>
+        <div style={{ flex: 1, color: "#FFFFFF", minWidth: "280px", maxWidth: "600px" }}>
           <h2
             style={{
-              fontSize: "2.6rem",
+              fontSize: "2rem",
               fontWeight: "700",
-              marginBottom: "1.2rem",
+              marginBottom: "1rem",
               lineHeight: "1.2",
             }}
+            className="query-title"
           >
             Ready to find your dream plot?
           </h2>
 
           <p
             style={{
-              fontSize: "1.05rem",
+              fontSize: "0.95rem",
               opacity: 0.9,
               maxWidth: "520px",
-              marginBottom: "2.5rem",
+              marginBottom: "2rem",
               lineHeight: "1.6",
             }}
           >
@@ -77,10 +77,10 @@ const QuickQuerySection = () => {
                 <Mail size={20} color="#1F6F54" />
               </div>
               <div>
-                <div style={{ fontSize: "0.9rem", opacity: 0.8 }}>
+                <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
                   Email Us
                 </div>
-                <strong style={{ fontSize: "1rem" }}>
+                <strong style={{ fontSize: "0.95rem" }}>
                   Landvest2026@gmail.com
                 </strong>
               </div>
@@ -90,18 +90,19 @@ const QuickQuerySection = () => {
 
         <div
           style={{
-            width: "360px",
+            width: "100%",
+            maxWidth: "360px",
             backgroundColor: "#FFFFFF",
             borderRadius: "12px",
-            padding: "2rem",
+            padding: "1.75rem",
             boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
           }}
         >
           <h3
             style={{
-              fontSize: "1.2rem",
+              fontSize: "1.15rem",
               fontWeight: "600",
-              marginBottom: "1.5rem",
+              marginBottom: "1.25rem",
               color: "#111827",
             }}
           >
@@ -144,6 +145,14 @@ const QuickQuerySection = () => {
           </form>
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .query-title {
+            font-size: 2.6rem !important;
+          }
+        }
+      `}</style>
     </section>
   );
 };

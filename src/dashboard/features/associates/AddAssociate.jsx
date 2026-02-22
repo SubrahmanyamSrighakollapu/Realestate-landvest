@@ -183,13 +183,22 @@ const AddAssociate = () => {
       if (files.residentialProof) data.append('residentialProof', files.residentialProof);
 
       if (isEdit) {
-        await employeeService.updateEmployee(data);
-        toastService.success('Associate updated successfully!');
+        const response = await employeeService.updateEmployee(data);
+        if (response.success) {
+          toastService.success('Associate updated successfully!');
+          navigate('/dashboard/associates/management');
+        } else {
+          toastService.error(response.message || 'Failed to update associate');
+        }
       } else {
-        await employeeService.addEmployee(data);
-        toastService.success('Associate added successfully!');
+        const response = await employeeService.addEmployee(data);
+        if (response.success) {
+          toastService.success('Associate added successfully!');
+          navigate('/dashboard/associates/management');
+        } else {
+          toastService.error(response.message || 'Failed to add associate');
+        }
       }
-      navigate('/dashboard/associates/management');
     } catch (error) {
       toastService.error(error.response?.data?.message || `Failed to ${isEdit ? 'update' : 'add'} associate`);
     } finally {

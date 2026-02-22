@@ -1,20 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, FolderKanban, Network, FileText, Award, BookOpen, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BarChart3, UserCog } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, Network, FileText, Award, BookOpen, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BarChart3, UserCog, Shield } from 'lucide-react';
 import { dashboardColors } from "../../styles/colors";
 import logo from '../../../assets/landvest-logo.jpeg';
+import { authService } from '../../../services/authService';
+import { permissionService } from '../../../services/permissionService';
 
 
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const [orgTreeOpen, setOrgTreeOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const employeeInfo = authService.getEmployeeData();
+    if (employeeInfo && employeeInfo.role && employeeInfo.role.name === 'Admin') {
+      setIsAdmin(true);
+    }
+  }, []);
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: Users, label: 'Associates', path: '/dashboard/associates/management' },
-    { icon: UserCog, label: 'Leads', path: '/dashboard/leads/management' },
-    { icon: FolderKanban, label: 'Projects', path: '/dashboard/projects/management' },
+    { icon: Users, label: 'Associates', path: '/dashboard/associates/management', permission: { module: 'Associates', action: 'view' } },
+    { icon: UserCog, label: 'Leads', path: '/dashboard/leads/management', permission: { module: 'Leads', action: 'view' } },
+    { icon: FolderKanban, label: 'Projects', path: '/dashboard/projects/management', adminOnly: true },
+    { icon: FolderKanban, label: 'Projects', path: '/dashboard/projects', nonAdminOnly: true },
     { 
       icon: Network, 
       label: 'Org Tree', 
@@ -24,10 +35,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         { label: 'Teams & Roles', path: '/dashboard/org-tree/teams-and-roles' }
       ]
     },
-    { icon: FileText, label: 'Reports', path: '/dashboard/reports/associate-reports' },
-    { icon: Award, label: 'Designation', path: '/dashboard/designations/management' },
-    { icon: BookOpen, label: 'Directory', path: '/dashboard/directory/management' },
-    { icon: BarChart3, label: 'Key Reports', path: '/dashboard/key-reports/reports' }
+    { icon: FileText, label: 'Reports', path: '/dashboard/reports/associate-reports', permission: { module: 'Reports', action: 'view' } },
+    { icon: Award, label: 'Designation', path: '/dashboard/designations/management', adminOnly: true },
+    { icon: BookOpen, label: 'Directory', path: '/dashboard/directory/management', adminOnly: true },
+    // { icon: BarChart3, label: 'Key Reports', path: '/dashboard/key-reports/reports' },
+    { icon: Shield, label: 'Permissions', path: '/dashboard/permissions/management', adminOnly: true }
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -77,7 +89,14 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       </div>
 
       <nav style={{ flex: 1, overflowY: 'auto', padding: '20px 0' }}>
-        {menuItems.map((item, index) => (
+        {menuItems.filter(item => {
+          if (item.adminOnly) return isAdmin;
+          if (item.nonAdminOnly) return !isAdmin;
+          if (item.permission) {
+            return permissionService.hasPermission(item.permission.module, item.permission.action);
+          }
+          return true;
+        }).map((item, index) => (
           <div key={index}>
             <Link
               to={item.subItems ? '#' : item.path}
@@ -122,7 +141,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
             {item.subItems && orgTreeOpen && isOpen && (
               <div style={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
-                {item.subItems.map((subItem, subIndex) => (
+                {item.subItems.filter(subItem => !subItem.adminOnly || isAdmin).map((subItem, subIndex) => (
                   <Link
                     key={subIndex}
                     to={subItem.path}

@@ -1,49 +1,52 @@
-import testimonial1 from '../../../assets/testimonial-image1.png';
+import testimonial1 from '../../../assets/testimonial-image1.jpeg';
+import testimonial2 from '../../../assets/testimonial-image2.jpeg';
+import testimonial3 from '../../../assets/testimonial-image3.jpeg';
 
 const TestimonialsSection = () => {
   const testimonials = [
     {
-      name: "Arun Kumar",
-      role: "Inventor, Hyderabad",
+      name: "Satya Phanindra",
+      // role: "Inventor, Hyderabad",
       text:
-        "I bought a plot in Green Valley 3 years ago. The value has nearly doubled! The registration process was incredibly smooth and transparent.",
+        "I recently purchased a plot in Sadhnagar from Landvest, and the entire process was smooth and transparent. Their team was professional, supportive, and guided me clearly at every step. Truly satisfied with their service.",
       img: testimonial1,
     },
     {
-      name: "Priya Reddy",
-      role: "Inventor, Hyderabad",
+      name: "Hema",
+      // role: "Inventor, Hyderabad",
       text:
-        "As an NRI, I was worried about managing property in India. OpenPlots team handled everything from fencing to legal checks remotely.",
-      img: testimonial1,
+        "I recently invested in a plot through Landvest in Adibatla, and the experience was excellent from start to finish. The team was knowledgeable, responsive, and ensured all my queries were addressed promptly.",
+      img: testimonial2,
     },
     {
-      name: "Anil Gupta",
-      role: "Inventor, Hyderabad",
+      name: "Pedapudi Samuel Raju",
+      // role: "Inventor, Hyderabad",
       text:
-        "The best part was no hidden charges. The price quoted was all-inclusive. Very professional and great locations.",
-      img: testimonial1,
+        "Purchasing a plot with Landvest in Shadnagar was a hassle-free experience. Their staff was courteous, well-informed, and guided me through each step with clarity and patience.",
+      img: testimonial3,
     },
   ];
 
   return (
     <section
       style={{
-        padding: "6rem 0",
+        padding: "4rem 1rem",
         backgroundColor: "#FFFFFF",
         position: "relative",
         width: "100%",
       }}
     >
-      <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-        <h2 style={{ fontSize: "2.3rem", fontWeight: 700, color: "#1F6F54" }}>
+      <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+        <h2 style={{ fontSize: "2rem", fontWeight: 700, color: "#1F6F54" }}>
           Our Testimonials
         </h2>
-        <p style={{ color: "#7A8C85", marginTop: "0.4rem" }}>
+        <p style={{ color: "#7A8C85", marginTop: "0.4rem", fontSize: "0.95rem" }}>
           What Our Customers Says
         </p>
       </div>
 
       <div
+        className="quote-left"
         style={{
           position: "absolute",
           top: "80px",
@@ -61,8 +64,8 @@ const TestimonialsSection = () => {
           maxWidth: "1200px",
           margin: "0 auto",
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "2rem",
+          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gap: "1.5rem",
           padding: "0 1rem"
         }}
       >
@@ -71,17 +74,17 @@ const TestimonialsSection = () => {
             key={index}
             style={{
               backgroundColor: "#FFFFFF",
-              padding: "2rem",
+              padding: "1.75rem",
               borderRadius: "12px",
               boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
             }}
           >
             <p
               style={{
-                fontSize: "0.95rem",
+                fontSize: "0.9rem",
                 lineHeight: "1.6",
                 color: "#6B7C73",
-                marginBottom: "1.8rem",
+                marginBottom: "1.5rem",
               }}
             >
               "{item.text}"
@@ -91,28 +94,28 @@ const TestimonialsSection = () => {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "0.8rem",
+                gap: "0.75rem",
               }}
             >
               <img
                 src={item.img}
                 alt={item.name}
                 style={{
-                  width: "44px",
-                  height: "44px",
+                  width: "70px",
+                  height: "70px",
                   borderRadius: "50%",
                   objectFit: "cover",
                 }}
               />
               <div>
-                <strong style={{ fontSize: "0.95rem" }}>{item.name}</strong>
+                <strong style={{ fontSize: "0.9rem" }}>{item.name}</strong>
                 <div
                   style={{
                     fontSize: "0.8rem",
                     color: "#8A9C95",
                   }}
                 >
-                  {item.role}
+                  {/* {item.role} */}
                 </div>
               </div>
             </div>
@@ -121,6 +124,7 @@ const TestimonialsSection = () => {
       </div>
 
       <div
+        className="quote-right"
         style={{
           position: "absolute",
           bottom: "60px",
@@ -132,6 +136,12 @@ const TestimonialsSection = () => {
       >
         "
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .quote-left, .quote-right { display: none; }
+        }
+      `}</style>
     </section>
   );
 };

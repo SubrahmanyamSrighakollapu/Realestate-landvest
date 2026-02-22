@@ -8,11 +8,11 @@ import Pagination from '../../components/common/Pagination';
 import { projectService } from '../../../services/projectService';
 import { toastService } from '../../../services/toastService';
 
-
 const ProjectManagement = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState('all');
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -29,7 +29,34 @@ const ProjectManagement = () => {
       toastService.error('Failed to load projects');
     }
   };
-  
+
+  const getStatusColor = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'ongoing':
+        return '#28A745';
+      case 'completed':
+        return '#007BFF';
+      case 'upcoming':
+        return '#FD7E14';
+      default:
+        return dashboardColors.primary;
+    }
+  };
+
+  // ✅ FILTER LOGIC
+  const filteredProjects =
+    statusFilter === 'all'
+      ? projects
+      : projects.filter(
+          (proj) => proj.status?.toLowerCase() === statusFilter
+        );
+
+  // ✅ PAGINATION ON FILTERED DATA
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div style={{ padding: "24px" }}>
       {/* Header */}
@@ -73,7 +100,7 @@ const ProjectManagement = () => {
           </div>
 
           <button
-            onClick={() => navigate("/dashboard/projects/add")} // adjust route to your add flow
+            onClick={() => navigate("/dashboard/projects/add")}
             style={{
               display: "flex",
               alignItems: "center",
@@ -206,6 +233,11 @@ const ProjectManagement = () => {
           </div>
 
           <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             style={{
               padding: "10px 14px",
               border: `1px solid ${dashboardColors.border}`,
@@ -214,22 +246,10 @@ const ProjectManagement = () => {
               minWidth: "160px",
             }}
           >
-            <option>All Status</option>
-            <option>Ongoing</option>
-            <option>Up Coming</option>
-            <option>Completed</option>
-          </select>
-
-          <select
-            style={{
-              padding: "10px 14px",
-              border: `1px solid ${dashboardColors.border}`,
-              borderRadius: "6px",
-              fontSize: "14px",
-              minWidth: "140px",
-            }}
-          >
-            <option>Select Date</option>
+            <option value="all">All Status</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="completed">Completed</option>
           </select>
         </div>
       </div>
@@ -282,71 +302,78 @@ const ProjectManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {projects.length === 0 ? (
+              {filteredProjects.length === 0 ? (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: 'center', padding: '40px' }}>No projects found</td>
+                  <td colSpan="9" style={{ textAlign: 'center', padding: '40px' }}>
+                    No projects found
+                  </td>
                 </tr>
               ) : (
-                projects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((proj) => (
-                <tr key={proj._id}>
-                  <td>{proj.code}</td>
-                  <td>{proj.title}</td>
-                  <td>
-                    <span
-                      style={{
-                        color: proj.status === 'active' ? dashboardColors.primary : '#c2410c',
-                        fontWeight: '500',
-                      }}
-                    >
-                      {proj.status === 'active' ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td>{proj.date ? new Date(proj.date).toLocaleDateString('en-IN') : 'N/A'}</td>
-                  <td>{proj.totalPlots || 0}</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        title="Edit"
+                paginatedProjects.map((proj) => (
+                  <tr key={proj._id}>
+                    <td>{proj.code}</td>
+                    <td>{proj.title}</td>
+                    <td>
+                      <span
                         style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: dashboardColors.primary,
-                        }}
-                        onClick={() => navigate(`/dashboard/projects/edit/${proj._id}`)}
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        title="Delete"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          color: '#ef4444',
-                        }}
-                        onClick={() => {
-                          if (window.confirm('Delete this project?')) {
-                            console.log('Delete project', proj._id);
-                          }
+                          color: getStatusColor(proj.status),
+                          fontWeight: '500',
                         }}
                       >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )))}
+                        {proj.status}
+                      </span>
+                    </td>
+                    <td>
+                      {proj.date
+                        ? new Date(proj.date).toLocaleDateString('en-IN')
+                        : 'N/A'}
+                    </td>
+                    <td>{proj.totalPlots || 0}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          title="Edit"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: dashboardColors.primary,
+                          }}
+                          onClick={() => navigate(`/dashboard/projects/edit/${proj._id}`)}
+                        >
+                          <Pencil size={18} />
+                        </button>
+                        <button
+                          title="Delete"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#ef4444',
+                          }}
+                          onClick={() => {
+                            if (window.confirm('Delete this project?')) {
+                              console.log('Delete project', proj._id);
+                            }
+                          }}
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
         <Pagination
           currentPage={currentPage}
-          totalItems={projects.length}
+          totalItems={filteredProjects.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

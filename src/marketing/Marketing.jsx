@@ -21,7 +21,10 @@ const Marketing = () => {
         <Route path="/projects/completed" element={<ProjectsCompleted />} />
         <Route path="/projects/completed/:id" element={<ProjectDetails />} />
         <Route path="/projects/ongoing" element={<OngoingProjects />} />
+        <Route path="/projects/ongoing/:id" element={<ProjectDetails />} />
         <Route path="/projects/upcoming" element={<UpcomingProjects />} />
+        <Route path="/projects/upcoming/:id" element={<ProjectDetails />} />
+        <Route path="/projects/:id" element={<ProjectDetails />} />
         <Route path="/contact" element={<GetInTouch />} />
       </Routes>
       <Footer />

@@ -17,59 +17,64 @@ const Hero = () => {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        height: '100vh',
+        minHeight: '100vh',
         position: 'relative',
-        padding: '2rem',
+        padding: '2rem 1rem',
         paddingBottom: '8rem',
         width: '100%',
+        display: 'flex',
+        alignItems: 'center',
       }}
     >
       <div
         style={{
           maxWidth: '600px',
-          marginLeft: '3rem',
-          marginTop: '6rem',
+          marginLeft: '0',
           textAlign: 'left',
           opacity: isLoaded ? 1 : 0,
           transform: isLoaded ? 'translateY(0)' : 'translateY(30px)',
           transition: 'all 1s ease-out',
+          padding: '0 1rem',
         }}
+        className="hero-content"
       >
         <h1
           style={{
-            fontSize: '3rem',
+            fontSize: '2.5rem',
             fontWeight: '600',
             color: colors.background,
             marginBottom: '1rem',
             lineHeight: '1.2',
             textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
           }}
+          className="hero-title"
         >
           Secure Your Future with Approved Open Plots
         </h1>
 
         <p
           style={{
-            fontSize: '1.1rem',
+            fontSize: '1rem',
             color: colors.background,
             marginBottom: '2rem',
             textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
           }}
+          className="hero-subtitle"
         >
           Invest in DTCP & RERA approved plots in prime developing corridors.
           <br />
           100% Clear Title • Instant Registration • High Appreciation
         </p>
 
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
           <button
             style={{
               backgroundColor: colors.button,
               color: colors.background,
-              padding: '1rem 2rem',
+              padding: '0.85rem 1.75rem',
               border: 'none',
               borderRadius: '5px',
-              fontSize: '1rem',
+              fontSize: '0.95rem',
               fontWeight: '600',
               cursor: 'pointer',
               transition: 'transform 0.2s',
@@ -84,10 +89,10 @@ const Hero = () => {
             style={{
               backgroundColor: 'rgba(255,255,255,0.9)',
               color: colors.text,
-              padding: '1rem 2rem',
+              padding: '0.85rem 1.75rem',
               border: 'none',
               borderRadius: '5px',
-              fontSize: '1rem',
+              fontSize: '0.95rem',
               fontWeight: '600',
               cursor: 'pointer',
               transition: 'transform 0.2s',
@@ -103,10 +108,10 @@ const Hero = () => {
       <div
         style={{
           backgroundColor: colors.background,
-          padding: '2rem',
+          padding: '1.5rem',
           borderRadius: '10px',
           boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-          width: '100%',
+          width: 'calc(100% - 2rem)',
           maxWidth: '1000px',
           position: 'absolute',
           bottom: '-75px',
@@ -115,26 +120,27 @@ const Hero = () => {
           opacity: isLoaded ? 1 : 0,
           transition: 'all 1s ease-out 0.3s',
         }}
+        className="hero-search"
       >
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '1.5rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '1rem',
             alignItems: 'end',
           }}
         >
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: colors.text }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: colors.text, fontSize: '0.9rem' }}>
               Location
             </label>
             <select
               style={{
                 width: '100%',
-                padding: '0.75rem',
+                padding: '0.7rem',
                 border: `1px solid ${colors.border}`,
                 borderRadius: '5px',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
               }}
             >
               <option>Select Location</option>
@@ -142,16 +148,16 @@ const Hero = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: colors.text }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: colors.text, fontSize: '0.9rem' }}>
               Property Type
             </label>
             <select
               style={{
                 width: '100%',
-                padding: '0.75rem',
+                padding: '0.7rem',
                 border: `1px solid ${colors.border}`,
                 borderRadius: '5px',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
               }}
             >
               <option>All types</option>
@@ -159,18 +165,18 @@ const Hero = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: colors.text }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', color: colors.text, fontSize: '0.9rem' }}>
               Budget Range
             </label>
             <input
               type="text"
               placeholder="Any Budget"
               style={{
-                width: '100%',
-                padding: '0.75rem',
+                width: '90%',
+                padding: '0.7rem',
                 border: `1px solid ${colors.border}`,
                 borderRadius: '5px',
-                fontSize: '1rem',
+                fontSize: '0.95rem',
               }}
             />
           </div>
@@ -179,10 +185,10 @@ const Hero = () => {
             style={{
               backgroundColor: colors.button,
               color: colors.background,
-              padding: '0.75rem 2rem',
+              padding: '0.7rem 1.5rem',
               border: 'none',
               borderRadius: '5px',
-              fontSize: '1rem',
+              fontSize: '0.95rem',
               fontWeight: '600',
               cursor: 'pointer',
               transition: 'background 0.2s',
@@ -194,6 +200,32 @@ const Hero = () => {
           </button>
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .hero-content {
+            margin-left: 3rem !important;
+          }
+          .hero-title {
+            font-size: 3rem !important;
+          }
+          .hero-subtitle {
+            font-size: 1.1rem !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .hero-title {
+            font-size: 1.75rem !important;
+          }
+          .hero-subtitle {
+            font-size: 0.9rem !important;
+          }
+          .hero-search {
+            bottom: -150px !important;
+            padding: 1rem !important;
+          }
+        }
+      `}</style>
     </section>
   );
 };

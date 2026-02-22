@@ -7,35 +7,32 @@ const GetInTouch = () => {
       <section
         style={{
           backgroundColor: '#f8f9fa',
-          padding: '4rem 2rem',
+          padding: '3rem 1rem',
           textAlign: 'center',
           width: '100%',
         }}
       >
-        <h1 style={{ fontSize: '2.8rem', marginBottom: '1rem', fontWeight: 'bold', color: '#1F6F54' }}>
+        <h1 className="contact-title" style={{ fontSize: '2rem', marginBottom: '1rem', fontWeight: 'bold', color: '#1F6F54' }}>
           Get In Touch
         </h1>
-        <p style={{ fontSize: '1.2rem', maxWidth: '800px', margin: '0 auto', color: '#64748b' }}>
+        <p style={{ fontSize: '1rem', maxWidth: '800px', margin: '0 auto', color: '#64748b', padding: '0 1rem' }}>
           Have questions about a property or need assistance? We are here to help you find your dream home.
         </p>
       </section>
 
       <section
+        className="contact-grid"
         style={{
-          padding: '4rem 2rem',
+          padding: '3rem 1rem',
           maxWidth: '1200px',
           margin: '0 auto',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '3rem',
-          alignItems: 'start',
         }}
       >
         <div>
-          <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', color: '#1F6F54' }}>Enquiry Form</h2>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#1F6F54' }}>Enquiry Form</h2>
           
-          <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <form style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div className="form-row" style={{ display: 'grid', gap: '1.25rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600', fontSize: '0.95rem' }}>
                   Name
@@ -154,8 +151,8 @@ const GetInTouch = () => {
           </form>
         </div>
 
-        <div style={{ backgroundColor: '#1F6F54', padding: '2.5rem', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', color: '#ffffff' }}>
-          <h2 style={{ fontSize: '1.8rem', marginBottom: '2rem', color: '#ffffff' }}>Contact Information</h2>
+        <div className="contact-info" style={{ backgroundColor: '#1F6F54', padding: '2rem', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', color: '#ffffff' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: '#ffffff' }}>Contact Information</h2>
 
           <div style={{ marginBottom: '2rem' }}>
             <p style={{ fontWeight: '600', marginBottom: '0.75rem', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -178,17 +175,18 @@ const GetInTouch = () => {
         </div>
       </section>
 
-      <section style={{ padding: '0 2rem 4rem' }}>
+      <section style={{ padding: '0 1rem 3rem' }}>
         <div
           style={{
             width: '100%',
             maxWidth: '1200px',
             margin: '0 auto',
-            height: '500px',
+            height: '400px',
             borderRadius: '12px',
             overflow: 'hidden',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
           }}
+          className="map-container"
         >
           <iframe
             title="Office Location - HITEC City, Hyderabad"
@@ -204,6 +202,40 @@ const GetInTouch = () => {
       </section>
 
       <QuickQuerySection />
+
+      <style>{`
+        @media (min-width: 768px) {
+          .contact-title {
+            font-size: 2.8rem !important;
+          }
+          .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+            padding: 4rem 2rem !important;
+          }
+          .form-row {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .map-container {
+            height: 500px !important;
+          }
+        }
+        @media (max-width: 767px) {
+          .contact-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+          }
+          .form-row {
+            grid-template-columns: 1fr !important;
+          }
+          .contact-info {
+            order: 2;
+          }
+        }
+      `}</style>
     </div>
   );
 };

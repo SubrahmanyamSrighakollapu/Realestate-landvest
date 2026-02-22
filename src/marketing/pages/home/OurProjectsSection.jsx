@@ -1,22 +1,31 @@
+import { useState, useEffect } from 'react';
 import { ArrowUpRight, MapPin } from 'lucide-react';
 import { colors } from '../../colors';
-import project1 from '../../../assets/our-projects-image1.png';
-import project2 from '../../../assets/our-projects-image2.png';
-import project3 from '../../../assets/our-projects-image3.png';
-import project4 from '../../../assets/our-projects-image4.png';
-import project5 from '../../../assets/our-projects-image5.png';
-import project6 from '../../../assets/our-projects-image6.png';
-
-const projectData = [
-  { image: project1, price: '₹14,500 / sq.yd' },
-  { image: project2, price: '₹14,500 / sq.yd' },
-  { image: project3, price: '₹14,500 / sq.yd' },
-  { image: project4, price: '₹14,500 / sq.yd' },
-  { image: project5, price: '₹14,500 / sq.yd' },
-  { image: project6, price: '₹14,500 / sq.yd' },
-];
+import { publicProjectService } from '../../../services/publicProjectService';
 
 const OurProjectsSection = () => {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const response = await publicProjectService.getProjects();
+      if (response.success) {
+        const filteredProjects = response.data
+          .filter(p => ['upcoming', 'ongoing', 'completed'].includes(p.status))
+          .slice(0, 6);
+        setProjects(filteredProjects);
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <section
       style={{
@@ -53,38 +62,37 @@ const OurProjectsSection = () => {
         </div>
 
         <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-            gap: '2.2rem',
-          }}
+          className="projects-grid"
         >
-          {projectData.map((project, index) => (
+          {loading ? (
+            <p style={{ textAlign: 'center', gridColumn: '1 / -1' }}>Loading projects...</p>
+          ) : projects.length === 0 ? (
+            <p style={{ textAlign: 'center', gridColumn: '1 / -1' }}>No projects available</p>
+          ) : (
+            projects.map((project) => (
             <div
-              key={index}
+              key={project._id}
+              className="project-card"
               style={{
                 backgroundColor: '#fff',
                 borderRadius: '14px',
                 overflow: 'hidden',
                 boxShadow: '0 6px 18px rgba(0,0,0,0.07)',
-                transition: 'all 0.25s ease',
                 cursor: 'pointer',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.boxShadow =
-                  '0 14px 32px rgba(0,0,0,0.12)';
+                e.currentTarget.style.boxShadow = '0 14px 32px rgba(0,0,0,0.12)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow =
-                  '0 6px 18px rgba(0,0,0,0.07)';
+                e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.07)';
               }}
             >
               <div style={{ height: '250px', overflow: 'hidden' }}>
                 <img
-                  src={project.image}
-                  alt="Green Valley Phase"
+                  src={`https://realestate.vsahasoft.com${project.thumbnnailImage}`}
+                  alt={project.title}
                   style={{
                     width: '100%',
                     height: '100%',
@@ -102,7 +110,7 @@ const OurProjectsSection = () => {
                     marginBottom: '0.35rem',
                   }}
                 >
-                  Green Valley Phase
+                  {project.title}
                 </h3>
 
                 <div
@@ -116,7 +124,7 @@ const OurProjectsSection = () => {
                   }}
                 >
                   <MapPin size={15} />
-                  Shadnagar, Hyderabad
+                  {project.location}
                 </div>
 
                 <div
@@ -126,7 +134,7 @@ const OurProjectsSection = () => {
                     marginBottom: '1.2rem',
                   }}
                 >
-                  RERA Approved | Ongoing
+                  {project.approvedBy} | {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
                 </div>
 
                 <div
@@ -143,7 +151,7 @@ const OurProjectsSection = () => {
                       color: colors.primary,
                     }}
                   >
-                    {project.price}
+                    ₹{project.startingPrice}
                   </div>
 
                   <div
@@ -166,9 +174,32 @@ const OurProjectsSection = () => {
                 </div>
               </div>
             </div>
-          ))}
+          ))
+          )}
         </div>
       </div>
+
+      <style>{`
+        .projects-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+          width: 100%;
+        }
+        .project-card {
+          transition: all 0.25s ease;
+        }
+        @media (min-width: 640px) {
+          .projects-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        @media (min-width: 1024px) {
+          .projects-grid {
+            grid-template-columns: repeat(3, 1fr);
+          }
+        }
+      `}</style>
     </section>
   );
 };

@@ -66,10 +66,10 @@ const MainAboutUs = () => {
         }}
       >
         <div
+          className="about-grid"
           style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1.1fr',
-            gap: '3rem',
+            gap: '2rem',
             alignItems: 'center',
           }}
         >
@@ -95,22 +95,24 @@ const MainAboutUs = () => {
           <div>
             <p
               style={{
-                fontSize: '1.5rem',
+                fontSize: '1.25rem',
                 fontWeight: '600',
                 color: '#2f7d5a',
                 marginBottom: '0.5rem',
               }}
+              className="about-subtitle"
             >
               About Us
             </p>
 
             <h2
               style={{
-                fontSize: '2rem',
+                fontSize: '1.75rem',
                 fontWeight: '700',
                 color: '#111827',
-                marginBottom: '1.2rem',
+                marginBottom: '1rem',
               }}
+              className="about-title"
             >
               Landvet Infra Developers Pvt. Ltd.
             </h2>
@@ -152,11 +154,12 @@ const MainAboutUs = () => {
         </div>
 
         <div
+          className="stats-grid"
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: '2rem',
-            marginTop: '3.5rem',
+            gap: '1.5rem',
+            marginTop: '3rem',
             flexWrap: 'wrap',
           }}
         >
@@ -199,6 +202,26 @@ const MainAboutUs = () => {
   ))}
         </div>
       </div>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .about-grid {
+            grid-template-columns: 1fr 1.1fr !important;
+            gap: 3rem !important;
+          }
+          .about-subtitle {
+            font-size: 1.5rem !important;
+          }
+          .about-title {
+            font-size: 2rem !important;
+            margin-bottom: 1.2rem !important;
+          }
+          .stats-grid {
+            gap: 2rem !important;
+            margin-top: 3.5rem !important;
+          }
+        }
+      `}</style>
     </section>
   );
 };

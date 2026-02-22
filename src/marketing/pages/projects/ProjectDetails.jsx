@@ -1,17 +1,48 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Home, Navigation, Lightbulb, Trees, Baby, Droplet, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Home, Navigation, Lightbulb, Trees, Baby, Droplet, Shield } from 'lucide-react';
+import { publicProjectService } from '../../../services/publicProjectService';
 import project1 from '../../../assets/our-projects-image1.png';
 
 const ProjectDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('availability');
+  const [project, setProject] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProjectDetails();
+  }, [id]);
+
+  const fetchProjectDetails = async () => {
+    try {
+      const response = await publicProjectService.getProjects();
+      if (response.success) {
+        const foundProject = response.data.find(p => p._id === id);
+        setProject(foundProject);
+      }
+    } catch (error) {
+      console.error('Error fetching project details:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div style={{ padding: '50px', textAlign: 'center' }}>Loading...</div>;
+  }
+
+  if (!project) {
+    return <div style={{ padding: '50px', textAlign: 'center' }}>Project not found</div>;
+  }
 
   const tabs = [
     { id: 'availability', label: 'Online Plot Availability' },
     { id: 'info', label: 'Project Info' },
     { id: 'payment', label: 'Payment Options' },
     { id: 'amenities', label: 'Amenities' },
+    // { id: 'highlights', label: 'Highlights' },
     { id: 'development', label: 'Project Development' },
     { id: 'location', label: 'Location Highlights' }
   ];
@@ -20,7 +51,7 @@ const ProjectDetails = () => {
     <div>
       {/* Hero Section */}
       <section style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${project1})`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(https://realestate.vsahasoft.com${project.bannerImage || project.thumbnnailImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         height: '400px',
@@ -30,14 +61,31 @@ const ProjectDetails = () => {
         padding: '0 40px'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+          <button 
+            onClick={() => navigate(-1)}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              borderRadius: '6px',
+              color: 'white',
+              cursor: 'pointer',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <ArrowLeft size={16} /> Back
+          </button>
           <h1 style={{ fontSize: '3rem', fontWeight: '700', marginBottom: '12px' }}>
-            Green Valley Phase
+            {project.title}
           </h1>
           <p style={{ fontSize: '1.2rem', marginBottom: '8px' }}>
-            📍 Shadnagar, Hyderabad
+            📍 {project.location}
           </p>
           <p style={{ fontSize: '1.1rem', lineHeight: '1.6', maxWidth: '800px' }}>
-            Curated open plot ventures designed for your future investment. Find the perfect space to build your dreams.
+            {project.description || 'Curated open plot ventures designed for your future investment. Find the perfect space to build your dreams.'}
           </p>
         </div>
       </section>
@@ -100,205 +148,10 @@ const ProjectDetails = () => {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
                 <img 
-                  src={project1} 
+                  src={project.layouts?.length > 0 ? `https://realestate.vsahasoft.com/${project.layouts[0].url}` : `https://realestate.vsahasoft.com${project.thumbnnailImage}`}
                   alt="Plot Layout" 
                   style={{ width: '100%', borderRadius: '8px' }}
                 />
-              </div>
-
-              {/* Project Info Section */}
-              <div style={{ marginTop: '50px' }}>
-                <h2 style={{ fontSize: '1.5rem', color: '#1F6F54', marginBottom: '12px' }}>
-                  Project Info
-                </h2>
-                <p style={{ fontSize: '0.95rem', color: '#666', marginBottom: '25px', lineHeight: '1.6' }}>
-                  This residential open plot project is thoughtfully planned to offer a perfect balance of nature, connectivity, and future growth. Designed as per approved layout standards, the project ensures clear titles, well-laid internal roads, and long-term value appreciation.
-                </p>
-                <div style={{
-                  backgroundColor: 'white',
-                  padding: '30px',
-                  borderRadius: '10px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                  display: 'flex',
-                  gap: '40px',
-                  alignItems: 'flex-start',
-                  flexWrap: 'wrap'
-                }}>
-                  <img 
-                    src={project1} 
-                    alt="Project" 
-                    style={{ 
-                      width: '280px', 
-                      height: '180px', 
-                      objectFit: 'cover', 
-                      borderRadius: '8px',
-                      border: '3px solid #1F6F54'
-                    }} 
-                  />
-                  <div style={{ 
-                    flex: 1, 
-                    minWidth: '300px',
-                    display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
-                    gap: '30px 40px'
-                  }}>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '8px' }}>Plot Sizes</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: '600', color: '#333' }}>150 - 400 Sq. Yds</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '8px' }}>Approval</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: '600', color: '#1F6F54' }}>HMDA Approved</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '8px' }}>Starts From</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: '700', color: '#e74c3c' }}>₹25 Lakhs</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '8px' }}>Availability Plots</div>
-                      <div style={{ fontSize: '1.05rem', fontWeight: '600', color: '#333' }}>15 Plots</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Amenities Section */}
-              <div style={{ marginTop: '50px' }}>
-                <h2 style={{ fontSize: '1.5rem', color: '#1F6F54', marginBottom: '12px' }}>
-                  Amenities
-                </h2>
-                <p style={{ fontSize: '0.95rem', color: '#666', marginBottom: '25px', lineHeight: '1.6' }}>
-                  The project is equipped with modern amenities to enhance quality of life and ensure a secure living environment.
-                </p>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '20px'
-                }}>
-                  {[
-                    { Icon: Home, name: 'Gated community' },
-                    { Icon: Navigation, name: 'Blacktop internal roads' },
-                    { Icon: Lightbulb, name: 'Street lighting' },
-                    { Icon: Trees, name: 'Landscaped parks &\ngreen spaces' },
-                    { Icon: Baby, name: "Children's play area" },
-                    { Icon: Droplet, name: 'Modern sewage\nfacilities' },
-                    { Icon: Shield, name: '24/7 security provisions' }
-                  ].map((amenity, idx) => (
-                    <div key={idx} style={{
-                      backgroundColor: 'white',
-                      padding: '25px 20px',
-                      borderRadius: '10px',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                      textAlign: 'center',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '15px'
-                    }}>
-                      <div style={{
-                        width: '65px',
-                        height: '65px',
-                        borderRadius: '50%',
-                        backgroundColor: '#E8F5F1',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '2px solid #1F6F54'
-                      }}>
-                        <amenity.Icon size={28} color="#1F6F54" strokeWidth={2} />
-                      </div>
-                      <div style={{ 
-                        fontSize: '0.9rem', 
-                        color: '#333', 
-                        fontWeight: '500',
-                        lineHeight: '1.4',
-                        whiteSpace: 'pre-line'
-                      }}>
-                        {amenity.name}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Project Development Section */}
-              <div style={{ marginTop: '50px' }}>
-                <h2 style={{ fontSize: '1.5rem', color: '#1F6F54', marginBottom: '12px' }}>
-                  Project Development
-                </h2>
-                <p style={{ fontSize: '0.95rem', color: '#666', marginBottom: '25px', lineHeight: '1.6' }}>
-                  The project is being developed in phases with a focus on quality infrastructure and timely execution. All developments comply with approved layout standards, ensuring a well-planned layout and sustainable growth for the future.
-                </p>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                  gap: '20px'
-                }}>
-                  {[project1, project1, project1, project1].map((img, idx) => (
-                    <div key={idx} style={{
-                      backgroundColor: 'white',
-                      borderRadius: '10px',
-                      overflow: 'hidden',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                      border: '3px solid #1F6F54'
-                    }}>
-                      <img src={img} alt={`Development ${idx + 1}`} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Location Highlights Section */}
-              <div style={{ marginTop: '50px' }}>
-                <h2 style={{ fontSize: '1.5rem', color: '#1F6F54', marginBottom: '12px' }}>
-                  Location Highlights
-                </h2>
-                <p style={{ fontSize: '0.95rem', color: '#666', marginBottom: '25px', lineHeight: '1.6' }}>
-                  Strategically located in a fast-developing area, the project offers excellent connectivity and growth potential.
-                </p>
-                <div style={{
-                  backgroundColor: 'white',
-                  padding: '30px',
-                  borderRadius: '10px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '30px',
-                  alignItems: 'center'
-                }}>
-                  <div>
-                    {[
-                      'Close to main highways and arterial roads',
-                      'Proximity to schools, colleges, and hospitals',
-                      'Easy access to IT hubs, industrial zones, and business centers',
-                      'Peaceful surroundings with high appreciation prospects'
-                    ].map((highlight, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
-                        <div style={{
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          backgroundColor: '#1F6F54',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontSize: '0.75rem',
-                          fontWeight: 'bold',
-                          flexShrink: 0
-                        }}>
-                          ✓
-                        </div>
-                        <div style={{ fontSize: '0.95rem', color: '#333', lineHeight: '1.5' }}>
-                          {highlight}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <img src={project1} alt="Location" style={{ width: '100%', height: '250px', objectFit: 'cover', borderRadius: '8px', border: '3px solid #1F6F54' }} />
-                  </div>
-                </div>
               </div>
             </div>
           )}
@@ -310,38 +163,51 @@ const ProjectDetails = () => {
                 Project Info
               </h2>
               <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '30px', lineHeight: '1.6' }}>
-                This residential open plot project is thoughtfully planned to offer a perfect balance of nature, connectivity, and future growth. Designed as per approved layout standards, the project ensures clear titles, well-laid internal roads, and long-term value appreciation.
+                {project.description || 'This residential open plot project is thoughtfully planned to offer a perfect balance of nature, connectivity, and future growth. Designed as per approved layout standards, the project ensures clear titles, well-laid internal roads, and long-term value appreciation.'}
               </p>
               <div style={{
                 backgroundColor: 'white',
                 padding: '30px',
                 borderRadius: '10px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-                gap: '30px'
+                display: 'flex',
+                gap: '40px',
+                alignItems: 'flex-start',
+                flexWrap: 'wrap'
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                  <img src={project1} alt="Project" style={{ width: '180px', height: '140px', objectFit: 'cover', borderRadius: '8px' }} />
+                <img 
+                  src={`https://realestate.vsahasoft.com${project.contentImage || project.thumbnnailImage}`}
+                  alt="Project" 
+                  style={{ 
+                    width: '280px', 
+                    height: '180px', 
+                    objectFit: 'cover', 
+                    borderRadius: '8px',
+                    border: '3px solid #1F6F54'
+                  }} 
+                />
+                <div style={{ 
+                  flex: 1, 
+                  minWidth: '300px',
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '30px 40px'
+                }}>
                   <div>
-                    <div style={{ marginBottom: '12px' }}>
-                      <div style={{ fontSize: '0.9rem', color: '#777', marginBottom: '4px' }}>Plot Sizes</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: '600' }}>150 - 400 Sq. Yds</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.9rem', color: '#777', marginBottom: '4px' }}>Approval</div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: '600', color: '#1F6F54' }}>HMDA Approved</div>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <div style={{ marginBottom: '12px' }}>
-                    <div style={{ fontSize: '0.9rem', color: '#777', marginBottom: '4px' }}>Starts From</div>
-                    <div style={{ fontSize: '1.3rem', fontWeight: '700', color: '#e74c3c' }}>₹25 Lakhs</div>
+                    <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '8px' }}>Plot Sizes</div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: '600', color: '#333' }}>{project.plotSize} Sq. Yds</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '0.9rem', color: '#777', marginBottom: '4px' }}>Availability Plots</div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: '600' }}>15 Plots</div>
+                    <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '8px' }}>Approval</div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: '600', color: '#1F6F54' }}>{project.approvedBy}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '8px' }}>Starts From</div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: '700', color: '#e74c3c' }}>₹{project.startingPrice}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: '8px' }}>Total Plots</div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: '600', color: '#333' }}>{project.totalPlots} Plots</div>
                   </div>
                 </div>
               </div>
@@ -354,15 +220,29 @@ const ProjectDetails = () => {
               <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '16px' }}>
                 Payment Options
               </h2>
+              <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '30px', lineHeight: '1.6' }}>
+                Flexible payment plans designed to make your dream plot affordable and accessible.
+              </p>
               <div style={{
                 backgroundColor: 'white',
                 padding: '30px',
                 borderRadius: '10px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
-                <p style={{ fontSize: '1.05rem', color: '#555', lineHeight: '1.6' }}>
-                  Flexible payment plans available. Contact us for detailed payment structure.
-                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                  <div style={{ padding: '20px', border: '2px solid #1F6F54', borderRadius: '8px' }}>
+                    <h3 style={{ color: '#1F6F54', marginBottom: '10px' }}>Down Payment</h3>
+                    <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>20% at booking</p>
+                  </div>
+                  <div style={{ padding: '20px', border: '2px solid #1F6F54', borderRadius: '8px' }}>
+                    <h3 style={{ color: '#1F6F54', marginBottom: '10px' }}>EMI Options</h3>
+                    <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>Up to 24 months</p>
+                  </div>
+                  <div style={{ padding: '20px', border: '2px solid #1F6F54', borderRadius: '8px' }}>
+                    <h3 style={{ color: '#1F6F54', marginBottom: '10px' }}>Bank Loans</h3>
+                    <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>Available</p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -373,39 +253,136 @@ const ProjectDetails = () => {
               <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '16px' }}>
                 Amenities
               </h2>
+              <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '30px', lineHeight: '1.6' }}>
+                {project.highlights?.length > 0 ? project.highlights[0].description : 'The project is equipped with modern amenities to enhance quality of life and ensure a secure living environment.'}
+              </p>
               <div style={{
-                backgroundColor: 'white',
-                padding: '30px',
-                borderRadius: '10px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 gap: '20px'
               }}>
-                {['24/7 Security', 'Water Supply', 'Street Lights', 'Gated Community', 'Park', 'Wide Roads'].map(amenity => (
-                  <div key={amenity} style={{ padding: '15px', border: '1px solid #e0e0e0', borderRadius: '8px' }}>
-                    ✓ {amenity}
+                {[
+                  { Icon: Home, name: 'Gated community' },
+                  { Icon: Navigation, name: 'Blacktop internal roads' },
+                  { Icon: Lightbulb, name: 'Street lighting' },
+                  { Icon: Trees, name: 'Landscaped parks &\ngreen spaces' },
+                  { Icon: Baby, name: "Children's play area" },
+                  { Icon: Droplet, name: 'Modern sewage\nfacilities' },
+                  { Icon: Shield, name: '24/7 security provisions' }
+                ].map((amenity, idx) => (
+                  <div key={idx} style={{
+                    backgroundColor: 'white',
+                    padding: '25px 20px',
+                    borderRadius: '10px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '15px'
+                  }}>
+                    <div style={{
+                      width: '65px',
+                      height: '65px',
+                      borderRadius: '50%',
+                      backgroundColor: '#E8F5F1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '2px solid #1F6F54'
+                    }}>
+                      <amenity.Icon size={28} color="#1F6F54" />
+                    </div>
+                    <div style={{
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      color: '#333',
+                      whiteSpace: 'pre-line'
+                    }}>
+                      {amenity.name}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Project Development */}
+          {/* Highlights */}
+          {/* {activeTab === 'highlights' && (
+            <div>
+              <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '16px' }}>
+                Project Highlights
+              </h2>
+              <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '30px', lineHeight: '1.6' }}>
+                Key features and benefits that make this project special.
+              </p>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '20px'
+              }}>
+                {project.highlights?.length > 0 ? (
+                  project.highlights.map((highlight, idx) => (
+                    <div key={idx} style={{
+                      backgroundColor: 'white',
+                      padding: '25px',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      border: '1px solid #f0f0f0'
+                    }}>
+                      <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1F6F54', marginBottom: '12px' }}>
+                        {highlight.title}
+                      </h4>
+                      <p style={{ fontSize: '14px', color: '#666', margin: 0, lineHeight: '1.6' }}>
+                        {highlight.description}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{
+                    backgroundColor: 'white',
+                    padding: '40px',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                    textAlign: 'center',
+                    gridColumn: '1 / -1'
+                  }}>
+                    <p style={{ fontSize: '16px', color: '#666', margin: 0 }}>
+                      Project highlights will be updated soon.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )} */}
           {activeTab === 'development' && (
             <div>
               <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '16px' }}>
                 Project Development
               </h2>
+              <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '30px', lineHeight: '1.6' }}>
+                Track the progress of infrastructure development and upcoming milestones.
+              </p>
               <div style={{
                 backgroundColor: 'white',
                 padding: '30px',
                 borderRadius: '10px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
-                <p style={{ fontSize: '1.05rem', color: '#555', lineHeight: '1.6' }}>
-                  Development progress and timeline information will be updated here.
-                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1F6F54' }}></div>
+                    <span style={{ fontSize: '1.1rem', fontWeight: '500' }}>Land Survey & Planning - Completed</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1F6F54' }}></div>
+                    <span style={{ fontSize: '1.1rem', fontWeight: '500' }}>Road Infrastructure - In Progress</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#ccc' }}></div>
+                    <span style={{ fontSize: '1.1rem', fontWeight: '500' }}>Utilities Setup - Upcoming</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -416,21 +393,45 @@ const ProjectDetails = () => {
               <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '16px' }}>
                 Location Highlights
               </h2>
+              <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '30px', lineHeight: '1.6' }}>
+                Strategically located with excellent connectivity and proximity to key landmarks.
+              </p>
               <div style={{
                 backgroundColor: 'white',
                 padding: '30px',
                 borderRadius: '10px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
-                <p style={{ fontSize: '1.05rem', color: '#555', lineHeight: '1.6', marginBottom: '20px' }}>
-                  Strategically located in Shadnagar, Hyderabad with excellent connectivity and growth potential.
-                </p>
-                <ul style={{ fontSize: '1.05rem', color: '#555', lineHeight: '2', paddingLeft: '20px' }}>
-                  <li>15 minutes from ORR</li>
-                  <li>Close to IT corridor</li>
-                  <li>Near educational institutions</li>
-                  <li>Excellent public transport connectivity</li>
-                </ul>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                  {project.locations?.length > 0 ? (
+                    project.locations.map((location, idx) => (
+                      <div key={idx}>
+                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>{location.title}</h4>
+                        <p>{location.description}</p>
+                      </div>
+                    ))
+                  ) : (
+                    // Default location highlights
+                    <>
+                      <div>
+                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>🏥 Healthcare</h4>
+                        <p>Hospitals nearby - 5 km</p>
+                      </div>
+                      <div>
+                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>🏫 Education</h4>
+                        <p>Schools & Colleges - 3 km</p>
+                      </div>
+                      <div>
+                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>🛒 Shopping</h4>
+                        <p>Shopping Centers - 4 km</p>
+                      </div>
+                      <div>
+                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>✈️ Connectivity</h4>
+                        <p>Major Roads & Transport</p>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           )}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Phone, Car, Users } from 'lucide-react';
+import { Phone, Car, Users, Upload } from 'lucide-react';
 import { dashboardColors } from '../../styles/colors';
 import { leadService } from '../../../services/leadService';
 import { employeeService } from '../../../services/employeeService';
@@ -33,16 +33,20 @@ const AddLeads = () => {
     requirements: '',
     plotSize: '',
     approvedBy: '',
+    facingPreference: '',
     budgectFrom: '',
     budgectTo: '',
     buyingPurpose: '',
     advanceAmount: '',
     advanceDate: '',
+    nextPayAmount: '',
+    nextPayDate: '',
     nextActionDate: '',
     nextActionType: 'call',
     nextActionNote: '',
     leadStatus: '',
-    assignedTo: ''
+    assignedTo: '',
+    selfieImage: null
   });
 
   useEffect(() => {
@@ -121,8 +125,12 @@ const AddLeads = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, files } = e.target;
+    if (name === 'selfieImage' && files && files[0]) {
+      setFormData(prev => ({ ...prev, [name]: files[0] }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handlePricingOptionChange = (e) => {
@@ -163,34 +171,43 @@ const AddLeads = () => {
 
     setLoading(true);
     try {
-      const payload = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        mobile: formData.mobile,
-        sourceType: sourceType,
-        source: sourceType === 'social' ? formData.source : '',
-        sourceEmployee: sourceType === 'sales' ? formData.sourceEmployee : '',
-        project: formData.project,
-        propertyType: formData.propertyType,
-        pricingOption: formData.pricingOption,
-        plotNo: formData.plotNo,
-        requirements: formData.requirements,
-        plotSize: formData.plotSize,
-        approvedBy: formData.approvedBy,
-        budgectFrom: formData.budgectFrom,
-        budgectTo: formData.budgectTo,
-        buyingPurpose: formData.buyingPurpose,
-        advanceAmount: formData.advanceAmount,
-        advanceDate: formData.advanceDate,
-        nextActionDate: formData.nextActionDate,
-        nextActionType: formData.nextActionType,
-        nextActionNote: formData.nextActionNote,
-        leadStatus: formData.leadStatus,
-        assignedTo: formData.assignedTo
-      };
+      const formDataToSend = new FormData();
+      
+      // Append all text fields
+      formDataToSend.append('firstName', formData.firstName);
+      formDataToSend.append('lastName', formData.lastName);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('mobile', formData.mobile);
+      formDataToSend.append('sourceType', sourceType);
+      formDataToSend.append('source', sourceType === 'social' ? formData.source : '');
+      formDataToSend.append('sourceEmployee', sourceType === 'sales' ? formData.sourceEmployee : '');
+      formDataToSend.append('project', formData.project);
+      formDataToSend.append('propertyType', formData.propertyType);
+      formDataToSend.append('pricingOption', formData.pricingOption);
+      formDataToSend.append('plotNo', formData.plotNo);
+      formDataToSend.append('requirements', formData.requirements);
+      formDataToSend.append('plotSize', formData.plotSize);
+      formDataToSend.append('approvedBy', formData.approvedBy);
+      formDataToSend.append('facingPreference', formData.facingPreference);
+      formDataToSend.append('budgectFrom', formData.budgectFrom);
+      formDataToSend.append('budgectTo', formData.budgectTo);
+      formDataToSend.append('buyingPurpose', formData.buyingPurpose);
+      formDataToSend.append('advanceAmount', formData.advanceAmount);
+      formDataToSend.append('advanceDate', formData.advanceDate);
+      formDataToSend.append('nextPayAmount', formData.nextPayAmount);
+      formDataToSend.append('nextPayDate', formData.nextPayDate);
+      formDataToSend.append('nextActionDate', formData.nextActionDate);
+      formDataToSend.append('nextActionType', formData.nextActionType);
+      formDataToSend.append('nextActionNote', formData.nextActionNote);
+      formDataToSend.append('leadStatus', formData.leadStatus);
+      formDataToSend.append('assignedTo', formData.assignedTo);
+      
+      // Append file if exists
+      if (formData.selfieImage) {
+        formDataToSend.append('selfieImage', formData.selfieImage);
+      }
 
-      const response = await leadService.addLead(payload);
+      const response = await leadService.addLead(formDataToSend);
       if (response.success) {
         toastService.success(response.message || 'Lead added successfully!');
         setFormData({
@@ -207,16 +224,20 @@ const AddLeads = () => {
           requirements: '',
           plotSize: '',
           approvedBy: '',
+          facingPreference: '',
           budgectFrom: '',
           budgectTo: '',
           buyingPurpose: '',
           advanceAmount: '',
           advanceDate: '',
+          nextPayAmount: '',
+          nextPayDate: '',
           nextActionDate: '',
           nextActionType: 'call',
           nextActionNote: '',
           leadStatus: '',
-          assignedTo: ''
+          assignedTo: '',
+          selfieImage: null
         });
         setEmployeeSearch('');
         setPricingOptions([]);
@@ -347,6 +368,41 @@ const AddLeads = () => {
                     boxSizing: 'border-box'
                   }}
                 />
+              </div>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                Upload Selfie with client
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="file"
+                  name="selfieImage"
+                  accept="image/*"
+                  onChange={handleInputChange}
+                  style={{ display: 'none' }}
+                  id="selfieUpload"
+                />
+                <label
+                  htmlFor="selfieUpload"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: `1px dashed ${dashboardColors.border}`,
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    backgroundColor: dashboardColors.tertiary,
+                    color: dashboardColors.text
+                  }}
+                >
+                  <Upload size={18} />
+                  {formData.selfieImage ? formData.selfieImage.name : 'Choose file'}
+                </label>
               </div>
             </div>
           </div>
@@ -701,6 +757,27 @@ const AddLeads = () => {
                     </div>
                   </div>
                 </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                    Facing Preference
+                  </label>
+                  <input
+                    type="text"
+                    name="facingPreference"
+                    value={formData.facingPreference}
+                    onChange={handleInputChange}
+                    placeholder="Enter Facing Preference"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: `1px solid ${dashboardColors.border}`,
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
               </div>
 
               <div>
@@ -878,6 +955,116 @@ const AddLeads = () => {
             Booking & Payment
           </h2>
           
+          {/* Advance Payment Card */}
+          <div style={{ backgroundColor: dashboardColors.tertiary, padding: '20px', borderRadius: '8px', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '600', color: dashboardColors.text, marginBottom: '16px' }}>
+              Advance Payment
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                  Advance Amount Paid
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: dashboardColors.textLight }}>₹</span>
+                  <input
+                    type="number"
+                    name="advanceAmount"
+                    value={formData.advanceAmount}
+                    onChange={handleInputChange}
+                    placeholder="Enter amount"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 28px',
+                      border: `1px solid ${dashboardColors.border}`,
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      backgroundColor: dashboardColors.white
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                  Payment Date
+                </label>
+                <input
+                  type="date"
+                  name="advanceDate"
+                  value={formData.advanceDate}
+                  onChange={handleInputChange}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: `1px solid ${dashboardColors.border}`,
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    backgroundColor: dashboardColors.white
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Next Due Date Card */}
+          <div style={{ backgroundColor: dashboardColors.tertiary, padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '600', color: dashboardColors.text, marginBottom: '16px' }}>
+              Next Due Date
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                  Due Amount
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: dashboardColors.textLight }}>₹</span>
+                  <input
+                    type="number"
+                    name="nextPayAmount"
+                    value={formData.nextPayAmount}
+                    onChange={handleInputChange}
+                    placeholder="Enter amount"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px 10px 28px',
+                      border: `1px solid ${dashboardColors.border}`,
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                      backgroundColor: dashboardColors.white
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                  Payment Date
+                </label>
+                <input
+                  type="date"
+                  name="nextPayDate"
+                  value={formData.nextPayDate}
+                  onChange={handleInputChange}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: `1px solid ${dashboardColors.border}`,
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    backgroundColor: dashboardColors.white
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          
           {selectedPricingMrp > 0 && (
             <div style={{ marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -896,7 +1083,7 @@ const AddLeads = () => {
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
                 Total Booking Amount
@@ -944,53 +1131,6 @@ const AddLeads = () => {
                   }}
                 />
               </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
-                Advance Amount Paid
-              </label>
-              <div style={{ position: 'relative' }}>
-                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: dashboardColors.textLight }}>₹</span>
-                <input
-                  type="number"
-                  name="advanceAmount"
-                  value={formData.advanceAmount}
-                  onChange={handleInputChange}
-                  placeholder="Enter amount"
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px 10px 28px',
-                    border: `1px solid ${dashboardColors.border}`,
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
-                />
-              </div>
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
-                Payment Date
-              </label>
-              <input
-                type="date"
-                name="advanceDate"
-                value={formData.advanceDate}
-                onChange={handleInputChange}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px',
-                  border: `1px solid ${dashboardColors.border}`,
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  boxSizing: 'border-box'
-                }}
-              />
             </div>
           </div>
         </div>

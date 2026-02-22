@@ -7,6 +7,8 @@ import dashboardColors from '../../styles/colors';
 import Pagination from '../../components/common/Pagination';
 import { leadService } from '../../../services/leadService';
 import { TableShimmer, CardShimmer } from '../../../components/loaders/ShimmerLoader';
+import { permissionService } from '../../../services/permissionService';
+import { toastService } from '../../../services/toastService';
 
 const LeadsManagement = () => {
   const navigate = useNavigate();
@@ -17,21 +19,24 @@ const LeadsManagement = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, new: 0 });
-  const itemsPerPage = 10;
+  const [canEdit, setCanEdit] = useState(false);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchLeads();
+    const isAdmin = permissionService.isAdmin();
+    setCanEdit(isAdmin || permissionService.canEdit('Leads'));
   }, [currentPage]);
 
   const fetchLeads = async () => {
     setLoading(true);
     try {
-      const response = await leadService.listLeads(currentPage, itemsPerPage);
-      if (response.success) {
-        setLeads(response.data);
-        setFilteredLeads(response.data);
-        setTotalItems(response.total);
-        calculateStats(response.data);
+      const response = await leadService.getLeadReports({ exportExcel: 0 });
+      if (response.data.success) {
+        setLeads(response.data.data);
+        setFilteredLeads(response.data.data);
+        setTotalItems(response.data.data.length);
+        calculateStats(response.data.data);
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
@@ -64,6 +69,7 @@ const LeadsManagement = () => {
     }
 
     setFilteredLeads(filtered);
+    setTotalItems(filtered.length);
   }, [searchTerm, leads]);
 
   return (
@@ -101,25 +107,27 @@ const LeadsManagement = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => navigate('/dashboard/leads/add')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                backgroundColor: dashboardColors.primary,
-                color: dashboardColors.white,
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-              }}
-            >
-              <UserPlus size={18} />
-              + Add Lead
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => navigate('/dashboard/leads/add')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  backgroundColor: dashboardColors.primary,
+                  color: dashboardColors.white,
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                }}
+              >
+                <UserPlus size={18} />
+                + Add Lead
+              </button>
+            )}
 
             <button
               style={{
@@ -250,7 +258,7 @@ const LeadsManagement = () => {
             Leads Report
           </h3>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{
+            {/* <button style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
@@ -263,8 +271,26 @@ const LeadsManagement = () => {
             }}>
               <Filter size={16} />
               Filters
-            </button>
-            <button style={{
+            </button> */}
+            <button 
+              onClick={async () => {
+                try {
+                  const response = await leadService.getLeadReports({ exportExcel: 1 });
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `leads-report-${new Date().getTime()}.xlsx`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                  window.URL.revokeObjectURL(url);
+                  toastService.success('Leads report exported successfully');
+                } catch (error) {
+                  console.error('Error exporting leads:', error);
+                  toastService.error('Failed to export leads report');
+                }
+              }}
+              style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
@@ -296,22 +322,21 @@ const LeadsManagement = () => {
                 <th>Mobile</th>
                 <th>Source Type</th>
                 <th>Lead Status</th>
-                {/* <th>Assigned To</th> */}
                 <th>Status</th>
-                <th>Action</th>
+                {canEdit && <th>Action</th>}
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: 'center', padding: '40px' }}>Loading...</td>
+                  <td colSpan={canEdit ? "8" : "7"} style={{ textAlign: 'center', padding: '40px' }}>Loading...</td>
                 </tr>
               ) : filteredLeads.length === 0 ? (
                 <tr>
-                  <td colSpan="9" style={{ textAlign: 'center', padding: '40px' }}>No leads found</td>
+                  <td colSpan={canEdit ? "8" : "7"} style={{ textAlign: 'center', padding: '40px' }}>No leads found</td>
                 </tr>
               ) : (
-                filteredLeads.map((lead) => (
+                filteredLeads.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((lead) => (
                   <tr key={lead._id}>
                     <td>{lead.code}</td>
                     <td>{lead.firstName} {lead.lastName}</td>
@@ -319,37 +344,30 @@ const LeadsManagement = () => {
                     <td>{lead.mobile}</td>
                     <td style={{ textTransform: 'capitalize' }}>{lead.sourceType}</td>
                     <td>{lead.leadStatus?.name || 'N/A'}</td>
-                    {/* <td>{lead.assignedTo?.name || 'N/A'}</td> */}
                     <td>
-                      <span style={{
-                        padding: '6px 12px',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        backgroundColor: lead.status === 'active' ? '#d4edda' : '#f8d7da',
-                        color: lead.status === 'active' ? '#155724' : '#721c24',
-                        display: 'inline-block',
-                        whiteSpace: 'nowrap'
-                      }}>
+                      <span className={`status-badge ${lead.status === 'active' ? 'status-completed' : 'status-pending'}`}>
                         {lead.status === 'active' ? '● Active' : '● InActive'}
                       </span>
                     </td>
-                    <td>
-                      <button
-                        onClick={() => navigate(`/dashboard/leads/edit/${lead._id}`)}
-                        style={{
-                          padding: '6px 12px',
-                          backgroundColor: dashboardColors.primary,
-                          color: dashboardColors.white,
-                          border: 'none',
-                          borderRadius: '6px',
-                          fontSize: '13px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Edit
-                      </button>
-                    </td>
+                    {canEdit && (
+                      <td>
+                        <button
+                          onClick={() => navigate(`/dashboard/leads/edit/${lead._id}`)}
+                          style={{
+      padding: '8px 12px',   
+      backgroundColor: dashboardColors.primary,
+      color: dashboardColors.white,
+      border: 'none',
+      borderRadius: '6px',
+      fontSize: '12px',
+      cursor: 'pointer',
+      whiteSpace: 'nowrap',  
+    }}
+                        >
+                          Lead Status
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}

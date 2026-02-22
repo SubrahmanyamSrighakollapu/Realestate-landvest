@@ -1,58 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Download, Calendar } from 'lucide-react';
 import dashboardColors from '../../styles/colors'; // adjust path
 import Pagination from '../../components/common/Pagination';
+import { employeeService } from '../../../services/employeeService';
+import { designationService } from '../../../services/designationService';
+import { toastService } from '../../../services/toastService';
 
 
 const DirectoryManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-  const totalItems = 245;
+  const itemsPerPage = 5;
+  const [directoryData, setDirectoryData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [nameFilter, setNameFilter] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('');
+  const [roles, setRoles] = useState([]);
 
-  // Mock data
-  const directoryData = [
-    {
-      name: 'Jane Doe',
-      bid: 'BID-4920',
-      role: 'Relationship Mgr',
-      status: 'Active',
-      joiningDate: 'Jan 12, 2023',
-      email: 'jana@gmail.com',
-      phone: '+91 9876543212',
-      sponsor: 'Michael Scott',
-    },
-    {
-      name: 'Jane Doe',
-      bid: 'BID-4921',
-      role: 'Broker',
-      status: 'Active',
-      joiningDate: 'Jan 12, 2024',
-      email: 'jana@gmail.com',
-      phone: '+91 9876543212',
-      sponsor: 'Michael Scott',
-    },
-    {
-      name: 'Jane Doe',
-      bid: 'BID-4922',
-      role: 'Sales Associate',
-      status: 'Inactive',
-      joiningDate: 'Jan 12, 2024',
-      email: 'jana@gmail.com',
-      phone: '+91 9876543212',
-      sponsor: '(No Sponsor)',
-    },
-    {
-      name: 'Jane Doe',
-      bid: 'BID-4923',
-      role: 'Relationship Mgr',
-      status: 'Active',
-      joiningDate: 'Jan 22, 2024',
-      email: 'jana@gmail.com',
-      phone: '+91 9876543212',
-      sponsor: 'Michael Scott',
-    },
-    // ... more entries
-  ];
+  useEffect(() => {
+    fetchEmployees();
+    fetchRoles();
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [searchTerm, nameFilter, selectedRole, selectedStatus, directoryData]);
+
+  const fetchEmployees = async () => {
+    try {
+      setLoading(true);
+      const response = await employeeService.listEmployees('');
+      if (response.success) {
+        setDirectoryData(response.data || []);
+      }
+    } catch (error) {
+      toastService.error('Failed to fetch employees');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const response = await designationService.listDesignations('');
+      if (response.success) {
+        setRoles(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    }
+  };
+
+  const applyFilters = () => {
+    let filtered = directoryData;
+
+    if (searchTerm) {
+      filtered = filtered.filter(item => 
+        item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.code?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (nameFilter) {
+      filtered = filtered.filter(item => 
+        item.name?.toLowerCase().includes(nameFilter.toLowerCase())
+      );
+    }
+
+    if (selectedRole) {
+      filtered = filtered.filter(item => item.role?._id === selectedRole);
+    }
+
+    if (selectedStatus) {
+      filtered = filtered.filter(item => item.status === selectedStatus);
+    }
+
+    setFilteredData(filtered);
+  };
 
 
   return (
@@ -108,6 +134,8 @@ const DirectoryManagement = () => {
             <input
               type="text"
               placeholder="Search by ID, Name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: '80%',
                 padding: '10px 10px 10px 40px',
@@ -135,30 +163,52 @@ const DirectoryManagement = () => {
           gap: '12px',
           alignItems: 'center',
         }}>
-          <select style={{
+          <input
+            type="text"
+            placeholder="Enter Name"
+            value={nameFilter}
+            onChange={(e) => setNameFilter(e.target.value)}
+            style={{
+              padding: '10px 14px',
+              border: `1px solid ${dashboardColors.border}`,
+              borderRadius: '6px',
+              fontSize: '14px',
+              flex: '1',
+              minWidth: '180px',
+            }}
+          />
+          <select 
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            style={{
             padding: '10px 14px',
             border: `1px solid ${dashboardColors.border}`,
             borderRadius: '6px',
             fontSize: '14px',
             minWidth: '160px',
           }}>
-            <option>All Roles</option>
-            {/* Populate from designations API later */}
+            <option value="">All Roles</option>
+            {roles.map(role => (
+              <option key={role._id} value={role._id}>{role.name}</option>
+            ))}
           </select>
 
-          <select style={{
+          <select 
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            style={{
             padding: '10px 14px',
             border: `1px solid ${dashboardColors.border}`,
             borderRadius: '6px',
             fontSize: '14px',
             minWidth: '140px',
           }}>
-            <option>Select Status</option>
-            <option>Active</option>
-            <option>Inactive</option>
+            <option value="">Select Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
 
-          <div style={{
+          {/* <div style={{
             display: 'flex',
             alignItems: 'center',
             border: `1px solid ${dashboardColors.border}`,
@@ -180,20 +230,7 @@ const DirectoryManagement = () => {
             <div style={{ padding: '10px', backgroundColor: dashboardColors.secondary }}>
               <Calendar size={18} color={dashboardColors.primary} />
             </div>
-          </div>
-
-          <input
-            type="text"
-            placeholder="Enter Name"
-            style={{
-              padding: '10px 14px',
-              border: `1px solid ${dashboardColors.border}`,
-              borderRadius: '6px',
-              fontSize: '14px',
-              flex: '1',
-              minWidth: '180px',
-            }}
-          />
+          </div> */}
         </div>
       </div>
 
@@ -254,26 +291,36 @@ const DirectoryManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {directoryData.map((item, idx) => (
-                <tr key={idx}>
-                  <td>
-                    <div style={{ fontWeight: '500' }}>{item.name}</div>
-                    <div style={{ fontSize: '13px', color: dashboardColors.textLight }}>
-                      {item.bid}
-                    </div>
-                  </td>
-                  <td>{item.role}</td>
-                  <td>
-                    <span className={`status-badge ${item.status === 'Active' ? 'status-completed' : 'status-pending'}`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td>{item.joiningDate}</td>
-                  <td>{item.email}</td>
-                  <td>{item.phone}</td>
-                  <td>{item.sponsor}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>Loading...</td>
                 </tr>
-              ))}
+              ) : filteredData.length === 0 ? (
+                <tr>
+                  <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>No employees found</td>
+                </tr>
+              ) : (
+                filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item, idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <div style={{ fontWeight: '500' }}>{item.name || 'N/A'}</div>
+                      <div style={{ fontSize: '13px', color: dashboardColors.textLight }}>
+                        {item.code || 'N/A'}
+                      </div>
+                    </td>
+                    <td>{item.role?.name || 'N/A'}</td>
+                    <td>
+                      <span className={`status-badge ${item.status === 'active' ? 'status-completed' : 'status-pending'}`}>
+                        {item.status === 'active' ? '● Active' : '● InActive'}
+                      </span>
+                    </td>
+                    <td>{item.doj ? new Date(item.doj).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</td>
+                    <td>{item.email || 'N/A'}</td>
+                    <td>{item.phone || 'N/A'}</td>
+                    <td>{item.sponser?.name || '(No Sponsor)'}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -281,7 +328,7 @@ const DirectoryManagement = () => {
         {/* Pagination */}
         <Pagination
           currentPage={currentPage}
-          totalItems={totalItems}
+          totalItems={filteredData.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

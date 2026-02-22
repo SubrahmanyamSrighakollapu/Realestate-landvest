@@ -5,6 +5,7 @@ import axios from 'axios';
 import { authService } from '../../../services/authService';
 import { organizationService } from '../../../services/organizationService';
 import { toastService } from '../../../services/toastService';
+import { permissionService } from '../../../services/permissionService';
 import Pagination from '../../components/common/Pagination';
 import '../../styles/global.css';
 
@@ -19,11 +20,16 @@ const Associates = () => {
   const [endDate, setEndDate] = useState('');
   const [associatesData, setAssociatesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [canDownload, setCanDownload] = useState(false);
   const itemsPerPage = 5;
 
   useEffect(() => {
     fetchDashboardData();
     fetchAssociatesReport();
+    const isAdmin = permissionService.isAdmin();
+    const downloadPermission = isAdmin || permissionService.canDownload('Associates');
+    console.log('Associates Download Permission:', downloadPermission);
+    setCanDownload(downloadPermission);
   }, []);
 
   const fetchDashboardData = async () => {
@@ -87,10 +93,10 @@ const Associates = () => {
   };
 
   const statsCards = [
-    { icon: Users, label: 'Total Associates', value: dashboardData.totalCount, color: '#3b82f6' },
-    { icon: UserCheck, label: 'Active Associates', value: dashboardData.activeCount, color: '#10b981' },
-    { icon: UserX, label: 'In Active Associates', value: dashboardData.inactiveCount, color: '#ef4444' },
-    { icon: UserPlus, label: 'New Associates', value: dashboardData.newCount, color: '#8b5cf6' }
+    { icon: Users, label: 'Total Associates', value: dashboardData.totalCount },
+    { icon: UserCheck, label: 'Active Associates', value: dashboardData.activeCount },
+    { icon: UserX, label: 'In Active Associates', value: dashboardData.inactiveCount },
+    { icon: UserPlus, label: 'New Associates', value: dashboardData.newCount }
   ];
 
   const topPerformingData = [
@@ -193,16 +199,16 @@ const Associates = () => {
               width: '48px',
               height: '48px',
               borderRadius: '12px',
-              backgroundColor: `${stat.color}15`,
+              backgroundColor: 'var(--dashboard-secondary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <stat.icon size={24} color={stat.color} />
+              <stat.icon size={24} color="var(--dashboard-primary)" />
             </div>
             <div>
               <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>{stat.label}</p>
-              <h3 style={{ fontSize: '28px', fontWeight: '700', color: '#1f2937', margin: '4px 0 0 0' }}>{stat.value}</h3>
+              <h3 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: '4px 0 0 0' }}>{stat.value}</h3>
             </div>
           </div>
         ))}
@@ -285,23 +291,21 @@ const Associates = () => {
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
-          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Active vs Inactive Associates Trend</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Total Sales Overview</h3>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
-              <Legend />
-              <Bar dataKey="active" fill="#10b981" name="Active Associates" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="inactive" fill="#ef4444" name="Inactive Associates" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="active" fill="#10b981" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-        <button style={{
+        {/* <button style={{
           padding: '10px 24px',
           backgroundColor: 'var(--dashboard-primary)',
           color: '#fff',
@@ -315,7 +319,7 @@ const Associates = () => {
           gap: '8px'
         }}>
           View All Associates
-        </button>
+        </button> */}
       </div>
 
       <div style={{
@@ -501,7 +505,7 @@ const Associates = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', margin: 0 }}>Associates Overview</h3>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{
+            {/* <button style={{
               padding: '8px 16px',
               backgroundColor: '#fff',
               border: '1px solid #e5e7eb',
@@ -515,24 +519,26 @@ const Associates = () => {
             }}>
               <Filter size={16} />
               Filters
-            </button>
-            <button
-              onClick={handleExport}
-              style={{
-              padding: '8px 16px',
-              backgroundColor: 'var(--dashboard-primary)',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#fff'
-            }}>
-              <Download size={16} />
-              Export
-            </button>
+            </button> */}
+            {canDownload && (
+              <button
+                onClick={handleExport}
+                style={{
+                padding: '8px 16px',
+                backgroundColor: 'var(--dashboard-primary)',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: '#fff'
+              }}>
+                <Download size={16} />
+                Export
+              </button>
+            )}
           </div>
         </div>
 
@@ -542,7 +548,7 @@ const Associates = () => {
             type="text"
             placeholder="Search here..."
             style={{
-              width: '100%',
+              width: '90%',
               padding: '10px 10px 10px 40px',
               border: '1px solid #e5e7eb',
               borderRadius: '8px',
@@ -602,7 +608,7 @@ const Associates = () => {
           onPageChange={setCurrentPage}
         />
       </div>
-
+{/* 
       <div style={{
         backgroundColor: '#fff',
         padding: '24px',
@@ -657,7 +663,7 @@ const Associates = () => {
             </tr>
           </tbody>
         </table>
-      </div>
+      </div> */}
     </div>
   );
 };

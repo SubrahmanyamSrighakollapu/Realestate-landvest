@@ -8,6 +8,7 @@ import Pagination from '../../components/common/Pagination';
 import { employeeService } from '../../../services/employeeService';
 import { designationService } from '../../../services/designationService';
 import { TableShimmer, CardShimmer } from '../../../components/loaders/ShimmerLoader';
+import { permissionService } from '../../../services/permissionService';
 
 const AssociatesManagement = () => {
   const navigate = useNavigate();
@@ -21,11 +22,14 @@ const AssociatesManagement = () => {
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, new: 0 });
-  const itemsPerPage = 10;
+  const [canEdit, setCanEdit] = useState(false);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     fetchAssociates();
     fetchRoles();
+    const isAdmin = permissionService.isAdmin();
+    setCanEdit(isAdmin || permissionService.canEdit('Associates'));
   }, []);
 
   const fetchAssociates = async () => {
@@ -127,25 +131,27 @@ const AssociatesManagement = () => {
           </div>
 
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => navigate('/dashboard/associates/create')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 20px',
-                backgroundColor: dashboardColors.primary,
-                color: dashboardColors.white,
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-              }}
-            >
-              <UserPlus size={18} />
-              + Add Associate
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => navigate('/dashboard/associates/create')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 20px',
+                  backgroundColor: dashboardColors.primary,
+                  color: dashboardColors.white,
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                }}
+              >
+                <UserPlus size={18} />
+                + Add Associate
+              </button>
+            )}
 
             <button
               style={{
@@ -272,7 +278,7 @@ const AssociatesManagement = () => {
             ))}
           </select>
 
-          <select
+          {/* <select
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
@@ -284,7 +290,7 @@ const AssociatesManagement = () => {
             minWidth: '140px',
           }}>
             <option>Select Date</option>
-          </select>
+          </select> */}
         </div>
 
         {/* Transaction Report Header */}
@@ -303,10 +309,10 @@ const AssociatesManagement = () => {
             color: dashboardColors.primary,
             margin: 0,
           }}>
-            Transaction Report
+            Associates List
           </h3>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button style={{
+            {/* <button style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
@@ -319,7 +325,7 @@ const AssociatesManagement = () => {
             }}>
               <Filter size={16} />
               Filters
-            </button>
+            </button> */}
             <button style={{
               display: 'flex',
               alignItems: 'center',
@@ -365,7 +371,9 @@ const AssociatesManagement = () => {
                   <td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>No associates found</td>
                 </tr>
               ) : (
-                filteredAssociates.map((assoc) => (
+                filteredAssociates
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                  .map((assoc) => (
                   <tr key={assoc._id}>
                     <td>{assoc.code}</td>
                     <td>{assoc.name}</td>

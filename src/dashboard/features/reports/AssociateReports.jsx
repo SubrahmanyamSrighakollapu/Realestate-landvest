@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, UserCheck, TrendingUp, TrendingDown, Search, Download, Calendar } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import Pagination from '../../components/common/Pagination';
+import { permissionService } from '../../../services/permissionService';
 import '../../styles/global.css';
 
 const AssociateReports = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [canDownload, setCanDownload] = useState(false);
   const totalItems = 245;
+
+  useEffect(() => {
+    const isAdmin = permissionService.isAdmin();
+    setCanDownload(isAdmin || permissionService.canDownload('Reports'));
+  }, []);
 
   const statsCards = [
     { icon: Users, label: 'Total Associates', value: '247', color: '#3b82f6' },
@@ -46,22 +53,24 @@ const AssociateReports = () => {
             Analyze team growth, status & hierarchy movement
           </p>
         </div>
-        <button style={{
-          padding: '10px 24px',
-          backgroundColor: 'var(--dashboard-primary)',
-          color: 'var(--dashboard-white)',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '14px',
-          fontWeight: '500',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <Download size={18} />
-          Export
-        </button>
+        {canDownload && (
+          <button style={{
+            padding: '10px 24px',
+            backgroundColor: 'var(--dashboard-primary)',
+            color: 'var(--dashboard-white)',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <Download size={18} />
+            Export
+          </button>
+        )}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>

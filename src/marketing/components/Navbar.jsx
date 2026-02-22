@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown, Menu, X } from 'lucide-react';
 import logo from '../../assets/landvest-logo.jpeg';
 
 const Navbar = () => {
   const [isProjectsOpen, setIsProjectsOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -25,7 +26,9 @@ const Navbar = () => {
     textDecoration: 'none',
     padding: '8px 14px',
     borderRadius: '6px',
-    transition: 'all 0.2s',
+    transition: 'all 0.3s ease',
+    position: 'relative',
+    cursor: 'pointer'
   };
 
   return (
@@ -39,202 +42,203 @@ const Navbar = () => {
         width: '100%',
       }}
     >
-      <div
-        style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 2rem',
-          height: '72px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '2rem'
-        }}
-      >
-        {/* LEFT SECTION - Logo */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Link
-            to="/"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              textDecoration: 'none',
-            }}
-          >
-            <img
-              src={logo}
-              alt="Landvest Logo"
-              style={{ height: '60px', width: 'auto' }}
-            />
-          </Link>
-        </div>
+<div
+  style={{
+    maxWidth: '1280px',
+    margin: '0 auto',
+    padding: '0 1rem',
+    height: '72px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  }}
+>
+  {/* LEFT - Logo */}
+  <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+    <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+      <img src={logo} alt="Landvest Logo" className="navbar-logo" style={{ height: '50px', width: 'auto' }} />
+    </Link>
+  </div>
 
-        {/* CENTER SECTION - Navigation Links */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.5rem',
-          }}
-        >
-          {['Home', 'About'].map((item) => (
-            <Link
-              key={item}
-              to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}
-              style={navLink}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#E8F5F1';
-                e.target.style.color = '#1F6F54';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.color = '#374151';
-              }}
-            >
-              {item}
+  {/* CENTER - Desktop Navigation */}
+  <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }} className="desktop-nav">
+              <div style={{ display: 'none', '@media (min-width: 768px)': { display: 'flex' } }} className="desktop-nav">
+            {['Home', 'About'].map((item) => (
+              <Link key={item} to={item === 'Home' ? '/' : `/${item.toLowerCase()}`} style={navLink} className="nav-item">
+                {item}
+              </Link>
+            ))}
+
+            <div style={{ position: 'relative' }} ref={dropdownRef}>
+              <button onClick={() => setIsProjectsOpen(!isProjectsOpen)} style={{ ...navLink, background: 'none', border: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }} className="nav-item">
+                Projects <ChevronDown size={16} />
+              </button>
+
+              {isProjectsOpen && (
+                <div style={{ position: 'absolute', top: '110%', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#ffffff', borderRadius: '10px', boxShadow: '0 12px 30px rgba(0,0,0,0.12)', minWidth: '200px', padding: '0.6rem 0', zIndex: 1001 }}>
+                  {['ongoing', 'completed', 'upcoming'].map((item) => (
+                    <Link key={item} to={`/projects/${item}`} onClick={() => setIsProjectsOpen(false)} style={{ display: 'block', padding: '0.75rem 1.2rem', fontSize: '0.9rem', color: '#374151', textDecoration: 'none', transition: 'background 0.2s', textTransform: 'capitalize' }}>
+                      {item} Projects
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link to="/gallery" style={navLink} className="nav-item">
+              Gallery
             </Link>
-          ))}
-
-          <div style={{ position: 'relative' }} ref={dropdownRef}>
-            <button
-              onClick={() => setIsProjectsOpen(!isProjectsOpen)}
-              style={{
-                ...navLink,
-                background: 'none',
-                border: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.3rem',
-                cursor: 'pointer',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#E8F5F1';
-                e.currentTarget.style.color = '#1F6F54';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = '#374151';
-              }}
-            >
-              Projects
-              <ChevronDown size={16} />
-            </button>
-
-            {isProjectsOpen && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '110%',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '10px',
-                  boxShadow: '0 12px 30px rgba(0,0,0,0.12)',
-                  minWidth: '200px',
-                  padding: '0.6rem 0',
-                  zIndex: 1001,
-                }}
-              >
-                {['ongoing', 'completed', 'upcoming'].map((item) => (
-                  <Link
-                    key={item}
-                    to={`/projects/${item}`}
-                    onClick={() => setIsProjectsOpen(false)}
-                    style={{
-                      display: 'block',
-                      padding: '0.75rem 1.2rem',
-                      fontSize: '0.9rem',
-                      color: '#374151',
-                      textDecoration: 'none',
-                      transition: 'background 0.2s',
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.target.style.backgroundColor = '#f3f4f6')
-                    }
-                    onMouseLeave={(e) =>
-                      (e.target.style.backgroundColor = 'transparent')
-                    }
-                  >
-                    {item} Projects
-                  </Link>
-                ))}
-              </div>
-            )}
           </div>
+  </div>
 
-          {[ 'Gallery'].map((item) => (
-            <Link
-              key={item}
-              to={`/${item.toLowerCase()}`}
-              style={navLink}
-              onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#E8F5F1';
-                e.target.style.color = '#1F6F54';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.color = '#374151';
-              }}
-            >
-              {item}
+  {/* RIGHT - Buttons */}
+  <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }} className="desktop-buttons">
+    <Link to="/auth/signup" style={{
+      backgroundColor: '#1F6F54',
+      color: '#ffffff',
+      padding: '0.55rem 1.2rem',
+      borderRadius: '5px',
+      fontSize: '0.85rem',
+      fontWeight: '600',
+      textDecoration: 'none',
+      whiteSpace: 'nowrap'
+    }}>
+      Associate Login
+    </Link>
+
+    <Link to="/contact" style={{
+      backgroundColor: '#C9A24D',
+      color: '#ffffff',
+      padding: '0.55rem 1.2rem',
+      borderRadius: '5px',
+      fontSize: '0.85rem',
+      fontWeight: '600',
+      textDecoration: 'none',
+      whiteSpace: 'nowrap',
+      marginLeft: '1rem'
+    }}>
+      Enquire Now
+    </Link>
+  </div>
+
+  {/* Mobile Menu Button */}
+  <button
+    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+    className="mobile-menu-btn"
+    style={{
+      display: 'block',
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      padding: '0.5rem'
+    }}
+  >
+    {isMobileMenuOpen ? <X size={24} color="#374151" /> : <Menu size={24} color="#374151" />}
+  </button>
+</div>
+
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div style={{ backgroundColor: '#ffffff', borderTop: '1px solid #e5e7eb', padding: '1rem' }} className="mobile-menu">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {['Home', 'About'].map((item) => (
+              <Link key={item} to={item === 'Home' ? '/' : `/${item.toLowerCase()}`} onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '0.75rem 1rem', fontSize: '0.95rem', color: '#374151', textDecoration: 'none', borderRadius: '6px', transition: 'background 0.2s' }}>
+                {item}
+              </Link>
+            ))}
+            
+            <div>
+              <button onClick={() => setIsProjectsOpen(!isProjectsOpen)} style={{ width: '100%', textAlign: 'left', padding: '0.75rem 1rem', fontSize: '0.95rem', color: '#374151', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: '6px' }}>
+                Projects <ChevronDown size={16} style={{ transform: isProjectsOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
+              </button>
+              {isProjectsOpen && (
+                <div style={{ paddingLeft: '1rem', marginTop: '0.5rem' }}>
+                  {['ongoing', 'completed', 'upcoming'].map((item) => (
+                    <Link 
+                      key={item} 
+                      to={`/projects/${item}`} 
+                      onClick={() => { 
+                        setIsProjectsOpen(false); 
+                        setIsMobileMenuOpen(false); 
+                      }} 
+                      style={{ 
+                        display: 'block', 
+                        padding: '0.5rem 1rem', 
+                        fontSize: '0.9rem', 
+                        color: '#64748b', 
+                        textDecoration: 'none', 
+                        textTransform: 'capitalize',
+                        borderRadius: '4px'
+                      }}
+                    >
+                      {item} Projects
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link to="/gallery" onClick={() => setIsMobileMenuOpen(false)} style={{ padding: '0.75rem 1rem', fontSize: '0.95rem', color: '#374151', textDecoration: 'none', borderRadius: '6px', transition: 'background 0.2s' }}>
+              Gallery
             </Link>
-          ))}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+              <Link to="/auth/signup" onClick={() => setIsMobileMenuOpen(false)} style={{ backgroundColor: '#1F6F54', color: '#ffffff', padding: '0.75rem', borderRadius: '5px', fontSize: '0.9rem', fontWeight: '600', textDecoration: 'none', textAlign: 'center' }}>
+                Associate Login
+              </Link>
+              <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)} style={{ backgroundColor: '#C9A24D', color: '#ffffff', padding: '0.75rem', borderRadius: '5px', fontSize: '0.9rem', fontWeight: '600', textDecoration: 'none', textAlign: 'center' }}>
+                Enquire Now
+              </Link>
+            </div>
+          </div>
         </div>
+      )}
 
-        {/* RIGHT SECTION - Buttons */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-          }}
-        >
-          <button
-            aria-label="Search"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#4b5563',
-              padding: '0.5rem',
-            }}
-          >
-            <Search size={18} />
-          </button>
+      <style>{`
+        .nav-item {
+          position: relative;
+          transition: color 0.3s ease;
+          cursor: pointer;
+        }
 
-          <Link
-            to="/auth/signup"
-            style={{
-              backgroundColor: '#1F6F54',
-              color: '#ffffff',
-              padding: '0.55rem 1.4rem',
-              borderRadius: '5px',
-              fontSize: '0.9rem',
-              fontWeight: '600',
-              textDecoration: 'none',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Associate Login
-          </Link>
+        /* Smooth color transition */
+        .nav-item:hover {
+          color: #1F6F54 !important;
+        }
 
-          <Link
-            to="/contact"
-            style={{
-              backgroundColor: '#C9A24D',
-              color: '#ffffff',
-              padding: '0.55rem 1.4rem',
-              borderRadius: '5px',
-              fontSize: '0.9rem',
-              fontWeight: '600',
-              textDecoration: 'none',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Enquire Now
-          </Link>
-        </div>
-      </div>
+        /* Animated underline */
+        .nav-item::after {
+          content: '';
+          position: absolute;
+          left: 50%;
+          bottom: -4px;
+          width: 0%;
+          height: 2px;
+          background: linear-gradient(90deg, #1F6F54, #C9A24D);
+          transition: all 0.35s ease;
+          transform: translateX(-50%);
+          border-radius: 2px;
+        }
+
+        /* Expand underline on hover */
+        .nav-item:hover::after {
+          width: 70%;
+        }
+
+        /* Slight lift animation */
+        .nav-item:hover {
+          transform: translateY(-2px);
+        }
+
+        @media (min-width: 768px) {
+          .desktop-nav { display: flex !important; align-items: center; gap: 1.5rem; }
+          .desktop-buttons { display: flex !important; align-items: center; gap: 1rem; }
+          .mobile-menu-btn { display: none !important; }
+          .mobile-menu { display: none !important; }
+          .navbar-logo { height: 65px !important; }
+        }
+      `}</style>
     </nav>
   );
 };

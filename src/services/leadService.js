@@ -49,5 +49,17 @@ export const leadService = {
   updateLead: async (data) => {
     const response = await apiClient.post('/admin/leads/update', data);
     return response.data;
+  },
+
+  collectPayment: async (data) => {
+    const response = await apiClient.post('/admin/leads/collectpayment', data);
+    return response.data;
+  },
+
+  getLeadReports: async (data) => {
+    const response = await apiClient.post('/admin/reports/lead', data, {
+      responseType: data.exportExcel === 1 ? 'blob' : 'json'
+    });
+    return response;
   }
 };

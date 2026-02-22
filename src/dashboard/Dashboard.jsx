@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Associates from "./features/associates/Associates";
 import Projects from "./features/projects/Projects";
 import Users from "./features/users/Users";
 import { dashboardColors } from "./styles/colors";
 import { UserPlus, Users as UsersIcon, UserCheck } from 'lucide-react';
+import { permissionService } from '../services/permissionService';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("associates");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [canEditLeads, setCanEditLeads] = useState(false);
+  const [canEditAssociates, setCanEditAssociates] = useState(false);
+
+  useEffect(() => {
+    const isAdmin = permissionService.isAdmin();
+    setCanEditLeads(isAdmin || permissionService.canEdit('Leads'));
+    setCanEditAssociates(isAdmin || permissionService.canEdit('Associates'));
+  }, []);
 
   const tabs = [
     { id: "associates", label: "Associates", component: Associates },
@@ -60,72 +69,49 @@ const Dashboard = () => {
           </div>
 
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            {/* <div style={{ display: "flex", gap: "8px" }}>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+            {canEditLeads && (
+              <button
+                onClick={() => navigate('/dashboard/leads/add')}
                 style={{
-                  padding: "8px 12px",
-                  border: `1px solid ${dashboardColors.border}`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "10px 20px",
+                  backgroundColor: dashboardColors.primary,
+                  color: dashboardColors.white,
+                  border: "none",
                   borderRadius: "6px",
                   fontSize: "14px",
-                  outline: "none",
+                  fontWeight: "500",
+                  cursor: "pointer",
                 }}
-              />
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+              >
+                <UserCheck size={18} />
+                Add Lead
+              </button>
+            )}
+
+            {canEditAssociates && (
+              <button
+                onClick={() => navigate('/dashboard/associates/create')}
                 style={{
-                  padding: "8px 12px",
-                  border: `1px solid ${dashboardColors.border}`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "10px 20px",
+                  backgroundColor: dashboardColors.primary,
+                  color: dashboardColors.white,
+                  border: "none",
                   borderRadius: "6px",
                   fontSize: "14px",
-                  outline: "none",
+                  fontWeight: "500",
+                  cursor: "pointer",
                 }}
-              />
-            </div> */}
-
-            <button
-              onClick={() => navigate('/dashboard/leads/add')}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "10px 20px",
-                backgroundColor: dashboardColors.primary,
-                color: dashboardColors.white,
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "14px",
-                fontWeight: "500",
-                cursor: "pointer",
-              }}
-            >
-              <UserCheck size={18} />
-              Add Lead
-            </button>
-
-            <button
-              onClick={() => navigate('/dashboard/associates/create')}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "10px 20px",
-                backgroundColor: dashboardColors.primary,
-                color: dashboardColors.white,
-                border: "none",
-                borderRadius: "6px",
-                fontSize: "14px",
-                fontWeight: "500",
-                cursor: "pointer",
-              }}
-            >
-              <UserPlus size={18} />
-              Add Associate
-            </button>
+              >
+                <UserPlus size={18} />
+                Add Associate
+              </button>
+            )}
 
             <button
               onClick={() => navigate('/dashboard/users/create')}

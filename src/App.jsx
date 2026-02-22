@@ -29,6 +29,9 @@ import Reports from "./dashboard/features/key-reports/Reports";
 import AddLeads from "./dashboard/features/leads/AddLeads";
 import LeadsManagement from "./dashboard/features/leads/LeadsManagement";
 import EditLead from "./dashboard/features/leads/EditLead";
+import PermissionsManagement from "./dashboard/pages/permissions/PermissionsManagement";
+import ProjectsPage from "./dashboard/pages/projects/Projects";
+import ProjectView from "./dashboard/pages/projects/ProjectView";
 import Login from "./auth/Login";
 import Signup from "./auth/Signup";
 import ApprovalPending from "./auth/ApprovalPending";
@@ -82,8 +85,8 @@ function App() {
             element={<AssociatesManagement />}
           />
 
-          {/* Projects */}
-          <Route path="projects" element={<Projects />} />
+          {/* Admin Projects */}
+          <Route path="projects/management" element={<ProjectManagement />} />
           <Route path="projects/add" element={<AddProjectLayout />}>
             <Route index element={<AddProjectLayout />} />
             <Route path="basic-info" element={<AddProjectLayout />} />
@@ -94,8 +97,11 @@ function App() {
             <Route path="gallery" element={<AddProjectLayout />} />
             <Route path="review" element={<AddProjectLayout />} />
           </Route>
-          <Route path="projects/management" element={<ProjectManagement />} />
           <Route path="projects/edit/:id" element={<EditProject />} />
+
+          {/* Projects */}
+          <Route path="projects" element={<ProjectsPage />} />
+          <Route path="projects/view/:id" element={<ProjectView />} />
 
           {/* Directory */}
           <Route path="directory/management" element={<DirectoryManagement />} />
@@ -113,6 +119,9 @@ function App() {
 
           {/* Key Reports */}
           <Route path="key-reports/reports" element={<Reports />} />
+
+          {/* Permissions */}
+          <Route path="permissions/management" element={<PermissionsManagement />} />
         </Route>
       </Routes>
     </BrowserRouter>

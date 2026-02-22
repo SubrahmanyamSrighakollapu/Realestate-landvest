@@ -132,7 +132,7 @@ const Signup = () => {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       {/* Left side - Background image + gradient overlay + centered content image */}
-      <div style={{
+      <div className="auth-left-section" style={{
         flex: 1,
         position: 'relative',
         overflow: 'hidden',
@@ -565,6 +565,14 @@ const Signup = () => {
           </form>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .auth-left-section {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
