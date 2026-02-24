@@ -54,11 +54,11 @@ const ProjectDetails = () => {
         backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(https://realestate.vsahasoft.com${project.bannerImage || project.thumbnnailImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        height: '400px',
+        minHeight: '300px',
         display: 'flex',
         alignItems: 'center',
         color: 'white',
-        padding: '0 40px'
+        padding: '20px'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
           <button 
@@ -78,13 +78,13 @@ const ProjectDetails = () => {
           >
             <ArrowLeft size={16} /> Back
           </button>
-          <h1 style={{ fontSize: '3rem', fontWeight: '700', marginBottom: '12px' }}>
+          <h1 className="project-title" style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '12px' }}>
             {project.title}
           </h1>
-          <p style={{ fontSize: '1.2rem', marginBottom: '8px' }}>
+          <p className="project-location" style={{ fontSize: '1.1rem', marginBottom: '8px' }}>
             📍 {project.location}
           </p>
-          <p style={{ fontSize: '1.1rem', lineHeight: '1.6', maxWidth: '800px' }}>
+          <p className="project-desc" style={{ fontSize: '1rem', lineHeight: '1.6', maxWidth: '800px' }}>
             {project.description || 'Curated open plot ventures designed for your future investment. Find the perfect space to build your dreams.'}
           </p>
         </div>
@@ -178,6 +178,7 @@ const ProjectDetails = () => {
                 <img 
                   src={`https://realestate.vsahasoft.com${project.contentImage || project.thumbnnailImage}`}
                   alt="Project" 
+                  className="project-info-img"
                   style={{ 
                     width: '280px', 
                     height: '180px', 
@@ -186,9 +187,9 @@ const ProjectDetails = () => {
                     border: '3px solid #1F6F54'
                   }} 
                 />
-                <div style={{ 
+                <div className="project-info-grid" style={{ 
                   flex: 1, 
-                  minWidth: '300px',
+                  minWidth: '280px',
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
                   gap: '30px 40px'
@@ -438,6 +439,16 @@ const ProjectDetails = () => {
 
         </div>
       </section>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .project-title { font-size: 1.8rem !important; }
+          .project-location { font-size: 1rem !important; }
+          .project-desc { font-size: 0.95rem !important; }
+          .project-info-img { width: 100% !important; height: auto !important; }
+          .project-info-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        }
+      `}</style>
     </div>
   );
 };

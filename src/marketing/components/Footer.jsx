@@ -49,7 +49,7 @@ const Footer = () => {
               </div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
                 <MapPin size={18} color="#1F6F54" style={{ marginTop: '2px', flexShrink: 0 }} />
-                <span style={{ fontSize: '0.9rem' }}>123 Business Street, City, State 12345</span>
+                <span style={{ fontSize: '0.9rem' }}>Door No: 12-8-42, 2nd Floor, Savithri Mallaiah Arcade Lallaguda, Secunderabad, Hyderabad, Telangana-500017</span>
               </div>
             </div>
           </div>

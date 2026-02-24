@@ -4,4 +4,10 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    minify: 'esbuild' // Use esbuild instead of terser
+  },
+  base: '/' // For relative paths in production
 })

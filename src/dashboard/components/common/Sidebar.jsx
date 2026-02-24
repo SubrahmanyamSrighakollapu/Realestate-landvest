@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, FolderKanban, Network, FileText, Award, BookOpen, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BarChart3, UserCog, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, Network, FileText, Award, BookOpen, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BarChart3, UserCog, Shield, Building2, UsersRound } from 'lucide-react';
 import { dashboardColors } from "../../styles/colors";
 import logo from '../../../assets/landvest-logo.jpeg';
 import { authService } from '../../../services/authService';
@@ -31,8 +31,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       label: 'Org Tree', 
       path: '/dashboard/org-tree',
       subItems: [
-        { label: 'Org Management', path: '/dashboard/org-tree/management' },
-        { label: 'Teams & Roles', path: '/dashboard/org-tree/teams-and-roles' }
+        { label: 'Org Management', path: '/dashboard/org-tree/management', icon: Building2 },
+        { label: 'Teams & Roles', path: '/dashboard/org-tree/teams-and-roles', icon: UsersRound }
       ]
     },
     { icon: FileText, label: 'Reports', path: '/dashboard/reports/associate-reports', permission: { module: 'Reports', action: 'view' } },
@@ -146,8 +146,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     key={subIndex}
                     to={subItem.path}
                     style={{
-                      display: 'block',
-                      padding: '10px 20px 10px 57px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '10px 20px 10px 45px',
                       color: isActive(subItem.path) ? '#C9A24D' : dashboardColors.primary,
                       textDecoration: 'none',
                       fontSize: '14px',
@@ -165,6 +167,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                       }
                     }}
                   >
+                    {subItem.icon && <subItem.icon size={18} />}
                     {subItem.label}
                   </Link>
                 ))}

@@ -6,6 +6,7 @@ import profileImage from '../../assets/associate-profile.jpg';
 import { employeeService } from '../../../services/employeeService';
 import { ProfileShimmer } from '../../../components/loaders/ShimmerLoader';
 import { permissionService } from '../../../services/permissionService';
+import { toastService } from '../../../services/toastService';
 import '../../styles/global.css';
 
 const AssociateProfile = () => {
@@ -67,17 +68,46 @@ const AssociateProfile = () => {
   };
 
 
+  const handleResetPassword = async () => {
+    if (!resetPasswordData.username || !resetPasswordData.employeeId || !resetPasswordData.newPassword || !resetPasswordData.confirmPassword) {
+      toastService.error('All fields are required');
+      return;
+    }
+
+    if (resetPasswordData.newPassword !== resetPasswordData.confirmPassword) {
+      toastService.error('Passwords do not match');
+      return;
+    }
+
+    if (resetPasswordData.newPassword.length < 6) {
+      toastService.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('code', resetPasswordData.employeeId);
+      formData.append('password', resetPasswordData.newPassword);
+
+      await employeeService.updateEmployee(formData);
+      toastService.success('Password reset successfully!');
+      closeResetPasswordModal();
+    } catch (error) {
+      toastService.error(error.response?.data?.message || 'Failed to reset password');
+    }
+  };
+
   const closeResetPasswordModal = () => {
-  setShowResetPasswordModal(false);
-  setResetPasswordData({
-    username: '',
-    employeeId: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  setShowNewPassword(false);
-  setShowConfirmPassword(false);
-};
+    setShowResetPasswordModal(false);
+    setResetPasswordData({
+      username: '',
+      employeeId: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+  };
 
   const monthlySalesData = [
     { month: 'Jan', value: 40 },
@@ -783,16 +813,17 @@ const AssociateProfile = () => {
             </div>
 
             <button
-              onClick={closeResetPasswordModal}
+              onClick={handleResetPassword}
+              disabled={!resetPasswordData.username || !resetPasswordData.employeeId || !resetPasswordData.newPassword || !resetPasswordData.confirmPassword || resetPasswordData.newPassword !== resetPasswordData.confirmPassword}
               style={{
                 width: '100%',
                 padding: '14px',
-                backgroundColor: 'var(--dashboard-primary)',
+                backgroundColor: (!resetPasswordData.username || !resetPasswordData.employeeId || !resetPasswordData.newPassword || !resetPasswordData.confirmPassword || resetPasswordData.newPassword !== resetPasswordData.confirmPassword) ? '#d1d5db' : 'var(--dashboard-primary)',
                 border: 'none',
                 borderRadius: '6px',
                 fontSize: '16px',
                 color: 'white',
-                cursor: 'pointer',
+                cursor: (!resetPasswordData.username || !resetPasswordData.employeeId || !resetPasswordData.newPassword || !resetPasswordData.confirmPassword || resetPasswordData.newPassword !== resetPasswordData.confirmPassword) ? 'not-allowed' : 'pointer',
                 fontWeight: '500'
               }}
             >

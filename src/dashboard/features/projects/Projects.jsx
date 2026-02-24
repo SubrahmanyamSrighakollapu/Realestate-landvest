@@ -12,12 +12,30 @@ const Projects = () => {
     inactiveCount: 0,
     newCount: 0
   });
+  const [topPerformersData, setTopPerformersData] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     fetchDashboardData();
+    fetchTopPerformers();
   }, []);
+
+  const fetchTopPerformers = async () => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.post(
+        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/associates',
+        { startDate: startDate, endDate: endDate },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setTopPerformersData(response.data.data.slice(0, 4));
+      }
+    } catch (error) {
+      console.error('Error fetching top performers:', error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -129,7 +147,10 @@ const Projects = () => {
           />
         </div>
         <button
-          onClick={fetchDashboardData}
+          onClick={() => {
+            fetchDashboardData();
+            fetchTopPerformers();
+          }}
           style={{
             padding: '8px 20px',
             backgroundColor: 'var(--dashboard-primary)',
@@ -404,26 +425,19 @@ const Projects = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Priya Sharma</td>
-                <td>Agent</td>
-                <td>₹6,80,000</td>
-              </tr>
-              <tr>
-                <td>Priya Sharma</td>
-                <td>Agent</td>
-                <td>₹6,80,000</td>
-              </tr>
-              <tr>
-                <td>Priya Sharma</td>
-                <td>Agent</td>
-                <td>₹6,80,000</td>
-              </tr>
-              <tr>
-                <td>Priya Sharma</td>
-                <td>Agent</td>
-                <td>₹6,80,000</td>
-              </tr>
+              {topPerformersData.length === 0 ? (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', padding: '20px' }}>No data available</td>
+                </tr>
+              ) : (
+                topPerformersData.map((performer, index) => (
+                  <tr key={index}>
+                    <td>{performer.name}</td>
+                    <td>{performer.roleName}</td>
+                    <td>₹{performer.totalAdvance.toLocaleString('en-IN')}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

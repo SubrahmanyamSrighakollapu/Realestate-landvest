@@ -22,9 +22,14 @@ const Login = () => {
         await authService.fetchEmployeeInfo(formData.code);
         toastService.success('Login successful!');
         navigate('/dashboard');
+      } else {
+        // Handle case where API returns 200 but success is false
+        toastService.error(response.message || 'Login failed. Please check your credentials.');
       }
     } catch (err) {
-      toastService.error(err.response?.data?.message || 'Login failed. Please try again.');
+      // Handle network errors or other exceptions
+      const errorMessage = err.response?.data?.message || err.message || 'Login failed. Please try again.';
+      toastService.error(errorMessage);
     } finally {
       setLoading(false);
     }

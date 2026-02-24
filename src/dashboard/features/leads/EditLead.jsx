@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Phone, Car, Users } from 'lucide-react';
+import { Phone, Car, Users, Upload, ArrowLeft } from 'lucide-react';
 import { dashboardColors } from '../../styles/colors';
 import { leadService } from '../../../services/leadService';
 import { employeeService } from '../../../services/employeeService';
@@ -22,6 +22,8 @@ const EditLead = () => {
   const [selectedPricingMrp, setSelectedPricingMrp] = useState(0);
   const [previousAdvanceAmount, setPreviousAdvanceAmount] = useState(0);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [existingImage, setExistingImage] = useState('');
   const [showAdvanceCard, setShowAdvanceCard] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
@@ -81,6 +83,8 @@ const EditLead = () => {
         setPreviousAdvanceAmount(lead.advanceAmount || 0);
         setSelectedPricingMrp(lead.totalBalance || 0);
         setPaymentHistory(lead.advanceInfo || []);
+        
+        setExistingImage(lead.selfieImage || '');
         
         // Hide advance card if there's at least one payment record
         if (lead.advanceInfo && lead.advanceInfo.length > 0) {
@@ -142,7 +146,7 @@ const EditLead = () => {
       if (projectsRes.success) setProjects(projectsRes.data);
       if (propertyTypesRes.success) setPropertyTypes(propertyTypesRes.data);
       if (buyingPurposesRes.success) setBuyingPurposes(buyingPurposesRes.data);
-      if (leadStatusesRes.success) setLeadStatuses(leadStatusesRes.data);
+      if (leadStatusesRes.success) setLeadStatuses(leadStatusesRes.data.filter(status => status.status === 'active'));
     } catch (error) {
       toastService.error('Failed to load initial data');
     }
@@ -262,6 +266,12 @@ const EditLead = () => {
       formDataToSend.append('leadStatus', formData.leadStatus);
       formDataToSend.append('assignedTo', formData.assignedTo);
 
+      
+      // Append file if exists
+      if (selectedFile) {
+        formDataToSend.append('selfieImage', selectedFile);
+      }
+
       const response = await leadService.updateLead(formDataToSend);
       if (response.success) {
         toastService.success('Lead updated successfully!');
@@ -278,6 +288,27 @@ const EditLead = () => {
 
   return (
     <div style={{ padding: '24px', backgroundColor: dashboardColors.background }}>
+      {/* Back Button */}
+      <div style={{ marginBottom: '24px' }}>
+        <button
+          onClick={() => navigate('/dashboard/leads/management')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            backgroundColor: dashboardColors.white,
+            border: `1px solid ${dashboardColors.border}`,
+            borderRadius: '6px',
+            fontSize: '14px',
+            cursor: 'pointer',
+            color: dashboardColors.text
+          }}
+        >
+          <ArrowLeft size={18} />
+          Back to Leads Management
+        </button>
+      </div>
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: '600', color: dashboardColors.text, margin: '0 0 8px 0' }}>
           Edit Lead
@@ -392,6 +423,53 @@ const EditLead = () => {
                     boxSizing: 'border-box'
                   }}
                 />
+              </div>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                Upload Selfie with client
+              </label>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '12px',
+                padding: '16px',
+                background: dashboardColors.tertiary,
+                border: `1px solid ${dashboardColors.border}`,
+                borderRadius: '8px'
+              }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setSelectedFile(e.target.files[0])}
+                  style={{ display: 'none' }}
+                  id="selfieUpload"
+                />
+                <label
+                  htmlFor="selfieUpload"
+                  style={{
+                    padding: '10px 20px',
+                    background: dashboardColors.primary,
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'opacity 0.2s'
+                  }}
+                >
+                  Choose File
+                </label>
+                <div style={{ flex: 1, fontSize: '14px', color: dashboardColors.text }}>
+                  {selectedFile ? (
+                    <span>{selectedFile.name}</span>
+                  ) : existingImage ? (
+                    <span>Current: <a href={`https://realestate.vsahasoft.com${existingImage}`} target="_blank" rel="noopener noreferrer" style={{ color: dashboardColors.primary, textDecoration: 'underline', cursor: 'pointer', fontSize: '13px' }}>View File</a></span>
+                  ) : (
+                    <span style={{ color: '#9ca3af' }}>No file chosen</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -953,17 +1031,31 @@ const EditLead = () => {
           {selectedPricingMrp > 0 && (
             <div style={{ marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '500', color: dashboardColors.text }}>Payment Progress</span>
-                <span style={{ fontSize: '13px', color: dashboardColors.textLight }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: dashboardColors.text }}>Payment Progress</span>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: dashboardColors.primary }}>
                   ₹{(previousAdvanceAmount + (parseFloat(formData.advanceAmount) || 0)).toLocaleString('en-IN')} of ₹{selectedPricingMrp.toLocaleString('en-IN')} paid
                 </span>
               </div>
-              <div style={{ width: '100%', height: '8px', backgroundColor: dashboardColors.tertiary, borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${calculateProgress()}%`, height: '100%', background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)' }}></div>
+              <div style={{ 
+                width: '100%', 
+                height: '12px', 
+                backgroundColor: '#f3f4f6', 
+                borderRadius: '8px', 
+                overflow: 'hidden',
+                border: `1px solid ${dashboardColors.border}`,
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)'
+              }}>
+                <div style={{ 
+                  width: `${calculateProgress()}%`, 
+                  height: '100%', 
+                  background: `linear-gradient(90deg, ${dashboardColors.primary} 0%, ${dashboardColors.button} 100%)`,
+                  transition: 'width 0.3s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}></div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-                <span style={{ fontSize: '12px', color: dashboardColors.textLight }}>{calculateProgress().toFixed(1)}% completed</span>
-                <span style={{ fontSize: '12px', color: dashboardColors.textLight }}>₹{calculateBalanceAmount().toLocaleString('en-IN')} remaining</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '500', color: dashboardColors.primary }}>{calculateProgress().toFixed(1)}% completed</span>
+                <span style={{ fontSize: '13px', fontWeight: '500', color: dashboardColors.textLight }}>Balance: ₹{calculateBalanceAmount().toLocaleString('en-IN')}</span>
               </div>
             </div>
           )}
@@ -1019,27 +1111,50 @@ const EditLead = () => {
             </div>
           </div>
 
-          {/* Next Due Date Card - Always show */}
-          <div style={{ backgroundColor: dashboardColors.tertiary, padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: '600', color: dashboardColors.text, marginBottom: '16px' }}>
-              Next Due Date
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
-                  Due Amount
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: dashboardColors.textLight }}>₹</span>
+          {/* Next Due Date Card - Show only if balance amount > 0 */}
+          {calculateBalanceAmount() > 0 && (
+            <div style={{ backgroundColor: dashboardColors.tertiary, padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', color: dashboardColors.text, marginBottom: '16px' }}>
+                Next Due Date
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                    Due Amount
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: dashboardColors.textLight }}>₹</span>
+                    <input
+                      type="number"
+                      name="nextPayAmount"
+                      value={formData.nextPayAmount}
+                      onChange={handleInputChange}
+                      placeholder="Enter amount"
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px 10px 28px',
+                        border: `1px solid ${dashboardColors.border}`,
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        backgroundColor: dashboardColors.white
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
+                    Payment Date
+                  </label>
                   <input
-                    type="number"
-                    name="nextPayAmount"
-                    value={formData.nextPayAmount}
+                    type="date"
+                    name="nextPayDate"
+                    value={formData.nextPayDate}
                     onChange={handleInputChange}
-                    placeholder="Enter amount"
                     style={{
                       width: '100%',
-                      padding: '10px 12px 10px 28px',
+                      padding: '10px 12px',
                       border: `1px solid ${dashboardColors.border}`,
                       borderRadius: '6px',
                       fontSize: '14px',
@@ -1050,29 +1165,8 @@ const EditLead = () => {
                   />
                 </div>
               </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: dashboardColors.text, marginBottom: '8px' }}>
-                  Payment Date
-                </label>
-                <input
-                  type="date"
-                  name="nextPayDate"
-                  value={formData.nextPayDate}
-                  onChange={handleInputChange}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    border: `1px solid ${dashboardColors.border}`,
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                    backgroundColor: dashboardColors.white
-                  }}
-                />
-              </div>
             </div>
-          </div>
+          )}
 
           {/* Payment History Cards */}
           {paymentHistory && paymentHistory.length > 0 && (

@@ -72,6 +72,20 @@ const LeadsManagement = () => {
     setTotalItems(filtered.length);
   }, [searchTerm, leads]);
 
+  const getLeadStatusColor = (statusName) => {
+    const colors = {
+      'Hot': { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' },
+      'Cold': { bg: '#dbeafe', text: '#1e40af', border: '#93c5fd' },
+      'Warm': { bg: '#fef3c7', text: '#92400e', border: '#fcd34d' },
+      'In Progress': { bg: '#e0e7ff', text: '#3730a3', border: '#a5b4fc' },
+      'Follow up': { bg: '#fce7f3', text: '#831843', border: '#f9a8d4' },
+      'Won': { bg: '#d1fae5', text: '#065f46', border: '#6ee7b7' },
+      'Lost': { bg: '#fee2e2', text: '#991b1b', border: '#fca5a5' },
+      'Closed': { bg: '#f3f4f6', text: '#374151', border: '#d1d5db' }
+    };
+    return colors[statusName] || { bg: '#f3f4f6', text: '#374151', border: '#d1d5db' };
+  };
+
   return (
     <div style={{ padding: '24px' }}>
       {/* Header Section */}
@@ -102,7 +116,7 @@ const LeadsManagement = () => {
               color: dashboardColors.textLight,
               marginTop: '8px',
             }}>
-              Welcome back, Admin • Last login: Today at 9:30 AM
+              Welcome back, {JSON.parse(sessionStorage.getItem('user'))?.name || 'Admin'} • Last login: {new Date(JSON.parse(sessionStorage.getItem('user'))?.lastLogin || new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {new Date(JSON.parse(sessionStorage.getItem('user'))?.lastLogin || new Date()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
             </p>
           </div>
 
@@ -322,7 +336,7 @@ const LeadsManagement = () => {
                 <th>Mobile</th>
                 <th>Source Type</th>
                 <th>Lead Status</th>
-                <th>Status</th>
+                {/* <th>Status</th> */}
                 {canEdit && <th>Action</th>}
               </tr>
             </thead>
@@ -343,12 +357,27 @@ const LeadsManagement = () => {
                     <td>{lead.email}</td>
                     <td>{lead.mobile}</td>
                     <td style={{ textTransform: 'capitalize' }}>{lead.sourceType}</td>
-                    <td>{lead.leadStatus?.name || 'N/A'}</td>
                     <td>
+                      {lead.leadStatus?.name ? (
+                        <span style={{
+                          padding: '6px 12px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          backgroundColor: getLeadStatusColor(lead.leadStatus.name).bg,
+                          color: getLeadStatusColor(lead.leadStatus.name).text,
+                          border: `1px solid ${getLeadStatusColor(lead.leadStatus.name).border}`,
+                          display: 'inline-block'
+                        }}>
+                          {lead.leadStatus.name}
+                        </span>
+                      ) : 'N/A'}
+                    </td>
+                    {/* <td>
                       <span className={`status-badge ${lead.status === 'active' ? 'status-completed' : 'status-pending'}`}>
                         {lead.status === 'active' ? '● Active' : '● InActive'}
                       </span>
-                    </td>
+                    </td> */}
                     {canEdit && (
                       <td>
                         <button

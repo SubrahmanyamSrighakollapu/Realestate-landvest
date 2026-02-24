@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Building, Clock, Calendar, CheckCircle, Search, Pencil, Trash2 
 } from 'lucide-react';
+import axios from 'axios';
 import dashboardColors from '../../styles/colors';
 import Pagination from '../../components/common/Pagination';
 import { projectService } from '../../../services/projectService';
@@ -13,11 +14,34 @@ const ProjectManagement = () => {
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [dashboardData, setDashboardData] = useState({
+    totalCount: 0,
+    activeCount: 0,
+    inactiveCount: 0,
+    newCount: 0
+  });
   const itemsPerPage = 5;
 
   useEffect(() => {
     fetchProjects();
+    fetchDashboardData();
   }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const token = sessionStorage.getItem('authToken');
+      const response = await axios.post(
+        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/projects',
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setDashboardData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
 
   const fetchProjects = async () => {
     try {
@@ -130,13 +154,13 @@ const ProjectManagement = () => {
         }}
       >
         {[
-          { icon: Building, label: "Total Projects", value: "57" },
-          { icon: Clock, label: "Ongoing Projects", value: "10 " },
-          { icon: Calendar, label: "Upcoming Projects", value: "13" },
+          { icon: Building, label: "Total Projects", value: dashboardData.totalCount },
+          { icon: Clock, label: "Active Projects", value: dashboardData.activeCount },
+          { icon: Calendar, label: "Inactive Projects", value: dashboardData.inactiveCount },
           {
             icon: CheckCircle,
-            label: "Completed Projects",
-            value: "13",
+            label: "New Projects",
+            value: dashboardData.newCount,
           },
         ].map((stat, i) => (
           <div
@@ -298,7 +322,7 @@ const ProjectManagement = () => {
                 <th>Sold</th>
                 <th>Blocked</th>
                 <th>Available</th>
-                <th>Action</th>
+                {/* <th>Action</th> */}
               </tr>
             </thead>
             <tbody>
@@ -332,7 +356,7 @@ const ProjectManagement = () => {
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
-                    <td>
+                    {/* <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           title="Edit"
@@ -363,7 +387,7 @@ const ProjectManagement = () => {
                           <Trash2 size={18} />
                         </button>
                       </div>
-                    </td>
+                    </td> */}
                   </tr>
                 ))
               )}

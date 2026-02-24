@@ -126,7 +126,7 @@ const AssociatesManagement = () => {
               color: dashboardColors.textLight,
               marginTop: '8px',
             }}>
-              Welcome back, Admin • Last login: Today at 9:30 AM
+              Welcome back, {JSON.parse(sessionStorage.getItem('user'))?.name || 'Admin'} • Last login: {new Date(JSON.parse(sessionStorage.getItem('user'))?.lastLogin || new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {new Date(JSON.parse(sessionStorage.getItem('user'))?.lastLogin || new Date()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
             </p>
           </div>
 

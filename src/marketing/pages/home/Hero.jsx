@@ -17,10 +17,10 @@ const Hero = () => {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        minHeight: '100vh',
+        minHeight: '60vh',
         position: 'relative',
         padding: '2rem 1rem',
-        paddingBottom: '8rem',
+        paddingBottom: '6rem',
         width: '100%',
         display: 'flex',
         alignItems: 'center',
@@ -221,7 +221,7 @@ const Hero = () => {
             font-size: 0.9rem !important;
           }
           .hero-search {
-            bottom: -150px !important;
+            bottom: -300px !important;
             padding: 1rem !important;
           }
         }

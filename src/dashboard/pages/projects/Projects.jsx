@@ -12,11 +12,34 @@ const Projects = () => {
   const [loading, setLoading] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [dashboardData, setDashboardData] = useState({
+    totalCount: 0,
+    activeCount: 0,
+    inactiveCount: 0,
+    newCount: 0
+  });
   const itemsPerPage = 5;
 
   useEffect(() => {
     fetchProjects();
+    fetchDashboardData();
   }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const token = sessionStorage.getItem('authToken');
+      const response = await axios.post(
+        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/projects',
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setDashboardData(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -36,11 +59,10 @@ const Projects = () => {
   };
 
   const stats = [
-    { label: 'Total Projects', value: projects.length, subtext: 'Assigned to you' },
-    { label: 'Active Projects', value: projects.filter(p => p.status === 'active').length, subtext: 'Currently selling' },
-    { label: 'Available Plots', value: '125', subtext: 'Across all projects' },
-    { label: 'Sold Plots', value: '200', subtext: 'Total sold' },
-    { label: 'Project Revenue', value: '₹42.8M', subtext: 'Combined revenue' }
+    { label: 'Total Projects', value: dashboardData.totalCount, subtext: 'All projects' },
+    { label: 'Active Projects', value: dashboardData.activeCount, subtext: 'Currently selling' },
+    { label: 'Inactive Projects', value: dashboardData.inactiveCount, subtext: 'Not active' },
+    { label: 'New Projects', value: dashboardData.newCount, subtext: 'Recently added' }
   ];
 
   const filteredProjects = projects.filter(project =>

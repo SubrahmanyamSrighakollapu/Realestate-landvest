@@ -5,8 +5,8 @@ const SiteGallery = () => {
     <section
       style={{
         position: 'relative',
-        height: '70vh',
-        minHeight: '500px',
+        height: '50vh',
+        minHeight: '400px',
         backgroundImage: `url(${galleryImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
@@ -73,8 +73,8 @@ const SiteGallery = () => {
       <style>{`
         @media (min-width: 768px) {
           .gallery-hero {
-            height: 85vh !important;
-            min-height: 620px !important;
+            height: 60vh !important;
+            min-height: 480px !important;
             padding-left: 6% !important;
           }
         }

@@ -57,6 +57,12 @@ const AddAssociate = () => {
     residentialProof: null
   });
 
+  const [existingFiles, setExistingFiles] = useState({
+    panProof: employee?.panProof || '',
+    aadharProof: employee?.aadharProof || '',
+    residentialProof: employee?.residentialProof || ''
+  });
+
   useEffect(() => {
     if (isEdit && employee) {
       setSelectedSponsor(employee.sponser);
@@ -283,6 +289,41 @@ const AddAssociate = () => {
         .file-pan         { background: #f3e8ff; color: #6b21a8; border: 1px solid #c084fc; }
         .file-aadhaar     { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
         .file-btn:hover   { opacity: 0.92; }
+        .file-upload-container {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px;
+          background: ${dashboardColors.tertiary};
+          border: 1px solid ${dashboardColors.border};
+          border-radius: 8px;
+          margin-bottom: 16px;
+        }
+        .file-upload-btn {
+          padding: 10px 20px;
+          background: ${dashboardColors.primary};
+          color: white;
+          border: none;
+          border-radius: 6px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: opacity 0.2s;
+        }
+        .file-upload-btn:hover {
+          opacity: 0.9;
+        }
+        .file-info {
+          flex: 1;
+          font-size: 14px;
+          color: ${dashboardColors.text};
+        }
+        .existing-file-link {
+          color: ${dashboardColors.primary};
+          text-decoration: underline;
+          cursor: pointer;
+          font-size: 13px;
+        }
       `}</style>
 
       <div style={{
@@ -663,17 +704,25 @@ const AddAssociate = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gap: '20px' }}>
+              <div>
                 <div>
                   <label style={labelStyle}>Residential Proof<br/><small style={{ fontWeight: 400, color: '#6b7280' }}>
                     (Upload electricity bill, rental agreement, etc.)
                   </small></label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div className="file-upload-container">
                     <input type="file" id="residentialProof" name="residentialProof" style={{ display: 'none' }} onChange={handleFileChange} />
-                    <label htmlFor="residentialProof" className="file-btn file-residential">
+                    <label htmlFor="residentialProof" className="file-upload-btn">
                       Choose File
                     </label>
-                    <span style={{ color: '#6b7280', fontSize: '14px' }}>{files.residentialProof?.name || 'No file chosen'}</span>
+                    <div className="file-info">
+                      {files.residentialProof ? (
+                        <span>{files.residentialProof.name}</span>
+                      ) : existingFiles.residentialProof ? (
+                        <span>Current: <a href={`https://realestate.vsahasoft.com${existingFiles.residentialProof}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
+                      ) : (
+                        <span style={{ color: '#9ca3af' }}>No file chosen</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -681,12 +730,20 @@ const AddAssociate = () => {
                   <label style={labelStyle}>PAN Card<br/><small style={{ fontWeight: 400, color: '#6b7280' }}>
                     Upload clear copy of PAN card
                   </small></label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div className="file-upload-container">
                     <input type="file" id="panCard" name="panProof" style={{ display: 'none' }} onChange={handleFileChange} />
-                    <label htmlFor="panCard" className="file-btn file-pan">
+                    <label htmlFor="panCard" className="file-upload-btn">
                       Choose File
                     </label>
-                    <span style={{ color: '#6b7280', fontSize: '14px' }}>{files.panProof?.name || 'No file chosen'}</span>
+                    <div className="file-info">
+                      {files.panProof ? (
+                        <span>{files.panProof.name}</span>
+                      ) : existingFiles.panProof ? (
+                        <span>Current: <a href={`https://realestate.vsahasoft.com${existingFiles.panProof}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
+                      ) : (
+                        <span style={{ color: '#9ca3af' }}>No file chosen</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -694,12 +751,20 @@ const AddAssociate = () => {
                   <label style={labelStyle}>Aadhaar Card<br/><small style={{ fontWeight: 400, color: '#6b7280' }}>
                     Upload clear copy of Aadhaar card
                   </small></label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <div className="file-upload-container">
                     <input type="file" id="aadhaarCard" name="aadharProof" style={{ display: 'none' }} onChange={handleFileChange} />
-                    <label htmlFor="aadhaarCard" className="file-btn file-aadhaar">
+                    <label htmlFor="aadhaarCard" className="file-upload-btn">
                       Choose File
                     </label>
-                    <span style={{ color: '#6b7280', fontSize: '14px' }}>{files.aadharProof?.name || 'No file chosen'}</span>
+                    <div className="file-info">
+                      {files.aadharProof ? (
+                        <span>{files.aadharProof.name}</span>
+                      ) : existingFiles.aadharProof ? (
+                        <span>Current: <a href={`https://realestate.vsahasoft.com${existingFiles.aadharProof}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
+                      ) : (
+                        <span style={{ color: '#9ca3af' }}>No file chosen</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

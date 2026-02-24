@@ -20,12 +20,25 @@ const Associates = () => {
   const [endDate, setEndDate] = useState('');
   const [associatesData, setAssociatesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [topPerformersData, setTopPerformersData] = useState([]);
+  const [associatesStatusData, setAssociatesStatusData] = useState({ 
+    activePercentage: 86, 
+    inactivePercentage: 14,
+    activeCount: 0,
+    inactiveCount: 0
+  });
+  const [newAssociatesData, setNewAssociatesData] = useState([]);
+  const [salesOverviewData, setSalesOverviewData] = useState([]);
   const [canDownload, setCanDownload] = useState(false);
   const itemsPerPage = 5;
 
   useEffect(() => {
     fetchDashboardData();
     fetchAssociatesReport();
+    fetchTopPerformers();
+    fetchAssociatesStatus();
+    fetchNewAssociates();
+    fetchSalesOverview();
     const isAdmin = permissionService.isAdmin();
     const downloadPermission = isAdmin || permissionService.canDownload('Associates');
     console.log('Associates Download Permission:', downloadPermission);
@@ -87,9 +100,88 @@ const Associates = () => {
     }
   };
 
+  const fetchTopPerformers = async () => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.post(
+        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/associates',
+        { startDate: startDate, endDate: endDate },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setTopPerformersData(response.data.data.slice(0, 4));
+      }
+    } catch (error) {
+      console.error('Error fetching top performers:', error);
+    }
+  };
+
+  const fetchAssociatesStatus = async () => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.post(
+        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/associatescount',
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setAssociatesStatusData({
+          activePercentage: parseFloat(response.data.data.activePercentage),
+          inactivePercentage: parseFloat(response.data.data.inactivePercentage),
+          activeCount: response.data.data.activeCount,
+          inactiveCount: response.data.data.inactiveCount
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching associates status:', error);
+    }
+  };
+
+  const fetchNewAssociates = async () => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.post(
+        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/newassociates',
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setNewAssociatesData(response.data.data.map(item => ({
+          month: item.month.split(' ')[0],
+          value: item.count
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching new associates:', error);
+    }
+  };
+
+  const fetchSalesOverview = async () => {
+    try {
+      const token = authService.getToken();
+      const response = await axios.post(
+        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/salesoverview',
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        setSalesOverviewData(response.data.data.map(item => ({
+          month: item.month.split(' ')[0],
+          active: item.totalCollected
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching sales overview:', error);
+    }
+  };
+
   const handleApplyFilter = () => {
     fetchDashboardData();
     fetchAssociatesReport();
+    fetchTopPerformers();
+    fetchAssociatesStatus();
+    fetchNewAssociates();
+    fetchSalesOverview();
   };
 
   const statsCards = [
@@ -99,35 +191,17 @@ const Associates = () => {
     { icon: UserPlus, label: 'New Associates', value: dashboardData.newCount }
   ];
 
-  const topPerformingData = [
-    { name: 'Rajesh', value: 5000 },
-    { name: 'Priya', value: 6000 },
-    { name: 'Amit', value: 8500 },
-    { name: 'Sneha', value: 7200 }
-  ];
+  const topPerformingData = topPerformersData.map(item => ({
+    name: item.name,
+    value: item.totalAdvance
+  }));
 
   const pieData = [
-    { name: 'Active', value: 86, color: '#10b981' },
-    { name: 'In Active', value: 14, color: '#ef4444' }
+    { name: 'Active', value: associatesStatusData.activePercentage, color: '#10b981' },
+    { name: 'In Active', value: associatesStatusData.inactivePercentage, color: '#ef4444' }
   ];
 
-  const newAssociatesData = [
-    { month: 'Jan', value: 20 },
-    { month: 'Feb', value: 35 },
-    { month: 'Mar', value: 45 },
-    { month: 'Apr', value: 25 },
-    { month: 'May', value: 30 },
-    { month: 'Jun', value: 40 }
-  ];
 
-  const trendData = [
-    { month: 'Jan', active: 150, inactive: 20 },
-    { month: 'Feb', active: 160, inactive: 18 },
-    { month: 'Mar', active: 170, inactive: 15 },
-    { month: 'Apr', active: 175, inactive: 14 },
-    { month: 'May', active: 180, inactive: 13 },
-    { month: 'Jun', active: 180, inactive: 13 }
-  ];
 
   const transactions = [
     { id: 'TXN001', name: 'Arun Kumar', project: 'Green Valley - Plot A12', amount: '₹4,50,000', date: '2026-01-25', status: 'Completed' },
@@ -258,7 +332,9 @@ const Associates = () => {
                     <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: item.color }}></div>
                     <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>{item.name} ({item.value}%)</span>
                   </div>
-                  <p style={{ fontSize: '12px', color: '#6b7280', marginLeft: '20px' }}>Remaining - 2 Months</p>
+                  <p style={{ fontSize: '12px', color: '#6b7280', marginLeft: '20px' }}>
+                    {item.name === 'Active' ? `${associatesStatusData.activeCount} Associates` : `${associatesStatusData.inactiveCount} Associates`}
+                  </p>
                 </div>
               ))}
             </div>
@@ -293,7 +369,7 @@ const Associates = () => {
         }}>
           <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Total Sales Overview</h3>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={trendData}>
+            <BarChart data={salesOverviewData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
@@ -427,26 +503,19 @@ const Associates = () => {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Priya Sharma</td>
-                <td>Agent</td>
-                <td>₹6,80,000</td>
-              </tr>
-              <tr>
-                <td>Priya Sharma</td>
-                <td>Agent</td>
-                <td>₹6,80,000</td>
-              </tr>
-              <tr>
-                <td>Priya Sharma</td>
-                <td>Agent</td>
-                <td>₹6,80,000</td>
-              </tr>
-              <tr>
-                <td>Priya Sharma</td>
-                <td>Agent</td>
-                <td>₹6,80,000</td>
-              </tr>
+              {topPerformersData.length === 0 ? (
+                <tr>
+                  <td colSpan="3" style={{ textAlign: 'center', padding: '20px' }}>No data available</td>
+                </tr>
+              ) : (
+                topPerformersData.map((performer, index) => (
+                  <tr key={index}>
+                    <td>{performer.name}</td>
+                    <td>{performer.roleName}</td>
+                    <td>₹{performer.totalAdvance.toLocaleString('en-IN')}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

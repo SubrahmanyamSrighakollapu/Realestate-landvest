@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Phone, Car, Users, Upload } from 'lucide-react';
+import { Phone, Car, Users, Upload, ArrowLeft } from 'lucide-react';
 import { dashboardColors } from '../../styles/colors';
 import { leadService } from '../../../services/leadService';
 import { employeeService } from '../../../services/employeeService';
@@ -80,7 +80,7 @@ const AddLeads = () => {
       if (projectsRes.success) setProjects(projectsRes.data);
       if (propertyTypesRes.success) setPropertyTypes(propertyTypesRes.data);
       if (buyingPurposesRes.success) setBuyingPurposes(buyingPurposesRes.data);
-      if (leadStatusesRes.success) setLeadStatuses(leadStatusesRes.data);
+      if (leadStatusesRes.success) setLeadStatuses(leadStatusesRes.data.filter(status => status.status === 'active'));
     } catch (error) {
       toastService.error('Failed to load initial data');
     }
@@ -254,12 +254,34 @@ const AddLeads = () => {
 
   return (
     <div style={{ padding: '24px', backgroundColor: dashboardColors.background }}>
+      {/* Back Button */}
+      <div style={{ marginBottom: '16px' }}>
+        <button
+          onClick={() => window.history.back()}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            backgroundColor: dashboardColors.white,
+            border: `1px solid ${dashboardColors.border}`,
+            borderRadius: '6px',
+            fontSize: '14px',
+            cursor: 'pointer',
+            color: dashboardColors.text
+          }}
+        >
+          <ArrowLeft size={18} />
+          Back
+        </button>
+      </div>
+
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: '600', color: dashboardColors.text, margin: '0 0 8px 0' }}>
           Add New Lead
         </h1>
         <p style={{ fontSize: '14px', color: dashboardColors.textLight, margin: 0 }}>
-          Welcome back, Admin • Last login: Today at 9:30 AM
+          Welcome back, {JSON.parse(sessionStorage.getItem('user'))?.name || 'Admin'} • Last login: {new Date(JSON.parse(sessionStorage.getItem('user'))?.lastLogin || new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {new Date(JSON.parse(sessionStorage.getItem('user'))?.lastLogin || new Date()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
         </p>
       </div>
 
@@ -1068,17 +1090,31 @@ const AddLeads = () => {
           {selectedPricingMrp > 0 && (
             <div style={{ marginBottom: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '500', color: dashboardColors.text }}>Payment Progress</span>
-                <span style={{ fontSize: '13px', color: dashboardColors.textLight }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: dashboardColors.text }}>Payment Progress</span>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: dashboardColors.primary }}>
                   ₹{(parseFloat(formData.advanceAmount) || 0).toLocaleString('en-IN')} of ₹{selectedPricingMrp.toLocaleString('en-IN')} paid
                 </span>
               </div>
-              <div style={{ width: '100%', height: '8px', backgroundColor: dashboardColors.tertiary, borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ width: `${calculateProgress()}%`, height: '100%', background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)' }}></div>
+              <div style={{ 
+                width: '100%', 
+                height: '12px', 
+                backgroundColor: '#f3f4f6', 
+                borderRadius: '8px', 
+                overflow: 'hidden',
+                border: `1px solid ${dashboardColors.border}`,
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)'
+              }}>
+                <div style={{ 
+                  width: `${calculateProgress()}%`, 
+                  height: '100%', 
+                  background: `linear-gradient(90deg, ${dashboardColors.primary} 0%, ${dashboardColors.button} 100%)`,
+                  transition: 'width 0.3s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}></div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-                <span style={{ fontSize: '12px', color: dashboardColors.textLight }}>{calculateProgress().toFixed(1)}% completed</span>
-                <span style={{ fontSize: '12px', color: dashboardColors.textLight }}>₹{calculateBalanceAmount().toLocaleString('en-IN')} remaining</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                <span style={{ fontSize: '13px', fontWeight: '500', color: dashboardColors.primary }}>{calculateProgress().toFixed(1)}% completed</span>
+                <span style={{ fontSize: '13px', fontWeight: '500', color: dashboardColors.textLight }}>Balance: ₹{calculateBalanceAmount().toLocaleString('en-IN')}</span>
               </div>
             </div>
           )}
