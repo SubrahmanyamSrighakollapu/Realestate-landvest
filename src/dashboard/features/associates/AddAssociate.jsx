@@ -48,19 +48,22 @@ const AddAssociate = () => {
     panNumber: employee?.panNumber || '',
     aadharNumber: employee?.aadharNumber || '',
     passportNumber: employee?.passportNumber || '',
+    bloodGroup: employee?.bloodGroup || '',
     isStaff: employee?.isStaff || false
   });
 
   const [files, setFiles] = useState({
     panProof: null,
     aadharProof: null,
-    residentialProof: null
+    residentialProof: null,
+    profileImage: null
   });
 
   const [existingFiles, setExistingFiles] = useState({
     panProof: employee?.panProof || '',
     aadharProof: employee?.aadharProof || '',
-    residentialProof: employee?.residentialProof || ''
+    residentialProof: employee?.residentialProof || '',
+    profileImage: employee?.profileImage || ''
   });
 
   useEffect(() => {
@@ -187,6 +190,7 @@ const AddAssociate = () => {
       if (files.panProof) data.append('panProof', files.panProof);
       if (files.aadharProof) data.append('aadharProof', files.aadharProof);
       if (files.residentialProof) data.append('residentialProof', files.residentialProof);
+      if (files.profileImage) data.append('profileImage', files.profileImage);
 
       if (isEdit) {
         const response = await employeeService.updateEmployee(data);
@@ -537,6 +541,21 @@ const AddAssociate = () => {
                 </div>
 
                 <div>
+                  <label style={labelStyle}>Blood Group</label>
+                  <select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} style={inputBase}>
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
+
+                <div>
                   <label style={labelStyle}>Password {!isEdit && '*'}</label>
                   <input 
                     type="password" 
@@ -701,6 +720,25 @@ const AddAssociate = () => {
                     onChange={handleChange}
                     style={inputBase}
                   />
+                </div>
+              </div>
+
+                            <div style={{ marginBottom: '32px' }}>
+                <label style={labelStyle}>Profile Image</label>
+                <div className="file-upload-container">
+                  <input type="file" id="profileImage" name="profileImage" accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
+                  <label htmlFor="profileImage" className="file-upload-btn">
+                    Choose File
+                  </label>
+                  <div className="file-info">
+                    {files.profileImage ? (
+                      <span>{files.profileImage.name}</span>
+                    ) : existingFiles.profileImage ? (
+                      <span>Current: <a href={`https://realestate.vsahasoft.com${existingFiles.profileImage}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
+                    ) : (
+                      <span style={{ color: '#9ca3af' }}>No file chosen</span>
+                    )}
+                  </div>
                 </div>
               </div>
 

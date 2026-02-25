@@ -22,6 +22,20 @@ const IDCard = () => {
     return <div>No employee data available</div>;
   }
 
+  const getInitials = (name) => {
+    if (!name) return 'NA';
+    const names = name.trim().split(' ');
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  };
+
+  const getProfileImage = () => {
+    if (employee?.profileImage) {
+      return `https://realestate.vsahasoft.com${employee.profileImage}`;
+    }
+    return null;
+  };
+
   const handleDownload = async () => {
     const element = cardRef.current;
     if (!element) return;
@@ -30,6 +44,7 @@ const IDCard = () => {
       const canvas = await html2canvas(element, {
         scale: 3,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: null
       });
@@ -91,6 +106,46 @@ const IDCard = () => {
           borderRadius: '20px',
           overflow: 'hidden'
         }}>
+          {/* Profile Image */}
+          <div style={{
+            position: 'absolute',
+            top: '145px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '180px',
+            height: '180px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            border: '4px solid white',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}>
+            {getProfileImage() ? (
+              <img 
+                src={getProfileImage()} 
+                alt="Profile" 
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover'
+                }} 
+              />
+            ) : (
+              <div style={{
+                width: '100%',
+                height: '100%',
+                backgroundColor: 'rgba(31, 111, 84, 1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '48px',
+                fontWeight: '600',
+                color: 'white'
+              }}>
+                {getInitials(employee.name)}
+              </div>
+            )}
+          </div>
+
           {/* Employee Name */}
           <div style={{
             position: 'absolute',
@@ -134,7 +189,7 @@ const IDCard = () => {
             <div style={{ display: 'flex', marginBottom: '8px' }}>
               <span style={{ fontWeight: '600', color: '#374151', minWidth: '140px' }}>BLOOD GROUP</span>
               <span style={{ margin: '0 8px' }}>:</span>
-              <span style={{ color: '#6b7280' }}>{employee.bloodgroup || 'N/A'}</span>
+              <span style={{ color: '#6b7280' }}>{employee.bloodGroup || 'N/A'}</span>
             </div>
             <div style={{ display: 'flex' }}>
               <span style={{ fontWeight: '600', color: '#374151', minWidth: '140px' }}>ADDRESS</span>

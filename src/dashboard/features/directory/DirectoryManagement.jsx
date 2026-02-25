@@ -259,7 +259,7 @@ const DirectoryManagement = () => {
             Directory
           </h3>
 
-          <button style={{
+          {/* <button style={{
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
@@ -274,7 +274,7 @@ const DirectoryManagement = () => {
           }}>
             <Download size={16} />
             Export
-          </button>
+          </button> */}
         </div>
 
         <div style={{ overflowX: 'auto' }}>

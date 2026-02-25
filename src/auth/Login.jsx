@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { User, Lock } from 'lucide-react';
 import { authService } from '../services/authService';
 import { toastService } from '../services/toastService';
-import LoginBgImage from '../../src/assets/login-bg.png'
+import LoginBgImage from '../assets/login-bg.png'
 import LandvestLogo from '../assets/landvest-logo.jpeg';
+import LoginImage from '../assets/login-image.png';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const Login = () => {
         }}>
           <div style={{ maxWidth: '450px', width: '100%' }}>
             <img
-              src="/src/assets/login-image.png"
+              src={LoginImage}
               alt="Real Estate"
               style={{
                 width: '100%',

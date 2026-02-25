@@ -11,10 +11,38 @@ const OrganizationStructure = () => {
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
   const [orgData, setOrgData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [roleColorMap, setRoleColorMap] = useState({});
 
   useEffect(() => {
     fetchOrgTree();
   }, []);
+
+  const generateColorPalette = (count) => {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+      const hue = (i * 137.5) % 360;
+      colors.push(`hsl(${hue}, 70%, 55%)`);
+    }
+    return colors;
+  };
+
+  const assignRoleColors = (data) => {
+    const roles = new Set();
+    const collectRoles = (nodes) => {
+      nodes.forEach(node => {
+        if (node.role?._id) roles.add(node.role._id);
+        if (node.children) collectRoles(node.children);
+      });
+    };
+    collectRoles(data);
+    
+    const colorPalette = generateColorPalette(roles.size);
+    const colorMap = {};
+    Array.from(roles).forEach((roleId, index) => {
+      colorMap[roleId] = colorPalette[index];
+    });
+    setRoleColorMap(colorMap);
+  };
 
   const fetchOrgTree = async () => {
     setLoading(true);
@@ -22,6 +50,7 @@ const OrganizationStructure = () => {
       const response = await organizationService.getOrgTree();
       if (response.success) {
         setOrgData(response.data);
+        assignRoleColors(response.data);
       }
     } catch (error) {
       toastService.error('Failed to load organization tree');
@@ -95,9 +124,6 @@ const OrganizationStructure = () => {
   const renderTree = (nodes, level = 0) => {
     if (!nodes || nodes.length === 0) return null;
 
-    const colors = ['#f97316', '#3b82f6', '#8b5cf6', '#10b981'];
-    const color = colors[level % colors.length];
-
     return (
       <div style={{ position: 'relative', marginBottom: '50px' }}>
         {level > 0 && (
@@ -111,12 +137,15 @@ const OrganizationStructure = () => {
           }}></div>
         )}
         <div style={{ display: 'flex', justifyContent: 'space-around', gap: '20px', paddingTop: level > 0 ? '30px' : '0' }}>
-          {nodes.map((node, index) => (
-            <div key={node._id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <MemberCard member={node} showConnector={level > 0} color={color} />
-              {node.children && node.children.length > 0 && renderTree(node.children, level + 1)}
-            </div>
-          ))}
+          {nodes.map((node, index) => {
+            const color = roleColorMap[node.role?._id] || '#3b82f6';
+            return (
+              <div key={node._id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <MemberCard member={node} showConnector={level > 0} color={color} />
+                {node.children && node.children.length > 0 && renderTree(node.children, level + 1)}
+              </div>
+            );
+          })}
         </div>
       </div>
     );

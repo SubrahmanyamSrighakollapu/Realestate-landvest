@@ -27,5 +27,29 @@ export const employeeService = {
       }
     });
     return response.data;
+  },
+
+  getPortfolio: async (code, startDate = '', endDate = '') => {
+    const response = await apiClient.post('/admin/profile/portfolio', {
+      code,
+      startDate,
+      endDate
+    });
+    return response.data;
+  },
+
+  getSales: async (code) => {
+    const response = await apiClient.post('/admin/profile/sales', { code });
+    return response.data;
+  },
+
+  getCommission: async (code) => {
+    const response = await apiClient.post('/admin/profile/commission', { code });
+    return response.data;
+  },
+
+  getMyTeamTree: async () => {
+    const response = await apiClient.post('/admin/myteam/tree');
+    return response.data;
   }
 };

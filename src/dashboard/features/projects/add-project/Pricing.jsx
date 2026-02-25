@@ -311,7 +311,7 @@ const Pricing = ({ onNext, onPrevious, currentStep, projectData, setProjectData 
                       value={data.basePrice || ''}
                       onChange={(e) => handleInputChange(option._id, 'basePrice', e.target.value)}
                       style={{
-                        width: '100%',
+                        width: '90%',
                         padding: '10px 14px',
                         border: `1px solid ${dashboardColors.border}`,
                         borderRadius: '6px',
@@ -339,7 +339,7 @@ const Pricing = ({ onNext, onPrevious, currentStep, projectData, setProjectData 
                       value={data.mrp || ''}
                       onChange={(e) => handleInputChange(option._id, 'mrp', e.target.value)}
                       style={{
-                        width: '100%',
+                        width: '90%',
                         padding: '10px 14px',
                         border: `1px solid ${dashboardColors.border}`,
                         borderRadius: '6px',
@@ -367,7 +367,7 @@ const Pricing = ({ onNext, onPrevious, currentStep, projectData, setProjectData 
                       value={data.duration || ''}
                       onChange={(e) => handleInputChange(option._id, 'duration', e.target.value)}
                       style={{
-                        width: '100%',
+                        width: '90%',
                         padding: '10px 14px',
                         border: `1px solid ${dashboardColors.border}`,
                         borderRadius: '6px',
@@ -395,7 +395,7 @@ const Pricing = ({ onNext, onPrevious, currentStep, projectData, setProjectData 
                       value={data.installment || ''}
                       onChange={(e) => handleInputChange(option._id, 'installment', e.target.value)}
                       style={{
-                        width: '100%',
+                        width: '90%',
                         padding: '10px 14px',
                         border: `1px solid ${dashboardColors.border}`,
                         borderRadius: '6px',

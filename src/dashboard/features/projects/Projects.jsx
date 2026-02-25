@@ -3,6 +3,7 @@ import { Search, Download, Filter, FolderKanban, CheckCircle, XCircle, PlusCircl
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import { authService } from '../../../services/authService';
+import { dashboardService } from '../../../services/dashboardService';
 import '../../styles/global.css';
 
 const Projects = () => {
@@ -15,10 +16,12 @@ const Projects = () => {
   const [topPerformersData, setTopPerformersData] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
     fetchDashboardData();
     fetchTopPerformers();
+    fetchRecentActivity();
   }, []);
 
   const fetchTopPerformers = async () => {
@@ -50,6 +53,17 @@ const Projects = () => {
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+    }
+  };
+
+  const fetchRecentActivity = async () => {
+    try {
+      const response = await dashboardService.getLatestLeads();
+      if (response.success) {
+        setRecentActivity(response.data.slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
     }
   };
 
@@ -150,6 +164,7 @@ const Projects = () => {
           onClick={() => {
             fetchDashboardData();
             fetchTopPerformers();
+            fetchRecentActivity();
           }}
           style={{
             padding: '8px 20px',
@@ -302,7 +317,7 @@ const Projects = () => {
           </div>
         </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+      {/* <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         <button style={{
           padding: '10px 24px',
           backgroundColor: 'var(--dashboard-primary)',
@@ -406,7 +421,7 @@ const Projects = () => {
             ))}
           </tbody>
         </table>
-      </div>
+      </div> */}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '24px' }}>
         <div style={{
@@ -450,38 +465,28 @@ const Projects = () => {
         }}>
           <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Recent Activity</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', marginTop: '6px', flexShrink: 0 }}></div>
+            {recentActivity.length === 0 ? (
+              <p style={{ fontSize: '13px', color: '#6b7280', textAlign: 'center', padding: '20px' }}>No recent activity</p>
+            ) : (
+              recentActivity.map((activity, index) => {
+                const colors = ['#10b981', '#3b82f6', '#8b5cf6'];
+                const timeAgo = new Date(activity.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                return (
+                  <div key={activity._id} style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: colors[index % 3], marginTop: '6px', flexShrink: 0 }}></div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>Payment Received</span>
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>2 min ago</span>
+                        <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>{activity.description}</span>
+                        <span style={{ fontSize: '12px', color: '#6b7280' }}>{timeAgo}</span>
                 </div>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Received ₹6,80,000 for Plot A12 From Priya</p>
+                      <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
+                        {activity.lead?.firstName} {activity.lead?.lastName} - {activity.lead?.project?.title}
+                      </p>
               </div>
             </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6', marginTop: '6px', flexShrink: 0 }}></div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>New Associate Added</span>
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>1 hour ago</span>
-                </div>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Priya Sharma joined as Relationship Manager.</p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8b5cf6', marginTop: '6px', flexShrink: 0 }}></div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>Project Updated</span>
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>3 hour ago</span>
-                </div>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>New layout uploaded for Sunshine Valley project.</p>
-              </div>
-            </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>

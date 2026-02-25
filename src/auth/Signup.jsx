@@ -4,7 +4,8 @@ import { User, Mail, Lock, Phone, ChevronDown, Eye, EyeOff } from 'lucide-react'
 import { authService } from '../services/authService';
 import { toastService } from '../services/toastService';
 import axios from 'axios';
-import LoginBgImage from '../../src/assets/login-bg.png'
+import LoginBgImage from '../assets/login-bg.png'
+import LoginImage from '../assets/login-image.png';
 
 
 const Signup = () => {
@@ -166,7 +167,7 @@ const Signup = () => {
         }}>
           <div style={{ maxWidth: '450px', width: '100%' }}>
             <img
-              src="/src/assets/login-image.png"
+              src={LoginImage}
               alt="Real Estate"
               style={{
                 width: '100%',

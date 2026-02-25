@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Phone, MapPin, Calendar, User, Edit, TrendingUp, X, Lo
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import profileImage from '../../assets/associate-profile.jpg';
 import { employeeService } from '../../../services/employeeService';
+import { dashboardService } from '../../../services/dashboardService';
 import { ProfileShimmer } from '../../../components/loaders/ShimmerLoader';
 import { permissionService } from '../../../services/permissionService';
 import { toastService } from '../../../services/toastService';
@@ -26,12 +27,27 @@ const AssociateProfile = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [portfolioData, setPortfolioData] = useState({ leads: 0, sales: 0, commission: 0, projects: 0 });
+  const [salesData, setSalesData] = useState([]);
+  const [commissionData, setCommissionData] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
 
   useEffect(() => {
     fetchEmployeeInfo();
     const isAdmin = permissionService.isAdmin();
     setCanEdit(isAdmin || permissionService.canEdit('Associates'));
   }, [id]);
+
+  useEffect(() => {
+    if (employee?.code) {
+      fetchPortfolioData();
+      fetchSalesData();
+      fetchCommissionData();
+      fetchRecentActivity();
+    }
+  }, [employee?.code, startDate, endDate]);
 
   const fetchEmployeeInfo = async () => {
     try {
@@ -43,6 +59,65 @@ const AssociateProfile = () => {
       console.error('Error fetching employee info:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPortfolioData = async () => {
+    try {
+      const response = await employeeService.getPortfolio(employee.code, startDate, endDate);
+      if (response.success) {
+        const data = response.data;
+        setPortfolioData({
+          leads: data.find(item => item.name === 'Leads')?.value || 0,
+          sales: data.find(item => item.name === 'Sales')?.value || 0,
+          commission: data.find(item => item.name === 'Commission')?.value || 0,
+          projects: data.find(item => item.name === 'Projects')?.value || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching portfolio data:', error);
+    }
+  };
+
+  const fetchSalesData = async () => {
+    try {
+      const response = await employeeService.getSales(employee.code);
+      if (response.success) {
+        setSalesData(response.data.map(item => ({
+          month: item.month,
+          value: item.totalCollected
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching sales data:', error);
+    }
+  };
+
+  const fetchCommissionData = async () => {
+    try {
+      const response = await employeeService.getCommission(employee.code);
+      if (response.success) {
+        setCommissionData(response.data.map(item => ({
+          month: item.month,
+          value: item.totalCollected
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching commission data:', error);
+    }
+  };
+
+  const fetchRecentActivity = async () => {
+    try {
+      const response = await dashboardService.getLatestLeads();
+      if (response.success) {
+        const employeeActivities = response.data.filter(
+          activity => activity.assignedTo?._id === employee._id
+        ).slice(0, 2);
+        setRecentActivity(employeeActivities);
+      }
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
     }
   };
 
@@ -109,23 +184,19 @@ const AssociateProfile = () => {
     setShowConfirmPassword(false);
   };
 
-  const monthlySalesData = [
-    { month: 'Jan', value: 40 },
-    { month: 'Feb', value: 55 },
-    { month: 'March', value: 35 },
-    { month: 'April', value: 50 },
-    { month: 'May', value: 65 },
-    { month: 'June', value: 85 }
-  ];
+  const getInitials = (name) => {
+    if (!name) return 'NA';
+    const names = name.trim().split(' ');
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  };
 
-  const commissionData = [
-    { month: 'Jan', value: 8 },
-    { month: 'Feb', value: 6 },
-    { month: 'March', value: 10 },
-    { month: 'April', value: 7 },
-    { month: 'May', value: 9 },
-    { month: 'June', value: 11 }
-  ];
+  const getProfileImage = () => {
+    if (employee?.profileImage) {
+      return `https://realestate.vsahasoft.com${employee.profileImage}`;
+    }
+    return null;
+  };
 
   if (loading) {
     return (
@@ -179,12 +250,29 @@ const AssociateProfile = () => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
           <div style={{ display: 'flex', gap: '20px' }}>
-            <img src={profileImage} alt="Profile" style={{
-              width: '100px',
-              height: '100px',
-              borderRadius: '50%',
-              objectFit: 'cover'
-            }} />
+            {getProfileImage() ? (
+              <img src={getProfileImage()} alt="Profile" style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }} />
+            ) : (
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--dashboard-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '36px',
+                fontWeight: '600',
+                color: 'white'
+              }}>
+                {getInitials(employee.name)}
+              </div>
+            )}
             <div>
               <h3 style={{ fontSize: '22px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 12px 0' }}>
                 {employee.name}
@@ -302,7 +390,7 @@ const AssociateProfile = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', alignItems: 'center' }}>
           <button 
             onClick={() => navigate(`/dashboard/associates/${id}/team-tree`)}
             style={{
@@ -317,46 +405,53 @@ const AssociateProfile = () => {
           }}>
             Team Tree
           </button>
-          <select style={{
-            padding: '10px 16px',
-            border: '1px solid var(--dashboard-border)',
-            borderRadius: '6px',
-            fontSize: '14px',
-            cursor: 'pointer'
-          }}>
-            <option>Select Date</option>
-          </select>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{
+              padding: '10px 16px',
+              border: '1px solid var(--dashboard-border)',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+            placeholder="Start Date"
+          />
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{
+              padding: '10px 16px',
+              border: '1px solid var(--dashboard-border)',
+              borderRadius: '6px',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+            placeholder="End Date"
+          />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
           <div style={{ padding: '16px', backgroundColor: 'var(--dashboard-tertiary)', borderRadius: '8px' }}>
-            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 8px 0' }}>Total Sales</p>
-            <h3 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--dashboard-primary)', margin: 0 }}>12 Plots</h3>
-            <p style={{ fontSize: '12px', color: 'var(--dashboard-text-light)', margin: '4px 0 0 0' }}>-2 this month</p>
+            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 8px 0' }}>Leads</p>
+            <h3 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--dashboard-primary)', margin: 0 }}>{portfolioData.leads}</h3>
           </div>
 
           <div style={{ padding: '16px', backgroundColor: 'var(--dashboard-tertiary)', borderRadius: '8px' }}>
-            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 8px 0' }}>Total Sales Value</p>
-            <h3 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--dashboard-primary)', margin: 0 }}>₹2.4 Cr</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-              <TrendingUp size={14} color="#10b981" />
-              <span style={{ fontSize: '12px', color: '#10b981' }}>+8%</span>
-            </div>
+            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 8px 0' }}>Sales</p>
+            <h3 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--dashboard-primary)', margin: 0 }}>{portfolioData.sales}</h3>
           </div>
 
           <div style={{ padding: '16px', backgroundColor: 'var(--dashboard-tertiary)', borderRadius: '8px' }}>
-            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 8px 0' }}>Commission Earned</p>
-            <h3 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--dashboard-primary)', margin: 0 }}>₹12.5 L</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-              <TrendingUp size={14} color="#10b981" />
-              <span style={{ fontSize: '12px', color: '#10b981' }}>+12%</span>
-            </div>
+            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 8px 0' }}>Commission</p>
+            <h3 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--dashboard-primary)', margin: 0 }}>₹{portfolioData.commission}</h3>
           </div>
 
           <div style={{ padding: '16px', backgroundColor: 'var(--dashboard-tertiary)', borderRadius: '8px' }}>
-            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 8px 0' }}>Active Projects</p>
-            <h3 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--dashboard-primary)', margin: 0 }}>03</h3>
-            <p style={{ fontSize: '12px', color: 'var(--dashboard-text-light)', margin: '4px 0 0 0' }}>Peak: 05</p>
+            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 8px 0' }}>Projects</p>
+            <h3 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--dashboard-primary)', margin: 0 }}>{portfolioData.projects}</h3>
           </div>
         </div>
       </div>
@@ -468,7 +563,7 @@ const AssociateProfile = () => {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
         <div style={{
           backgroundColor: 'var(--dashboard-white)',
           padding: '20px',
@@ -477,7 +572,7 @@ const AssociateProfile = () => {
         }}>
           <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', marginBottom: '16px' }}>Monthly Sales Trend</h3>
           <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={monthlySalesData}>
+            <BarChart data={salesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
@@ -493,10 +588,7 @@ const AssociateProfile = () => {
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>Commission Growth</h3>
-            <span style={{ fontSize: '12px', color: '#10b981', fontWeight: '500' }}>+8% Increased</span>
-          </div>
+          <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', marginBottom: '16px' }}>Commission Growth</h3>
           <ResponsiveContainer width="100%" height={180}>
             <LineChart data={commissionData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -506,22 +598,6 @@ const AssociateProfile = () => {
               <Line type="monotone" dataKey="value" stroke="#ef4444" strokeWidth={2} dot={{ fill: '#ef4444', r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
-        </div>
-
-        <div style={{
-          backgroundColor: '#10b981',
-          padding: '20px',
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          color: 'white'
-        }}>
-          <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>Team Ranking Card</h3>
-          <div style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px' }}>#3 of 120</div>
-          <p style={{ fontSize: '13px', opacity: 0.9, marginBottom: '16px' }}>Ranked 3rd in relationship manager category</p>
-          <div style={{ backgroundColor: 'rgba(255,255,255,0.2)', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: '75%', height: '100%', backgroundColor: 'white', borderRadius: '4px' }}></div>
-          </div>
-          <p style={{ fontSize: '12px', marginTop: '8px', opacity: '0.8' }}>Performance Score</p>
         </div>
       </div>
 
@@ -589,25 +665,25 @@ const AssociateProfile = () => {
       }}>
         <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', marginBottom: '20px' }}>Recent Activity Log</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', marginTop: '6px', flexShrink: 0 }}></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: '500', color: 'var(--dashboard-text)', marginBottom: '4px' }}>
-                Closed Plot Sale - Emerald Heights
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: 0 }}>October 24, 2023 · 11:45 AM</p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6', marginTop: '6px', flexShrink: 0 }}></div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: '500', color: 'var(--dashboard-text)', marginBottom: '4px' }}>
-                Updated Client Lead - Oasis Residency
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: 0 }}>October 22, 2023 · 09:30 AM</p>
-            </div>
-          </div>
+          {recentActivity.length === 0 ? (
+            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', textAlign: 'center', padding: '20px' }}>No recent activity</p>
+          ) : (
+            recentActivity.map((activity, index) => {
+              const colors = ['#10b981', '#3b82f6'];
+              const timeAgo = new Date(activity.createdAt).toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+              return (
+                <div key={activity._id} style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: colors[index % 2], marginTop: '6px', flexShrink: 0 }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '14px', fontWeight: '500', color: 'var(--dashboard-text)', marginBottom: '4px' }}>
+                      {activity.description}
+                    </div>
+                    <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: 0 }}>{timeAgo}</p>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 

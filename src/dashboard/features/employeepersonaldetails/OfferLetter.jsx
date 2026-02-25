@@ -97,7 +97,7 @@ const OfferLetter = () => {
       }}>
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#1f2937', margin: '0 0 16px 0' }}>
-            ABC REAL ESTATE CORPORATION
+            LANDVEST INFRA
           </h1>
           <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.6', margin: 0 }}>
             Door No:12-8-42, 2nd Floor, Savithri Mallaah Arcade, Lallaguda,<br />

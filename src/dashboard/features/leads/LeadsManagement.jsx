@@ -143,7 +143,7 @@ const LeadsManagement = () => {
               </button>
             )}
 
-            <button
+            {/* <button
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -160,7 +160,7 @@ const LeadsManagement = () => {
             >
               <Download size={18} />
               Bulk Import/Export
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -309,7 +309,7 @@ const LeadsManagement = () => {
               alignItems: 'center',
               gap: '6px',
               padding: '8px 16px',
-              backgroundColor: dashboardColors.primary,
+              backgroundColor: dashboardColors.button,
               color: dashboardColors.white,
               border: 'none',
               borderRadius: '6px',
@@ -317,7 +317,7 @@ const LeadsManagement = () => {
               cursor: 'pointer',
             }}>
               <Download size={16} />
-              Export
+              Bulk Export
             </button>
           </div>
         </div>

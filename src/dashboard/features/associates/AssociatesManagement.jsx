@@ -7,6 +7,8 @@ import dashboardColors from '../../styles/colors';
 import Pagination from '../../components/common/Pagination';
 import { employeeService } from '../../../services/employeeService';
 import { designationService } from '../../../services/designationService';
+import { organizationService } from '../../../services/organizationService';
+import { toastService } from '../../../services/toastService';
 import { TableShimmer, CardShimmer } from '../../../components/loaders/ShimmerLoader';
 import { permissionService } from '../../../services/permissionService';
 
@@ -24,6 +26,30 @@ const AssociatesManagement = () => {
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, new: 0 });
   const [canEdit, setCanEdit] = useState(false);
   const itemsPerPage = 5;
+
+  const handleExport = async () => {
+    try {
+      const response = await organizationService.getAssociatesReport(
+        1,
+        1000,
+        '',
+        '',
+        1
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `associates-report-${new Date().getTime()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toastService.success('Associates report exported successfully');
+    } catch (error) {
+      console.error('Error exporting associates:', error);
+      toastService.error('Failed to export associates report');
+    }
+  };
 
   useEffect(() => {
     fetchAssociates();
@@ -153,7 +179,7 @@ const AssociatesManagement = () => {
               </button>
             )}
 
-            <button
+            {/* <button
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -170,7 +196,7 @@ const AssociatesManagement = () => {
             >
               <Download size={18} />
               Bulk Import/Export
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -326,12 +352,14 @@ const AssociatesManagement = () => {
               <Filter size={16} />
               Filters
             </button> */}
-            <button style={{
+            <button 
+              onClick={handleExport}
+              style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
               padding: '8px 16px',
-              backgroundColor: dashboardColors.primary,
+              backgroundColor: dashboardColors.button,
               color: dashboardColors.white,
               border: 'none',
               borderRadius: '6px',
@@ -339,7 +367,7 @@ const AssociatesManagement = () => {
               cursor: 'pointer',
             }}>
               <Download size={16} />
-              Export
+              Bulk Export
             </button>
           </div>
         </div>

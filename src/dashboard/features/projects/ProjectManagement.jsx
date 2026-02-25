@@ -322,7 +322,7 @@ const ProjectManagement = () => {
                 <th>Sold</th>
                 <th>Blocked</th>
                 <th>Available</th>
-                {/* <th>Action</th> */}
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -356,7 +356,7 @@ const ProjectManagement = () => {
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
-                    {/* <td>
+                    <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <button
                           title="Edit"
@@ -366,28 +366,12 @@ const ProjectManagement = () => {
                             cursor: 'pointer',
                             color: dashboardColors.primary,
                           }}
-                          onClick={() => navigate(`/dashboard/projects/edit/${proj._id}`)}
+                          onClick={() => navigate(`/dashboard/projects/add/basic-info`, { state: { projectId: proj._id, isEdit: true } })}
                         >
                           <Pencil size={18} />
                         </button>
-                        <button
-                          title="Delete"
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            color: '#ef4444',
-                          }}
-                          onClick={() => {
-                            if (window.confirm('Delete this project?')) {
-                              console.log('Delete project', proj._id);
-                            }
-                          }}
-                        >
-                          <Trash2 size={18} />
-                        </button>
                       </div>
-                    </td> */}
+                    </td>
                   </tr>
                 ))
               )}

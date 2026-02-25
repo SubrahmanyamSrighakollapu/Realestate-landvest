@@ -73,7 +73,7 @@ const DashboardNavbar = ({ sidebarOpen }) => {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '25px' }}>
-        <button style={{
+        {/* <button style={{
           background: 'none',
           border: 'none',
           cursor: 'pointer',
@@ -90,7 +90,7 @@ const DashboardNavbar = ({ sidebarOpen }) => {
             backgroundColor: '#ef4444',
             borderRadius: '50%'
           }}></span>
-        </button>
+        </button> */}
 
         <div style={{ position: 'relative', zIndex: 1001 }} ref={profileRef}>
           <button

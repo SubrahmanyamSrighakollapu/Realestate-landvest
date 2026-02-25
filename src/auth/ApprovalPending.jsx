@@ -1,6 +1,7 @@
-import LoginBgImage from '../../src/assets/login-bg.png';
+import LoginBgImage from '../assets/login-bg.png';
 import ApprovalGif from '../../src/assets/approval pending gif.gif';
 import { useNavigate } from 'react-router-dom';
+import LoginImage from '../assets/login-image.png';
 
 
 const ApprovalPending = () => {
@@ -42,7 +43,7 @@ const ApprovalPending = () => {
         }}>
           <div style={{ maxWidth: '450px', width: '100%' }}>
             <img
-              src="/src/assets/login-image.png"
+              src={LoginImage}
               alt="Real Estate"
               style={{
                 width: '100%',

@@ -1,18 +1,95 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, User, Calendar, Phone } from 'lucide-react';
-import profileImage from '../../assets/associate-profile.jpg';
+import { useState, useEffect } from 'react';
+import { employeeService } from '../../../services/employeeService';
 import '../../styles/global.css';
 
 const AssociateTeamTree = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const [employee, setEmployee] = useState(null);
+  const [teamTree, setTeamTree] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const teamMembers = [
-    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Senior Associate', color: '#f97316' },
-    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Senior Associate', color: '#ef4444' },
-    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Associate', color: '#10b981' },
-    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Junior Associate', color: '#3b82f6' },
-    { name: 'Arun Kumar', id: 'BID1000', sale: '₹1.2Cr', role: 'Sale Director', color: '#ec4899' }
-  ];
+  useEffect(() => {
+    fetchEmployeeInfo();
+    fetchTeamTree();
+  }, [id]);
+
+  const fetchEmployeeInfo = async () => {
+    try {
+      const response = await employeeService.getEmployeeInfo(id);
+      if (response.success) {
+        setEmployee(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching employee info:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTeamTree = async () => {
+    try {
+      const response = await employeeService.getMyTeamTree();
+      if (response.success) {
+        setTeamTree(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching team tree:', error);
+    }
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'NA';
+    const names = name.trim().split(' ');
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  };
+
+  const getProfileImage = (profileImage) => {
+    if (profileImage) {
+      return `https://realestate.vsahasoft.com${profileImage}`;
+    }
+    return null;
+  };
+
+  const ProfileAvatar = ({ name, profileImage, size = '48px', fontSize = '18px' }) => {
+    const imgSrc = getProfileImage(profileImage);
+    return imgSrc ? (
+      <img src={imgSrc} alt={name} style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        objectFit: 'cover'
+      }} />
+    ) : (
+      <div style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        backgroundColor: 'var(--dashboard-primary)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: fontSize,
+        fontWeight: '600',
+        color: 'white'
+      }}>
+        {getInitials(name)}
+      </div>
+    );
+  };
+
+  if (loading) {
+    return <div style={{ padding: '24px' }}>Loading...</div>;
+  }
+
+  if (!employee || !teamTree) {
+    return <div style={{ padding: '24px' }}>Employee not found</div>;
+  }
+
+  const teamMembers = teamTree.children || [];
 
   return (
     <div>
@@ -42,40 +119,35 @@ const AssociateTeamTree = () => {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', gap: '20px' }}>
-            <img src={profileImage} alt="Profile" style={{
-              width: '100px',
-              height: '100px',
-              borderRadius: '50%',
-              objectFit: 'cover'
-            }} />
+            <ProfileAvatar name={employee.name} profileImage={employee.profileImage} size="100px" fontSize="36px" />
             <div>
               <h3 style={{ fontSize: '22px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 12px 0' }}>
-                Priya Sharma
+                {employee.name}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '14px', color: 'var(--dashboard-text-light)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <User size={16} />
-                  <span>ID: RE-9042</span>
+                  <span>ID: {employee.code}</span>
                   <span style={{ margin: '0 4px' }}>•</span>
-                  <span>Manager</span>
+                  <span>{employee.role?.name || 'N/A'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Phone size={16} />
-                  <span>+91 98765 43210</span>
+                  <span>{employee.phone}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Calendar size={16} />
-                  <span>Joined October 12, 2021</span>
+                  <span>Joined {employee.doj ? new Date(employee.doj).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <User size={16} />
-                  <span>Sponsored By: <strong>Vikram Singh</strong></span>
+                  <span>Sponsored By: <strong>{employee.sponser?.name || 'N/A'}</strong></span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div style={{
+          {/* <div style={{
             backgroundColor: 'var(--dashboard-tertiary)',
             padding: '16px 20px',
             borderRadius: '8px',
@@ -89,7 +161,7 @@ const AssociateTeamTree = () => {
               <div>The Green Boulevard (NEW)</div>
               <div>Oasis Residency (FULL)</div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -105,21 +177,16 @@ const AssociateTeamTree = () => {
             position: 'relative'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-              <img src={profileImage} alt="Team Lead" style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '50%',
-                objectFit: 'cover'
-              }} />
+              <ProfileAvatar name={teamTree.name} profileImage={teamTree.profileImage} size="48px" fontSize="18px" />
               <div>
                 <h4 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>
-                  Bhoodhana Infra
+                  {teamTree.name}
                 </h4>
-                <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: 0 }}>Developers</p>
+                <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: 0 }}>{teamTree.role?.name || 'N/A'}</p>
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-              <span style={{ fontSize: '13px', color: 'var(--dashboard-text-light)' }}>BID1000</span>
+              <span style={{ fontSize: '13px', color: 'var(--dashboard-text-light)' }}>{teamTree.code}</span>
               <span style={{
                 fontSize: '12px',
                 fontWeight: '500',
@@ -141,7 +208,7 @@ const AssociateTeamTree = () => {
             }}>
               <div>
                 <p style={{ fontSize: '11px', color: 'var(--dashboard-text-light)', margin: '0 0 4px 0' }}>Team</p>
-                <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>26</p>
+                <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>{teamMembers.length}</p>
               </div>
               <div>
                 <p style={{ fontSize: '11px', color: 'var(--dashboard-text-light)', margin: '0 0 4px 0' }}>Sale</p>
@@ -181,8 +248,11 @@ const AssociateTeamTree = () => {
             backgroundColor: 'var(--dashboard-border)'
           }}></div>
 
-          {teamMembers.map((member, index) => (
-            <div key={index} style={{ position: 'relative' }}>
+          {teamMembers.map((member, index) => {
+            const colors = ['#f97316', '#ef4444', '#10b981', '#3b82f6', '#ec4899'];
+            const color = colors[index % colors.length];
+            return (
+            <div key={member._id} style={{ position: 'relative' }}>
               <div style={{
                 position: 'absolute',
                 top: '0',
@@ -203,17 +273,12 @@ const AssociateTeamTree = () => {
                 marginTop: '40px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <img src={profileImage} alt={member.name} style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    objectFit: 'cover'
-                  }} />
+                  <ProfileAvatar name={member.name} profileImage={member.profileImage} size="40px" fontSize="14px" />
                   <div>
                     <h5 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--dashboard-text)', margin: 0 }}>
                       {member.name}
                     </h5>
-                    <p style={{ fontSize: '11px', color: 'var(--dashboard-text-light)', margin: 0 }}>{member.id}</p>
+                    <p style={{ fontSize: '11px', color: 'var(--dashboard-text-light)', margin: 0 }}>{member.code}</p>
                   </div>
                 </div>
                 <div style={{
@@ -224,23 +289,23 @@ const AssociateTeamTree = () => {
                   paddingBottom: '8px',
                   borderBottom: '1px solid var(--dashboard-border)'
                 }}>
-                  <span style={{ color: 'var(--dashboard-text-light)' }}>Sale</span>
-                  <span style={{ fontWeight: '600', color: 'var(--dashboard-text)' }}>{member.sale}</span>
+                  <span style={{ color: 'var(--dashboard-text-light)' }}>Role</span>
+                  <span style={{ fontWeight: '600', color: 'var(--dashboard-text)' }}>{member.role?.name || 'N/A'}</span>
                 </div>
                 <div style={{
                   fontSize: '11px',
                   fontWeight: '500',
-                  color: member.color,
-                  backgroundColor: `${member.color}15`,
+                  color: color,
+                  backgroundColor: `${color}15`,
                   padding: '4px 8px',
                   borderRadius: '6px',
                   textAlign: 'center'
                 }}>
-                  {member.role}
+                  {member.role?.name || 'N/A'}
                 </div>
               </div>
             </div>
-          ))}
+          );})}
         </div>
       </div>
     </div>

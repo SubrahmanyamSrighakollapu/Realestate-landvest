@@ -63,5 +63,15 @@ export const projectService = {
   getParentRoles: async (roleId) => {
     const response = await apiClient.post('/admin/roles/parent', { role: roleId });
     return response.data;
+  },
+
+  getProjectInfo: async (id) => {
+    const response = await apiClient.post('/admin/project/info', { id });
+    return response.data;
+  },
+
+  updateProject: async (formData) => {
+    const response = await apiClient.post('/admin/project/update', formData);
+    return response.data;
   }
 };

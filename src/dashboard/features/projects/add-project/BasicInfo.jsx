@@ -1,9 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Upload } from 'lucide-react';
 import { projectService } from '../../../../services/projectService';
 import { toastService } from '../../../../services/toastService';
+import dashboardColors from '../../../styles/colors';
 
 const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectData }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { projectId, isEdit } = location.state || {};
+  
   const [formData, setFormData] = useState({
     title: projectData?.title || '',
     shortTitle: projectData?.shortTitle || '',
@@ -26,6 +32,51 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
   const [bannerImage, setBannerImage] = useState(null);
   const [thumbnailImage, setThumbnailImage] = useState(null);
   const [contentImage, setContentImage] = useState(null);
+  const [existingImages, setExistingImages] = useState({
+    bannerImage: '',
+    thumbnailImage: '',
+    contentImage: ''
+  });
+
+  useEffect(() => {
+    if (isEdit && projectId) {
+      fetchProjectInfo();
+    }
+  }, [isEdit, projectId]);
+
+  const fetchProjectInfo = async () => {
+    try {
+      const response = await projectService.getProjectInfo(projectId);
+      if (response.success) {
+        const data = response.data;
+        setFormData({
+          title: data.title || '',
+          shortTitle: data.shortTitle || '',
+          thumbnailTitle: data.thumbnailTitle || '',
+          status: data.status || 'active',
+          location: data.location || '',
+          date: data.date ? data.date.split('T')[0] : '',
+          approvedBy: data.approvedBy || '',
+          startingPrice: data.startingPrice || '',
+          plotSize: data.plotSize || '',
+          totalPlots: data.totalPlots || '',
+          description: data.description || '',
+          contentImageCaption: data.contentImageCaption || '',
+          metaTitle: data.metaTitle || '',
+          metaKeywords: data.metaKeywords || '',
+          metaDescription: data.metaDescription || ''
+        });
+        setExistingImages({
+          bannerImage: data.bannerImage || '',
+          thumbnailImage: data.thumbnnailImage || '',
+          contentImage: data.contentImage || ''
+        });
+        setProjectData(data);
+      }
+    } catch (error) {
+      toastService.error('Failed to load project info');
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -56,6 +107,12 @@ if (file && file.size > maxSize) {
     setLoading(true);
     try {
       const data = new FormData();
+      
+      if (isEdit && projectId) {
+        data.append('id', projectId);
+        data.append('code', projectData.code);
+      }
+      
       data.append('title', formData.title);
       if (formData.shortTitle) data.append('shortTitle', formData.shortTitle);
       if (formData.thumbnailTitle) data.append('thumbnailTitle', formData.thumbnailTitle);
@@ -76,17 +133,24 @@ if (file && file.size > maxSize) {
       if (thumbnailImage) data.append('thumbnnailImage', thumbnailImage);
       if (contentImage) data.append('contentImage', contentImage);
 
-      const response = await projectService.addProject(data);
+      const response = isEdit 
+        ? await projectService.updateProject(data)
+        : await projectService.addProject(data);
+        
       if (response.success) {
         setProjectData({ ...response.data, ...formData });
-        toastService.success('Project basic info saved successfully!');
-        onNext();
+        toastService.success(`Project ${isEdit ? 'updated' : 'saved'} successfully!`);
+        if (isEdit) {
+          navigate('/dashboard/projects/management');
+        } else {
+          onNext();
+        }
       }
     } catch (error) {
       if (error.response?.status === 413) {
         toastService.error('File size too large. Please reduce image sizes and try again.');
       } else {
-        toastService.error(error.response?.data?.message || 'Failed to save project');
+        toastService.error(error.response?.data?.message || `Failed to ${isEdit ? 'update' : 'save'} project`);
       }
     } finally {
       setLoading(false);
@@ -128,8 +192,13 @@ if (file && file.size > maxSize) {
             Banner Image
           </h4>
           <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
-            {bannerImage ? bannerImage.name : 'Drag & drop or click to upload'}
+            {bannerImage ? bannerImage.name : existingImages.bannerImage ? 'Current file uploaded' : 'Drag & drop or click to upload'}
           </p>
+          {existingImages.bannerImage && !bannerImage && (
+            <p style={{ fontSize: '12px', color: 'var(--dashboard-primary)', marginBottom: '12px' }}>
+              <a href={`https://realestate.vsahasoft.com${existingImages.bannerImage}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color:dashboardColors.primary }}>View Current File</a>
+            </p>
+          )}
           <input
             type="file"
             id="bannerImageInput"
@@ -178,8 +247,13 @@ if (file && file.size > maxSize) {
             Thumbnail Image
           </h4>
           <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
-            {thumbnailImage ? thumbnailImage.name : 'Drag & drop or click to upload'}
+            {thumbnailImage ? thumbnailImage.name : existingImages.thumbnailImage ? 'Current file uploaded' : 'Drag & drop or click to upload'}
           </p>
+          {existingImages.thumbnailImage && !thumbnailImage && (
+            <p style={{ fontSize: '12px', color: 'var(--dashboard-primary)', marginBottom: '12px' }}>
+              <a href={`https://realestate.vsahasoft.com${existingImages.thumbnailImage}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color:dashboardColors.primary }}>View Current File</a>
+            </p>
+          )}
           <input
             type="file"
             id="thumbnailImageInput"
@@ -484,8 +558,13 @@ if (file && file.size > maxSize) {
               Content Image
             </h4>
             <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
-              {contentImage ? contentImage.name : 'Drag & drop or click to upload'}
+              {contentImage ? contentImage.name : existingImages.contentImage ? 'Current file uploaded' : 'Drag & drop or click to upload'}
             </p>
+            {existingImages.contentImage && !contentImage && (
+              <p style={{ fontSize: '12px', color: 'var(--dashboard-primary)', marginBottom: '12px' }}>
+                <a href={`https://realestate.vsahasoft.com${existingImages.contentImage}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color:dashboardColors.primary }}>View Current File</a>
+              </p>
+            )}
             <input
               type="file"
               id="contentImageInput"
@@ -568,7 +647,7 @@ if (file && file.size > maxSize) {
             opacity: loading ? 0.6 : 1
           }}
         >
-          {loading ? 'Saving...' : 'Save & Continue'}
+          {loading ? (isEdit ? 'Updating...' : 'Saving...') : (isEdit ? 'Update' : 'Save & Continue')}
         </button>
       </div>
     </div>

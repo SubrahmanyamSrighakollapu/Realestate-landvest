@@ -6,6 +6,7 @@ import { authService } from '../../../services/authService';
 import { organizationService } from '../../../services/organizationService';
 import { toastService } from '../../../services/toastService';
 import { permissionService } from '../../../services/permissionService';
+import { dashboardService } from '../../../services/dashboardService';
 import Pagination from '../../components/common/Pagination';
 import '../../styles/global.css';
 
@@ -30,6 +31,7 @@ const Associates = () => {
   const [newAssociatesData, setNewAssociatesData] = useState([]);
   const [salesOverviewData, setSalesOverviewData] = useState([]);
   const [canDownload, setCanDownload] = useState(false);
+  const [recentActivity, setRecentActivity] = useState([]);
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -39,6 +41,7 @@ const Associates = () => {
     fetchAssociatesStatus();
     fetchNewAssociates();
     fetchSalesOverview();
+    fetchRecentActivity();
     const isAdmin = permissionService.isAdmin();
     const downloadPermission = isAdmin || permissionService.canDownload('Associates');
     console.log('Associates Download Permission:', downloadPermission);
@@ -175,6 +178,17 @@ const Associates = () => {
     }
   };
 
+  const fetchRecentActivity = async () => {
+    try {
+      const response = await dashboardService.getLatestLeads();
+      if (response.success) {
+        setRecentActivity(response.data.slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+    }
+  };
+
   const handleApplyFilter = () => {
     fetchDashboardData();
     fetchAssociatesReport();
@@ -182,6 +196,7 @@ const Associates = () => {
     fetchAssociatesStatus();
     fetchNewAssociates();
     fetchSalesOverview();
+    fetchRecentActivity();
   };
 
   const statsCards = [
@@ -398,7 +413,7 @@ const Associates = () => {
         </button> */}
       </div>
 
-      <div style={{
+      {/* <div style={{
         backgroundColor: '#fff',
         padding: '24px',
         borderRadius: '12px',
@@ -484,7 +499,7 @@ const Associates = () => {
             ))}
           </tbody>
         </table>
-      </div>
+      </div> */}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '24px' }}>
         <div style={{
@@ -528,38 +543,28 @@ const Associates = () => {
         }}>
           <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#1f2937', marginBottom: '20px' }}>Recent Activity</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', marginTop: '6px', flexShrink: 0 }}></div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>Payment Received</span>
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>2 min ago</span>
-                </div>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Received ₹6,80,000 for Plot A12 From Priya</p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6', marginTop: '6px', flexShrink: 0 }}></div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>New Associate Added</span>
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>1 hour ago</span>
-                </div>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>Priya Sharma joined as Relationship Manager.</p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8b5cf6', marginTop: '6px', flexShrink: 0 }}></div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>Project Updated</span>
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>3 hour ago</span>
-                </div>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>New layout uploaded for Sunshine Valley project.</p>
-              </div>
-            </div>
+            {recentActivity.length === 0 ? (
+              <p style={{ fontSize: '13px', color: '#6b7280', textAlign: 'center', padding: '20px' }}>No recent activity</p>
+            ) : (
+              recentActivity.map((activity, index) => {
+                const colors = ['#10b981', '#3b82f6', '#8b5cf6'];
+                const timeAgo = new Date(activity.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                return (
+                  <div key={activity._id} style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: colors[index % 3], marginTop: '6px', flexShrink: 0 }}></div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>{activity.description}</span>
+                        <span style={{ fontSize: '12px', color: '#6b7280' }}>{timeAgo}</span>
+                      </div>
+                      <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
+                        {activity.lead?.firstName} {activity.lead?.lastName} - {activity.lead?.project?.title}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>
