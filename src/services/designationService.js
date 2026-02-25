@@ -7,7 +7,11 @@ export const designationService = {
   },
 
   listDesignations: async (search = '') => {
-    const response = await apiClient.post('/admin/roles/list', { search });
+    const response = await apiClient.post('/admin/roles/list', { 
+      search,
+      sortBy: 'percentage',
+      sort: 'asc'
+    });
     return response.data;
   }
 };
