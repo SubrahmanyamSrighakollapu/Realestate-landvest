@@ -413,7 +413,7 @@ const Signup = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="Employee Code (e.g., EMP000003)"
+                  placeholder="Employee Code (e.g., LV100003)"
                   value={selectedEmployee || employeeCode}
                   onChange={(e) => handleEmployeeCodeChange(e.target.value.toUpperCase())}
                   required
