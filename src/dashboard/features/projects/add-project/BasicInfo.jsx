@@ -86,16 +86,20 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
   const handleFileUpload = (type, file) => {
     // Validate file size (max 250kB)
     const maxSize = 250 * 1024; 
-if (file && file.size > maxSize) {
-  toastService.error(
-    `File size must be less than 250KB. Selected file is ${(file.size / 1024).toFixed(2)}KB`
-  );
-  return;
-}
+    if (file && file.size > maxSize) {
+      toastService.error(
+        `File size must be less than 250KB. Selected file is ${(file.size / 1024).toFixed(2)}KB`
+      );
+      return;
+    }
     
     if (type === 'banner') setBannerImage(file);
     if (type === 'thumbnail') setThumbnailImage(file);
     if (type === 'content') setContentImage(file);
+    
+    if (file) {
+      toastService.success('File uploaded successfully!');
+    }
   };
 
   const handleSaveAndContinue = async () => {

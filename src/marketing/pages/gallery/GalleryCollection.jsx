@@ -1,21 +1,32 @@
+import gallery1 from '../../../assets/gallery1.png';
+import gallery2 from '../../../assets/gallery2.jpg';
+import gallery3 from '../../../assets/gallery3.jpg';
+import gallery4 from '../../../assets/gallery4.jpg';
+import gallery5 from '../../../assets/gallery5.jpg';
+import gallery6 from '../../../assets/gallery6.jpg';
+import gallery7 from '../../../assets/gallery7.jpg';
+import gallery8 from '../../../assets/gallery8.png';
+
+
 export default function GalleryCollection() {
   const tabs = ['All Photos', 'Site Layout', 'Open Plots', 'Infrastructure', 'Videos'];
 
-  // Sample image data – replace src with your actual asset paths
+  // Use imported images here
   const galleryImages = [
-    '/src/assets/gallery1.png',
-    '/src/assets/gallery2.jpg', // or your video icon
-    '/src/assets/gallery3.jpg',
-    '/src/assets/gallery4.jpg',
-    '/src/assets/gallery5.jpg',
-    '/src/assets/gallery6.jpg',
-    '/src/assets/gallery7.jpg',
-    '/src/assets/gallery8.png',
+    gallery1,
+    gallery2,
+    gallery3,
+    gallery4,
+    gallery5,
+    gallery6,
+    gallery7,
+    gallery8,
   ];
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', padding: '2rem 1rem' }}>
-      {/* Tabs / Filters */}
+      
+      {/* Tabs */}
       <div
         style={{
           display: 'flex',
@@ -25,7 +36,7 @@ export default function GalleryCollection() {
           marginBottom: '2rem',
         }}
       >
-        {tabs.map((tab, index) => (
+        {tabs.map((tab) => (
           <button
             key={tab}
             style={{
@@ -38,7 +49,10 @@ export default function GalleryCollection() {
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: tab === 'All Photos' ? '0 4px 12px rgba(230,126,34,0.3)' : 'none',
+              boxShadow:
+                tab === 'All Photos'
+                  ? '0 4px 12px rgba(230,126,34,0.3)'
+                  : 'none',
             }}
             className="gallery-tab"
           >
@@ -83,11 +97,13 @@ export default function GalleryCollection() {
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.04)';
-              e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.18)';
+              e.currentTarget.style.boxShadow =
+                '0 12px 30px rgba(0,0,0,0.18)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.12)';
+              e.currentTarget.style.boxShadow =
+                '0 6px 20px rgba(0,0,0,0.12)';
             }}
           >
             <img
@@ -98,7 +114,7 @@ export default function GalleryCollection() {
                 height: 'auto',
                 display: 'block',
                 objectFit: 'cover',
-                aspectRatio: '4 / 3', // consistent shape – adjust if needed (e.g. 16/9)
+                aspectRatio: '4 / 3',
               }}
             />
           </div>

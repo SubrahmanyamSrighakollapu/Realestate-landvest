@@ -114,7 +114,7 @@ const MainAboutUs = () => {
               }}
               className="about-title"
             >
-              Landvet Infra Developers Pvt. Ltd.
+              Landvest Infra Developers Pvt. Ltd.
             </h2>
 
             <p

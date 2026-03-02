@@ -13,5 +13,10 @@ export const designationService = {
       sort: 'asc'
     });
     return response.data;
+  },
+
+  getChildRoles: async (roleId) => {
+    const response = await apiClient.post('/admin/roles/child', { role: roleId });
+    return response.data;
   }
 };

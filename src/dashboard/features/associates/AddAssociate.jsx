@@ -106,11 +106,9 @@ const AddAssociate = () => {
   const fetchRolesBySponsor = async (sponsorRoleId) => {
     setLoadingRoles(true);
     try {
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/roles/list', { 
-        parent: sponsorRoleId 
-      });
-      if (response.data.success) {
-        setDesignations(response.data.data);
+      const response = await designationService.getChildRoles(sponsorRoleId);
+      if (response.success) {
+        setDesignations(response.data);
       }
     } catch (error) {
       console.error('Error fetching roles by sponsor:', error);
@@ -156,7 +154,10 @@ const AddAssociate = () => {
 
   const handleFileChange = (e) => {
     const { name, files: fileList } = e.target;
-    setFiles(prev => ({ ...prev, [name]: fileList[0] }));
+    if (fileList[0]) {
+      setFiles(prev => ({ ...prev, [name]: fileList[0] }));
+      toastService.success('File uploaded successfully!');
+    }
   };
 
   const handleSubmit = async (e) => {

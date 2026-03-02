@@ -34,6 +34,7 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
 
 if (validFiles.length > 0) {
     setImages(prev => [...prev, ...validFiles]);
+    toastService.success(`${validFiles.length} file(s) uploaded successfully!`);
   }
   };
 

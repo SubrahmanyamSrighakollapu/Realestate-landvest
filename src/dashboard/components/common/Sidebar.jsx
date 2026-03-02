@@ -66,6 +66,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         minHeight: '70px'
       }}>
         {isOpen && (
+           <Link to="/dashboard">
   <img
     src={logo}
     alt="Logo"
@@ -74,6 +75,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       objectFit: 'contain'
     }}
   />
+  </Link>
 )}
         <button onClick={() => setIsOpen(!isOpen)} style={{
           background: 'none',

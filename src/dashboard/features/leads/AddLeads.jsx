@@ -128,6 +128,7 @@ const AddLeads = () => {
     const { name, value, files } = e.target;
     if (name === 'selfieImage' && files && files[0]) {
       setFormData(prev => ({ ...prev, [name]: files[0] }));
+      toastService.success('File uploaded successfully!');
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }

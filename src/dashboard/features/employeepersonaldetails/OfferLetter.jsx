@@ -107,10 +107,10 @@ const OfferLetter = () => {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', fontSize: '13px' }}>
           <div>
-            <strong>Ref:</strong> MKT/AO/2247
+            <strong>Ref:</strong> Employee ID: {employee.code}
           </div>
           <div>
-            <strong>Date:</strong> {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            <strong>Date:</strong> {new Date().toLocaleDateString('en-GB')}
           </div>
         </div>
 
@@ -133,8 +133,7 @@ const OfferLetter = () => {
         <div style={{ fontSize: '13px', lineHeight: '1.8', marginBottom: '24px', textAlign: 'justify' }}>
           <p style={{ marginBottom: '12px' }}>
             <strong>1.</strong> Your engagement is purely on commission basis. You will be paid MD Cadre commission as per the
-            company is commission structure. Your services will be under the guidance and control of Mr./Ms. B
-            BETHENDRA.MH
+            company is commission structure. Your services will be under the guidance and control of Mr./Ms. {employee.sponser?.name || 'N/A'}
           </p>
 
           <p style={{ marginBottom: '12px' }}>
@@ -183,7 +182,7 @@ const OfferLetter = () => {
 
         <div style={{ marginBottom: '40px', fontSize: '13px' }}>
           <p style={{ margin: '0 0 8px 0' }}><strong>With Best Wishes,</strong></p>
-          <p style={{ margin: '0 0 8px 0' }}><strong>HASINI ESTATES</strong></p>
+          <p style={{ margin: '0 0 8px 0' }}><strong>LANDVEST INFRA</strong></p>
           <p style={{ margin: '0' }}><strong>GENERAL MANAGER, (MKTG)</strong></p>
         </div>
 

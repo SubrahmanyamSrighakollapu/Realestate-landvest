@@ -35,6 +35,7 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
 
      if (validFiles.length > 0) {
     setLayouts(prev => [...prev, ...validFiles]);
+    toastService.success(`${validFiles.length} file(s) uploaded successfully!`);
   }
   };
 
