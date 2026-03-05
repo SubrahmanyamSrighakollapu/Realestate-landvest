@@ -153,9 +153,28 @@ const AddAssociate = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const calculateTotalFileSize = (newFile, newFileType) => {
+    let total = 0;
+    if (newFileType === 'panProof' || files.panProof) total += (newFileType === 'panProof' ? newFile : files.panProof).size;
+    if (newFileType === 'aadharProof' || files.aadharProof) total += (newFileType === 'aadharProof' ? newFile : files.aadharProof).size;
+    if (newFileType === 'residentialProof' || files.residentialProof) total += (newFileType === 'residentialProof' ? newFile : files.residentialProof).size;
+    if (newFileType === 'profileImage' || files.profileImage) total += (newFileType === 'profileImage' ? newFile : files.profileImage).size;
+    return total;
+  };
+
   const handleFileChange = (e) => {
     const { name, files: fileList } = e.target;
     if (fileList[0]) {
+      const MAX_TOTAL_SIZE = 5 * 1024 * 1024; // 5MB
+      const totalSize = calculateTotalFileSize(fileList[0], name);
+      
+      if (totalSize > MAX_TOTAL_SIZE) {
+        toastService.error(
+          `Total file size cannot exceed 5MB. Current total: ${(totalSize / (1024 * 1024)).toFixed(2)}MB`
+        );
+        return;
+      }
+      
       setFiles(prev => ({ ...prev, [name]: fileList[0] }));
       toastService.success('File uploaded successfully!');
     }
@@ -171,6 +190,13 @@ const AddAssociate = () => {
 
     if (!isEdit && !formData.password) {
       toastService.error('Password is required');
+      return;
+    }
+
+    const MAX_TOTAL_SIZE = 5 * 1024 * 1024;
+    const totalSize = calculateTotalFileSize(null, null);
+    if (totalSize > MAX_TOTAL_SIZE) {
+      toastService.error(`Total file size cannot exceed 5MB. Current: ${(totalSize / (1024 * 1024)).toFixed(2)}MB`);
       return;
     }
 

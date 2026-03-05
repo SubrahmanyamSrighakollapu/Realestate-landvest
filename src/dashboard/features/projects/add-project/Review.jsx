@@ -26,6 +26,17 @@ const Review = ({ onPrevious, currentStep, projectData, isEdit }) => {
     }
   }, [projectData]);
 
+  const calculateTotalFileSize = () => {
+    let total = 0;
+    if (userImage) total += userImage.size;
+    if (file) total += file.size;
+    testimonials.forEach(t => {
+      if (t.userImage && typeof t.userImage !== 'string') total += t.userImage.size;
+      if (t.file && typeof t.file !== 'string') total += t.file.size;
+    });
+    return total;
+  };
+
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -41,7 +52,14 @@ const handleDrop = (e, type) => {
   const droppedFile = e.dataTransfer.files?.[0];
   if (!droppedFile) return;
 
-  if (!validateFileSize(droppedFile, type === 'userImage' ? 'User Image' : 'File')) {
+  const MAX_TOTAL_SIZE = 5 * 1024 * 1024;
+  const currentTotal = calculateTotalFileSize();
+  const newTotal = currentTotal + droppedFile.size;
+  
+  if (newTotal > MAX_TOTAL_SIZE) {
+    toastService.error(
+      `Total file size cannot exceed 5MB. Current total would be ${(newTotal / (1024 * 1024)).toFixed(2)}MB`
+    );
     return;
   }
 
@@ -60,6 +78,16 @@ const handleDrop = (e, type) => {
     }
     if (!description.trim()) {
       toastService.error('Description is required');
+      return;
+    }
+
+    const MAX_TOTAL_SIZE = 5 * 1024 * 1024;
+    const newTotal = calculateTotalFileSize();
+    
+    if (newTotal > MAX_TOTAL_SIZE) {
+      toastService.error(
+        `Total file size cannot exceed 5MB. Current total: ${(newTotal / (1024 * 1024)).toFixed(2)}MB`
+      );
       return;
     }
 
@@ -132,12 +160,16 @@ const handleDrop = (e, type) => {
   const validateFileSize = (file, label) => {
     if (!file) return false;
 
-    // if (file.size > MAX_SIZE) {
-    //   toastService.error(
-    //     `${label} must be less than 250KB. Selected file is ${(file.size / 1024).toFixed(2)}KB`
-    //   );
-    //   return false;
-    // }
+    const MAX_TOTAL_SIZE = 5 * 1024 * 1024;
+    const currentTotal = calculateTotalFileSize();
+    const newTotal = currentTotal + file.size;
+    
+    if (newTotal > MAX_TOTAL_SIZE) {
+      toastService.error(
+        `Total file size cannot exceed 5MB. Current total would be ${(newTotal / (1024 * 1024)).toFixed(2)}MB`
+      );
+      return false;
+    }
 
     return true;
   };

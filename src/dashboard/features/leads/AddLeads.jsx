@@ -127,7 +127,17 @@ const AddLeads = () => {
   const handleInputChange = (e) => {
     const { name, value, files } = e.target;
     if (name === 'selfieImage' && files && files[0]) {
-      setFormData(prev => ({ ...prev, [name]: files[0] }));
+      const MAX_TOTAL_SIZE = 5 * 1024 * 1024; // 5MB
+      const selectedFile = files[0];
+      
+      if (selectedFile.size > MAX_TOTAL_SIZE) {
+        toastService.error(
+          `File size cannot exceed 5MB. Selected file is ${(selectedFile.size / (1024 * 1024)).toFixed(2)}MB`
+        );
+        return;
+      }
+      
+      setFormData(prev => ({ ...prev, [name]: selectedFile }));
       toastService.success('File uploaded successfully!');
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));

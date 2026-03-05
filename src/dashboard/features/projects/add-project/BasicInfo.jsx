@@ -86,16 +86,25 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const calculateTotalFileSize = (newFile, newFileType) => {
+    let total = 0;
+    if (newFileType === 'banner' || bannerImage) total += (newFileType === 'banner' ? newFile : bannerImage).size;
+    if (newFileType === 'thumbnail' || thumbnailImage) total += (newFileType === 'thumbnail' ? newFile : thumbnailImage).size;
+    if (newFileType === 'content' || contentImage) total += (newFileType === 'content' ? newFile : contentImage).size;
+    return total;
+  };
+
   const handleFileUpload = (type, file) => {
-    // const maxSize = 250 * 1024; 
-    // if (file && file.size > maxSize) {
-    //   toastService.error(
-    //     `File size must be less than 250KB. Selected file is ${(file.size / 1024).toFixed(2)}KB`
-    //   );
-    //   return;
-    // }
-    
     if (file) {
+      const MAX_TOTAL_SIZE = 5 * 1024 * 1024; // 5MB
+      const totalSize = calculateTotalFileSize(file, type);
+      
+      if (totalSize > MAX_TOTAL_SIZE) {
+        toastService.error(
+          `Total file size cannot exceed 5MB. Current total: ${(totalSize / (1024 * 1024)).toFixed(2)}MB`
+        );
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         if (type === 'banner') {
@@ -119,6 +128,13 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
   const handleSaveAndContinue = async () => {
     if (!formData.title) {
       toastService.error('Project title is required');
+      return;
+    }
+
+    const MAX_TOTAL_SIZE = 5 * 1024 * 1024;
+    const totalSize = calculateTotalFileSize(null, null);
+    if (totalSize > MAX_TOTAL_SIZE) {
+      toastService.error(`Total file size cannot exceed 5MB. Current: ${(totalSize / (1024 * 1024)).toFixed(2)}MB`);
       return;
     }
 

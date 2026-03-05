@@ -17,33 +17,24 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
     }
   }, [projectData]);
 
+  const calculateTotalFileSize = () => {
+    return images.reduce((total, image) => total + image.size, 0);
+  };
+
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
-
-    // const maxSize = 250 * 1024; // 250KB
-    // const validFiles = [];
-    // const oversizedFiles = [];
-
-    // files.forEach(file => {
-    //   if (file.size <= maxSize) {
-    //     validFiles.push(file);
-    //   } else {
-    //     oversizedFiles.push(file);
-    //   }
-    // });
-
-    // if (oversizedFiles.length > 0) {
-    //   toastService.error(
-    //     `Each image must be less than 250KB. ${oversizedFiles.length} file(s) exceeded the limit.`
-    //   );
-    // }
-
-    // if (validFiles.length > 0) {
-    //   setImages(prev => [...prev, ...validFiles]);
-    //   toastService.success(`${validFiles.length} file(s) uploaded successfully!`);
-    // }
+    const MAX_TOTAL_SIZE = 5 * 1024 * 1024; // 5MB
 
     if (files.length > 0) {
+      const newTotalSize = calculateTotalFileSize() + files.reduce((sum, f) => sum + f.size, 0);
+      
+      if (newTotalSize > MAX_TOTAL_SIZE) {
+        toastService.error(
+          `Total file size cannot exceed 5MB. Current total would be ${(newTotalSize / (1024 * 1024)).toFixed(2)}MB`
+        );
+        return;
+      }
+      
       setImages(prev => [...prev, ...files]);
       toastService.success(`${files.length} file(s) uploaded successfully!`);
     }
@@ -63,8 +54,19 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
+    
     if (e.dataTransfer.files) {
       const files = Array.from(e.dataTransfer.files);
+      const MAX_TOTAL_SIZE = 5 * 1024 * 1024;
+      const newTotalSize = calculateTotalFileSize() + files.reduce((sum, f) => sum + f.size, 0);
+      
+      if (newTotalSize > MAX_TOTAL_SIZE) {
+        toastService.error(
+          `Total file size cannot exceed 5MB. Current total would be ${(newTotalSize / (1024 * 1024)).toFixed(2)}MB`
+        );
+        return;
+      }
+      
       setImages(prev => [...prev, ...files]);
     }
   };
