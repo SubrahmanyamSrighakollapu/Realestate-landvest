@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import dashboardColors from '../../../styles/colors';
 import { projectService } from '../../../../services/projectService';
@@ -8,6 +8,12 @@ const Location = ({ onNext, onPrevious, currentStep, projectData, setProjectData
   const [locations, setLocations] = useState([]);
   const [currentLocation, setCurrentLocation] = useState({ title: '', description: '' });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (projectData?.locations?.length > 0) {
+      setLocations(projectData.locations);
+    }
+  }, [projectData]);
 
   const handleAddLocation = () => {
     if (!currentLocation.title || !currentLocation.description) {

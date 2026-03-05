@@ -4,7 +4,7 @@ import dashboardColors from '../../../styles/colors';
 import { projectService } from '../../../../services/projectService';
 import { toastService } from '../../../../services/toastService';
 
-const Pricing = ({ onNext, onPrevious, currentStep, projectData, setProjectData }) => {
+const Pricing = ({ onNext, onPrevious, currentStep, projectData, setProjectData, isEdit }) => {
   const [pricingOptions, setPricingOptions] = useState([]);
   const [pricingData, setPricingData] = useState({});
   const [loading, setLoading] = useState(false);
@@ -25,6 +25,36 @@ const Pricing = ({ onNext, onPrevious, currentStep, projectData, setProjectData 
   useEffect(() => {
     fetchPricingList();
   }, []);
+
+  useEffect(() => {
+    if (projectData?.pricingOptions?.length > 0 && pricingOptions.length > 0) {
+      const existingData = {};
+      pricingOptions.forEach(option => {
+        existingData[option._id] = {
+          pricingOption: option._id,
+          mrp: '',
+          basePrice: '',
+          duration: '',
+          installment: '',
+          advancePayment: false,
+          terms: false
+        };
+      });
+      projectData.pricingOptions.forEach(item => {
+        const optionId = typeof item.pricingOption === 'object' ? item.pricingOption._id : item.pricingOption;
+        existingData[optionId] = {
+          pricingOption: optionId,
+          mrp: item.mrp || '',
+          basePrice: item.basePrice || '',
+          duration: item.duration || '',
+          installment: item.installment || '',
+          advancePayment: item.advancePayment || false,
+          terms: item.terms || false
+        };
+      });
+      setPricingData(existingData);
+    }
+  }, [projectData?.pricingOptions, pricingOptions]);
 
   const fetchPricingList = async () => {
     try {
@@ -437,25 +467,27 @@ const Pricing = ({ onNext, onPrevious, currentStep, projectData, setProjectData 
 
       <div style={{
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: isEdit ? 'space-between' : 'flex-end',
         paddingTop: '24px',
         borderTop: `1px solid ${dashboardColors.border}`,
       }}>
-        <button
-          onClick={onPrevious}
-          style={{
-            padding: '12px 32px',
-            backgroundColor: dashboardColors.white,
-            color: dashboardColors.text,
-            border: `1px solid ${dashboardColors.border}`,
-            borderRadius: '8px',
-            fontSize: '14px',
-            fontWeight: '500',
-            cursor: 'pointer',
-          }}
-        >
-          Previous
-        </button>
+        {isEdit && (
+          <button
+            onClick={onPrevious}
+            style={{
+              padding: '12px 32px',
+              backgroundColor: dashboardColors.white,
+              color: dashboardColors.text,
+              border: `1px solid ${dashboardColors.border}`,
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+            }}
+          >
+            Previous
+          </button>
+        )}
 
         <button
           onClick={handleSaveAndContinue}

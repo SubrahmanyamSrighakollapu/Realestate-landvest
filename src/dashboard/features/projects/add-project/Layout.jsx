@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import dashboardColors from '../../../styles/colors';
 import { projectService } from '../../../../services/projectService';
@@ -10,33 +10,43 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (projectData?.layouts?.length > 0) {
+      // Don't populate layouts on navigation back - user needs to re-upload if they want to change
+      // Existing layouts are stored as URLs on the server
+    }
+  }, [projectData]);
+
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
 
+    // const maxSize = 250 * 1024; // 250KB
+    // const validFiles = [];
+    // const oversizedFiles = [];
 
-     const maxSize = 250 * 1024; // 250KB
+    // files.forEach(file => {
+    //   if (file.size <= maxSize) {
+    //     validFiles.push(file);
+    //   } else {
+    //     oversizedFiles.push(file);
+    //   }
+    // });
 
-  const validFiles = [];
-  const oversizedFiles = [];
+    // if (oversizedFiles.length > 0) {
+    //   toastService.error(
+    //     `Each layout must be less than 250KB. ${oversizedFiles.length} file(s) exceeded the limit.`
+    //   );
+    // }
 
-  files.forEach(file => {
-    if (file.size <= maxSize) {
-      validFiles.push(file);
-    } else {
-      oversizedFiles.push(file);
+    // if (validFiles.length > 0) {
+    //   setLayouts(prev => [...prev, ...validFiles]);
+    //   toastService.success(`${validFiles.length} file(s) uploaded successfully!`);
+    // }
+
+    if (files.length > 0) {
+      setLayouts(prev => [...prev, ...files]);
+      toastService.success(`${files.length} file(s) uploaded successfully!`);
     }
-  });
-
-  if (oversizedFiles.length > 0) {
-    toastService.error(
-      `Each layout must be less than 250KB. ${oversizedFiles.length} file(s) exceeded the limit.`
-    );
-  }
-
-     if (validFiles.length > 0) {
-    setLayouts(prev => [...prev, ...validFiles]);
-    toastService.success(`${validFiles.length} file(s) uploaded successfully!`);
-  }
   };
 
   const handleDrag = (e) => {
@@ -70,13 +80,19 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
 };
 
   const handleSaveAndContinue = async () => {
-    if (layouts.length === 0) {
+    if (layouts.length === 0 && (!projectData?.layouts || projectData.layouts.length === 0)) {
       toastService.error('Please upload at least one layout');
       return;
     }
 
     if (!projectData?._id || !projectData?.code) {
       toastService.error('Project data is missing');
+      return;
+    }
+
+    // If no new layouts uploaded, just proceed to next step
+    if (layouts.length === 0) {
+      onNext();
       return;
     }
 
@@ -164,9 +180,17 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '32px'
+                  overflow: 'hidden'
                 }}>
-                  📐
+                  <img 
+                    src={URL.createObjectURL(layout)} 
+                    alt={layout.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
                 </div>
                 <p style={{
                   fontSize: '12px',
@@ -255,7 +279,7 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
             fontSize: '13px',
             color: dashboardColors.textLight,
           }}>
-            Recommended: 2014×513 px • Max size: 250KB per image
+            Recommended: 2014×513 px
           </p>
         </div>
 

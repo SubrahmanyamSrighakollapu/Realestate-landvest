@@ -107,7 +107,7 @@ const OfferLetter = () => {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', fontSize: '13px' }}>
           <div>
-            <strong>Ref:</strong> Employee ID: {employee.code}
+            <strong>Employee ID:</strong> {employee.code}
           </div>
           <div>
             <strong>Date:</strong> {new Date().toLocaleDateString('en-GB')}

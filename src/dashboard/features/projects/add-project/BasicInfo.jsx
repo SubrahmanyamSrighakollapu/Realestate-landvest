@@ -32,6 +32,9 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
   const [bannerImage, setBannerImage] = useState(null);
   const [thumbnailImage, setThumbnailImage] = useState(null);
   const [contentImage, setContentImage] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [contentPreview, setContentPreview] = useState(null);
   const [existingImages, setExistingImages] = useState({
     bannerImage: '',
     thumbnailImage: '',
@@ -84,20 +87,31 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
   };
 
   const handleFileUpload = (type, file) => {
-    // Validate file size (max 250kB)
-    const maxSize = 250 * 1024; 
-    if (file && file.size > maxSize) {
-      toastService.error(
-        `File size must be less than 250KB. Selected file is ${(file.size / 1024).toFixed(2)}KB`
-      );
-      return;
-    }
-    
-    if (type === 'banner') setBannerImage(file);
-    if (type === 'thumbnail') setThumbnailImage(file);
-    if (type === 'content') setContentImage(file);
+    // const maxSize = 250 * 1024; 
+    // if (file && file.size > maxSize) {
+    //   toastService.error(
+    //     `File size must be less than 250KB. Selected file is ${(file.size / 1024).toFixed(2)}KB`
+    //   );
+    //   return;
+    // }
     
     if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (type === 'banner') {
+          setBannerImage(file);
+          setBannerPreview(reader.result);
+        }
+        if (type === 'thumbnail') {
+          setThumbnailImage(file);
+          setThumbnailPreview(reader.result);
+        }
+        if (type === 'content') {
+          setContentImage(file);
+          setContentPreview(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
       toastService.success('File uploaded successfully!');
     }
   };
@@ -145,7 +159,7 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
         setProjectData({ ...response.data, ...formData });
         toastService.success(`Project ${isEdit ? 'updated' : 'saved'} successfully!`);
         if (isEdit) {
-          navigate('/dashboard/projects/management');
+          onNext();
         } else {
           onNext();
         }
@@ -180,52 +194,82 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
           textAlign: 'center',
           backgroundColor: 'var(--dashboard-tertiary)'
         }}>
-          <div style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--dashboard-white)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px'
-          }}>
-            <Upload size={28} color="var(--dashboard-primary)" />
-          </div>
-          <h4 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 8px 0' }}>
-            Banner Image
-          </h4>
-          <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
-            {bannerImage ? bannerImage.name : existingImages.bannerImage ? 'Current file uploaded' : 'Drag & drop or click to upload'}
-          </p>
-          {existingImages.bannerImage && !bannerImage && (
-            <p style={{ fontSize: '12px', color: 'var(--dashboard-primary)', marginBottom: '12px' }}>
-              <a href={`https://realestate.vsahasoft.com${existingImages.bannerImage}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color:dashboardColors.primary }}>View Current File</a>
-            </p>
+          {(bannerPreview || existingImages.bannerImage) ? (
+            <>
+              <img 
+                src={bannerPreview || `https://realestate.vsahasoft.com${existingImages.bannerImage}`} 
+                alt="Banner Preview" 
+                style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'contain', borderRadius: '8px', marginBottom: '16px' }} 
+              />
+              <input
+                type="file"
+                id="bannerImageInput"
+                accept="image/*"
+                onChange={(e) => handleFileUpload('banner', e.target.files[0])}
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={() => document.getElementById('bannerImageInput').click()}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: 'var(--dashboard-primary)',
+                  color: 'var(--dashboard-white)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Choose File
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--dashboard-white)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
+                <Upload size={28} color="var(--dashboard-primary)" />
+              </div>
+              <h4 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 8px 0' }}>
+                Banner Image
+              </h4>
+              <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
+                Drag & drop or click to upload
+              </p>
+              <input
+                type="file"
+                id="bannerImageInput"
+                accept="image/*"
+                onChange={(e) => handleFileUpload('banner', e.target.files[0])}
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={() => document.getElementById('bannerImageInput').click()}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: 'var(--dashboard-primary)',
+                  color: 'var(--dashboard-white)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Choose File
+              </button>
+            </>
           )}
-          <input
-            type="file"
-            id="bannerImageInput"
-            accept="image/*"
-            onChange={(e) => handleFileUpload('banner', e.target.files[0])}
-            style={{ display: 'none' }}
-          />
-          <button
-            type="button"
-            onClick={() => document.getElementById('bannerImageInput').click()}
-            style={{
-              padding: '10px 24px',
-              backgroundColor: 'var(--dashboard-primary)',
-              color: 'var(--dashboard-white)',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer'
-            }}
-          >
-            Choose File
-          </button>
         </div>
 
         <div style={{
@@ -235,52 +279,82 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
           textAlign: 'center',
           backgroundColor: 'var(--dashboard-tertiary)'
         }}>
-          <div style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--dashboard-white)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px'
-          }}>
-            <Upload size={28} color="var(--dashboard-primary)" />
-          </div>
-          <h4 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 8px 0' }}>
-            Thumbnail Image
-          </h4>
-          <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
-            {thumbnailImage ? thumbnailImage.name : existingImages.thumbnailImage ? 'Current file uploaded' : 'Drag & drop or click to upload'}
-          </p>
-          {existingImages.thumbnailImage && !thumbnailImage && (
-            <p style={{ fontSize: '12px', color: 'var(--dashboard-primary)', marginBottom: '12px' }}>
-              <a href={`https://realestate.vsahasoft.com${existingImages.thumbnailImage}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color:dashboardColors.primary }}>View Current File</a>
-            </p>
+          {(thumbnailPreview || existingImages.thumbnailImage) ? (
+            <>
+              <img 
+                src={thumbnailPreview || `https://realestate.vsahasoft.com${existingImages.thumbnailImage}`} 
+                alt="Thumbnail Preview" 
+                style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'contain', borderRadius: '8px', marginBottom: '16px' }} 
+              />
+              <input
+                type="file"
+                id="thumbnailImageInput"
+                accept="image/*"
+                onChange={(e) => handleFileUpload('thumbnail', e.target.files[0])}
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={() => document.getElementById('thumbnailImageInput').click()}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: 'var(--dashboard-primary)',
+                  color: 'var(--dashboard-white)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Choose File
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--dashboard-white)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
+                <Upload size={28} color="var(--dashboard-primary)" />
+              </div>
+              <h4 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 8px 0' }}>
+                Thumbnail Image
+              </h4>
+              <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
+                Drag & drop or click to upload
+              </p>
+              <input
+                type="file"
+                id="thumbnailImageInput"
+                accept="image/*"
+                onChange={(e) => handleFileUpload('thumbnail', e.target.files[0])}
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={() => document.getElementById('thumbnailImageInput').click()}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: 'var(--dashboard-primary)',
+                  color: 'var(--dashboard-white)',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Choose File
+              </button>
+            </>
           )}
-          <input
-            type="file"
-            id="thumbnailImageInput"
-            accept="image/*"
-            onChange={(e) => handleFileUpload('thumbnail', e.target.files[0])}
-            style={{ display: 'none' }}
-          />
-          <button
-            type="button"
-            onClick={() => document.getElementById('thumbnailImageInput').click()}
-            style={{
-              padding: '10px 24px',
-              backgroundColor: 'var(--dashboard-primary)',
-              color: 'var(--dashboard-white)',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer'
-            }}
-          >
-            Choose File
-          </button>
         </div>
       </div>
 
@@ -420,6 +494,10 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
               fontSize: '14px',
               outline: 'none'
             }}
+            onFocus={(e) => e.target.type = 'date'}
+            onBlur={(e) => {
+              if (!e.target.value) e.target.type = 'text';
+            }}
           />
         </div>
 
@@ -546,52 +624,82 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
             textAlign: 'center',
             backgroundColor: 'var(--dashboard-tertiary)'
           }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--dashboard-white)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 16px'
-            }}>
-              <Upload size={28} color="var(--dashboard-primary)" />
-            </div>
-            <h4 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 8px 0' }}>
-              Content Image
-            </h4>
-            <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
-              {contentImage ? contentImage.name : existingImages.contentImage ? 'Current file uploaded' : 'Drag & drop or click to upload'}
-            </p>
-            {existingImages.contentImage && !contentImage && (
-              <p style={{ fontSize: '12px', color: 'var(--dashboard-primary)', marginBottom: '12px' }}>
-                <a href={`https://realestate.vsahasoft.com${existingImages.contentImage}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color:dashboardColors.primary }}>View Current File</a>
-              </p>
+            {(contentPreview || existingImages.contentImage) ? (
+              <>
+                <img 
+                  src={contentPreview || `https://realestate.vsahasoft.com${existingImages.contentImage}`} 
+                  alt="Content Preview" 
+                  style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'contain', borderRadius: '8px', marginBottom: '16px' }} 
+                />
+                <input
+                  type="file"
+                  id="contentImageInput"
+                  accept="image/*"
+                  onChange={(e) => handleFileUpload('content', e.target.files[0])}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('contentImageInput').click()}
+                  style={{
+                    padding: '10px 24px',
+                    backgroundColor: 'var(--dashboard-primary)',
+                    color: 'var(--dashboard-white)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Choose File
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--dashboard-white)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px'
+                }}>
+                  <Upload size={28} color="var(--dashboard-primary)" />
+                </div>
+                <h4 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--dashboard-text)', margin: '0 0 8px 0' }}>
+                  Content Image
+                </h4>
+                <p style={{ fontSize: '13px', color: 'var(--dashboard-text-light)', margin: '0 0 16px 0' }}>
+                  Drag & drop or click to upload
+                </p>
+                <input
+                  type="file"
+                  id="contentImageInput"
+                  accept="image/*"
+                  onChange={(e) => handleFileUpload('content', e.target.files[0])}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('contentImageInput').click()}
+                  style={{
+                    padding: '10px 24px',
+                    backgroundColor: 'var(--dashboard-primary)',
+                    color: 'var(--dashboard-white)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Choose File
+                </button>
+              </>
             )}
-            <input
-              type="file"
-              id="contentImageInput"
-              accept="image/*"
-              onChange={(e) => handleFileUpload('content', e.target.files[0])}
-              style={{ display: 'none' }}
-            />
-            <button
-              type="button"
-              onClick={() => document.getElementById('contentImageInput').click()}
-              style={{
-                padding: '10px 24px',
-                backgroundColor: 'var(--dashboard-primary)',
-                color: 'var(--dashboard-white)',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer'
-              }}
-            >
-              Choose File
-            </button>
           </div>
 
           <div>

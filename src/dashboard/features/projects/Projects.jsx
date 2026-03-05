@@ -28,7 +28,7 @@ const Projects = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/associates',
+        'https://api.landvestinfra.com/api/v1/admin/dashboard/associates',
         { startDate: startDate, endDate: endDate },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -44,7 +44,7 @@ const Projects = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/projects',
+        'https://api.landvestinfra.com/api/v1/admin/dashboard/projects',
         { startDate: startDate, endDate: endDate },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -136,6 +136,7 @@ const Projects = () => {
           <label style={{ fontSize: '14px', color: '#6b7280', marginRight: '8px' }}>Start Date:</label>
           <input
             type="date"
+            max={new Date().toISOString().split('T')[0]}
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             style={{
@@ -151,6 +152,7 @@ const Projects = () => {
           <input
             type="date"
             value={endDate}
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => setEndDate(e.target.value)}
             style={{
               padding: '8px 12px',

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://realestate.vsahasoft.com/api/v1';
+const API_BASE_URL = 'https://api.landvestinfra.com/api/v1';
 
 export const publicProjectService = {
   async getProjects() {

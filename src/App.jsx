@@ -32,6 +32,7 @@ import EditLead from "./dashboard/features/leads/EditLead";
 import PermissionsManagement from "./dashboard/pages/permissions/PermissionsManagement";
 import ProjectsPage from "./dashboard/pages/projects/Projects";
 import ProjectView from "./dashboard/pages/projects/ProjectView";
+import Gallery from "./dashboard/features/settings/Gallery";
 import Login from "./auth/Login";
 import Signup from "./auth/Signup";
 import ApprovalPending from "./auth/ApprovalPending";
@@ -122,6 +123,9 @@ function App() {
 
           {/* Permissions */}
           <Route path="permissions/management" element={<PermissionsManagement />} />
+
+          {/* Settings */}
+          <Route path="settings/gallery" element={<Gallery />} />
         </Route>
       </Routes>
     </BrowserRouter>

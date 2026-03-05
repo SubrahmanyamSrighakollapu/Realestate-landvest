@@ -1,11 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, CheckCircle, X, Upload } from 'lucide-react';
 import dashboardColors from '../../../styles/colors';
 import { projectService } from '../../../../services/projectService';
 import { toastService } from '../../../../services/toastService';
 
-const Review = ({ onPrevious, currentStep, projectData }) => {
+const Review = ({ onPrevious, currentStep, projectData, isEdit }) => {
   const navigate = useNavigate();
   const userImageRef = useRef(null);
   const fileRef = useRef(null);
@@ -19,6 +19,12 @@ const Review = ({ onPrevious, currentStep, projectData }) => {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    if (projectData?.testimonials?.length > 0) {
+      setTestimonials(projectData.testimonials);
+    }
+  }, [projectData]);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -121,20 +127,20 @@ const handleDrop = (e, type) => {
   };
 
 
-  const MAX_SIZE = 250 * 1024; // 250KB
+  // const MAX_SIZE = 250 * 1024; // 250KB
 
-const validateFileSize = (file, label) => {
-  if (!file) return false;
+  const validateFileSize = (file, label) => {
+    if (!file) return false;
 
-  if (file.size > MAX_SIZE) {
-    toastService.error(
-      `${label} must be less than 250KB. Selected file is ${(file.size / 1024).toFixed(2)}KB`
-    );
-    return false;
-  }
+    // if (file.size > MAX_SIZE) {
+    //   toastService.error(
+    //     `${label} must be less than 250KB. Selected file is ${(file.size / 1024).toFixed(2)}KB`
+    //   );
+    //   return false;
+    // }
 
-  return true;
-};
+    return true;
+  };
 
   return (
     <div>
@@ -417,12 +423,12 @@ const validateFileSize = (file, label) => {
                   </div>
                   {testimonial.userImage && (
                     <div>
-                      <strong style={{ fontSize: '14px' }}>User Image:</strong> {testimonial.userImage.name}
+                      <strong style={{ fontSize: '14px' }}>User Image:</strong> {typeof testimonial.userImage === 'string' ? testimonial.userImage : testimonial.userImage.name}
                     </div>
                   )}
                   {testimonial.file && (
                     <div>
-                      <strong style={{ fontSize: '14px' }}>File:</strong> {testimonial.file.name}
+                      <strong style={{ fontSize: '14px' }}>File:</strong> {typeof testimonial.file === 'string' ? testimonial.file : testimonial.file.name}
                     </div>
                   )}
                 </div>
@@ -512,7 +518,7 @@ const validateFileSize = (file, label) => {
               color: dashboardColors.textLight,
               marginBottom: '24px',
             }}>
-              Project created Successfully!
+              Project {isEdit ? 'updated' : 'created'} Successfully!
             </p>
             <button
               onClick={handleSuccessClose}

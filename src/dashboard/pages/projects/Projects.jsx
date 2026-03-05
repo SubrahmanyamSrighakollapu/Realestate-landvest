@@ -9,6 +9,8 @@ const Projects = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,7 +31,7 @@ const Projects = () => {
     try {
       const token = sessionStorage.getItem('authToken');
       const response = await axios.post(
-        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/projects',
+        'https://api.landvestinfra.com/api/v1/admin/dashboard/projects',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -45,7 +47,7 @@ const Projects = () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('authToken');
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/admin/projects/list', {}, {
+      const response = await axios.post('https://api.landvestinfra.com/api/v1/admin/projects/list', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -102,6 +104,40 @@ const Projects = () => {
             <div style={{ fontSize: '12px', color: '#9ca3af' }}>{stat.subtext}</div>
           </div>
         ))}
+      </div>
+
+      {/* Date Filters */}
+      <div style={{ marginBottom: '20px', display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div>
+          <label style={{ fontSize: '14px', color: '#6b7280', marginRight: '8px' }}>Start Date:</label>
+          <input
+            type="date"
+            value={startDate}
+            max={new Date().toISOString().split('T')[0]}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: '14px', color: '#6b7280', marginRight: '8px' }}>End Date:</label>
+          <input
+            type="date"
+            value={endDate}
+            max={new Date().toISOString().split('T')[0]}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #e5e7eb',
+              borderRadius: '6px',
+              fontSize: '14px'
+            }}
+          />
+        </div>
       </div>
 
       {/* Showing Projects Section */}
@@ -275,17 +311,30 @@ const Projects = () => {
                 <td style={{ padding: '16px', fontSize: '14px', color: '#374151' }}>-</td>
                 <td style={{ padding: '16px', fontSize: '14px', color: '#374151' }}>₹10.5L</td>
                 <td style={{ padding: '16px' }}>
-                  <span className="status-badge status-completed" style={{
-                    padding: '6px 12px',
-                    borderRadius: '12px',
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    backgroundColor: project.status === 'active' ? '#d1fae5' : '#fee2e2',
-                    color: project.status === 'active' ? '#065f46' : '#991b1b'
-                  }}>
-                    {project.status === 'active' ? 'Ongoing' : 'Upcoming'}
-                  </span>
-                </td>
+  <span
+    style={{
+      padding: '6px 12px',
+      borderRadius: '12px',
+      fontSize: '12px',
+      fontWeight: '500',
+      textTransform: 'capitalize',
+      backgroundColor:
+        project.status === 'ongoing'
+          ? '#d1fae5'
+          : project.status === 'upcoming'
+          ? '#fef9c3'
+          : '#fee2e2',
+      color:
+        project.status === 'ongoing'
+          ? '#065f46'
+          : project.status === 'upcoming'
+          ? '#854d0e'
+          : '#991b1b'
+    }}
+  >
+    {project.status}
+  </span>
+</td>
                 <td style={{ padding: '16px' }}>
                   <button
                     onClick={() => navigate(`/dashboard/projects/view/${project._id}`)}

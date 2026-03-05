@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Building, Clock, Calendar, CheckCircle, Search, Pencil, Trash2 
+  Building, Clock, Calendar, CheckCircle, Search, Pencil, Trash2, AlertTriangle 
 } from 'lucide-react';
 import axios from 'axios';
 import dashboardColors from '../../styles/colors';
@@ -14,6 +14,9 @@ const ProjectManagement = () => {
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [deleteLoading, setDeleteLoading] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
   const [dashboardData, setDashboardData] = useState({
     totalCount: 0,
     activeCount: 0,
@@ -31,7 +34,7 @@ const ProjectManagement = () => {
     try {
       const token = sessionStorage.getItem('authToken');
       const response = await axios.post(
-        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/projects',
+        'https://api.landvestinfra.com/api/v1/admin/dashboard/projects',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -47,10 +50,33 @@ const ProjectManagement = () => {
     try {
       const response = await projectService.listProjects();
       if (response.success) {
-        setProjects(response.data);
+        const activeProjects = response.data.filter(p => p.status !== 'inactive');
+        setProjects(activeProjects);
       }
     } catch (error) {
       toastService.error('Failed to load projects');
+    }
+  };
+
+  const handleDelete = async (projectId) => {
+    setDeleteLoading(projectId);
+    try {
+      const data = new FormData();
+      data.append('id', projectId);
+      data.append('status', 'inactive');
+
+      const response = await projectService.updateProject(data);
+      if (response.success) {
+        toastService.success('Project deleted successfully!');
+        fetchProjects();
+        fetchDashboardData();
+        setShowDeleteModal(false);
+        setProjectToDelete(null);
+      }
+    } catch (error) {
+      toastService.error(error.response?.data?.message || 'Failed to delete project');
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -370,6 +396,23 @@ const ProjectManagement = () => {
                         >
                           <Pencil size={18} />
                         </button>
+                        <button
+                          title="Delete"
+                          disabled={deleteLoading === proj._id}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: deleteLoading === proj._id ? 'not-allowed' : 'pointer',
+                            color: '#ef4444',
+                            opacity: deleteLoading === proj._id ? 0.5 : 1
+                          }}
+                          onClick={() => {
+                            setProjectToDelete(proj);
+                            setShowDeleteModal(true);
+                          }}
+                        >
+                          <Trash2 size={18} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -386,6 +429,90 @@ const ProjectManagement = () => {
           onPageChange={setCurrentPage}
         />
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: dashboardColors.white,
+            padding: '32px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            maxWidth: '400px',
+            width: '90%',
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <AlertTriangle
+                size={64}
+                color="#ef4444"
+                style={{ marginBottom: '16px' }}
+              />
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                color: dashboardColors.text,
+                marginBottom: '12px',
+              }}>
+                Delete Project?
+              </h3>
+              <p style={{
+                fontSize: '14px',
+                color: dashboardColors.textLight,
+                margin: 0,
+              }}>
+                Are you sure you want to delete <strong>{projectToDelete?.title}</strong>? This action cannot be undone.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setProjectToDelete(null);
+                }}
+                disabled={deleteLoading}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: dashboardColors.white,
+                  color: dashboardColors.text,
+                  border: `1px solid ${dashboardColors.border}`,
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                  opacity: deleteLoading ? 0.5 : 1
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(projectToDelete._id)}
+                disabled={deleteLoading}
+                style={{
+                  padding: '10px 24px',
+                  backgroundColor: '#ef4444',
+                  color: dashboardColors.white,
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                  opacity: deleteLoading ? 0.6 : 1
+                }}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

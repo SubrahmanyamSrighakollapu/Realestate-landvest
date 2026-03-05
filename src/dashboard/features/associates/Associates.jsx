@@ -52,7 +52,7 @@ const Associates = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/employees',
+        'https://api.landvestinfra.com/api/v1/admin/dashboard/employees',
         { startDate: startDate, endDate: endDate },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -107,7 +107,7 @@ const Associates = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/associates',
+        'https://api.landvestinfra.com/api/v1/admin/dashboard/associates',
         { startDate: startDate, endDate: endDate },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -123,7 +123,7 @@ const Associates = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/associatescount',
+        'https://api.landvestinfra.com/api/v1/admin/dashboard/associatescount',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -144,7 +144,7 @@ const Associates = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/newassociates',
+        'https://api.landvestinfra.com/api/v1/admin/dashboard/newassociates',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -163,7 +163,7 @@ const Associates = () => {
     try {
       const token = authService.getToken();
       const response = await axios.post(
-        'https://realestate.vsahasoft.com/api/v1/admin/dashboard/salesoverview',
+        'https://api.landvestinfra.com/api/v1/admin/dashboard/salesoverview',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -234,6 +234,7 @@ const Associates = () => {
           <input
             type="date"
             value={startDate}
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => setStartDate(e.target.value)}
             style={{
               padding: '8px 12px',
@@ -248,6 +249,7 @@ const Associates = () => {
           <input
             type="date"
             value={endDate}
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => setEndDate(e.target.value)}
             style={{
               padding: '8px 12px',

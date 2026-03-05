@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://realestate.vsahasoft.com/api/v1';
+const BASE_URL = 'https://api.landvestinfra.com/api/v1';
 
 export const authService = {
   login: async (code, password) => {

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import dashboardColors from '../../../styles/colors';
 import { projectService } from '../../../../services/projectService';
@@ -10,32 +10,43 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (projectData?.images?.length > 0) {
+      // Don't populate images on navigation back - user needs to re-upload if they want to change
+      // Existing images are stored as URLs on the server
+    }
+  }, [projectData]);
+
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
 
-    const maxSize = 250 * 1024; // 250KB
+    // const maxSize = 250 * 1024; // 250KB
+    // const validFiles = [];
+    // const oversizedFiles = [];
 
-     const validFiles = [];
-  const oversizedFiles = [];
+    // files.forEach(file => {
+    //   if (file.size <= maxSize) {
+    //     validFiles.push(file);
+    //   } else {
+    //     oversizedFiles.push(file);
+    //   }
+    // });
 
-  files.forEach(file => {
-    if (file.size <= maxSize) {
-      validFiles.push(file);
-    } else {
-      oversizedFiles.push(file);
+    // if (oversizedFiles.length > 0) {
+    //   toastService.error(
+    //     `Each image must be less than 250KB. ${oversizedFiles.length} file(s) exceeded the limit.`
+    //   );
+    // }
+
+    // if (validFiles.length > 0) {
+    //   setImages(prev => [...prev, ...validFiles]);
+    //   toastService.success(`${validFiles.length} file(s) uploaded successfully!`);
+    // }
+
+    if (files.length > 0) {
+      setImages(prev => [...prev, ...files]);
+      toastService.success(`${files.length} file(s) uploaded successfully!`);
     }
-  });
-
-  if (oversizedFiles.length > 0) {
-    toastService.error(
-      `Each image must be less than 250KB. ${oversizedFiles.length} file(s) exceeded the limit.`
-    );
-  }
-
-if (validFiles.length > 0) {
-    setImages(prev => [...prev, ...validFiles]);
-    toastService.success(`${validFiles.length} file(s) uploaded successfully!`);
-  }
   };
 
   const handleDrag = (e) => {
@@ -63,13 +74,19 @@ if (validFiles.length > 0) {
   };
 
   const handleSaveAndContinue = async () => {
-    if (images.length === 0) {
+    if (images.length === 0 && (!projectData?.images || projectData.images.length === 0)) {
       toastService.error('Please upload at least one image');
       return;
     }
 
     if (!projectData?._id || !projectData?.code) {
       toastService.error('Project data is missing');
+      return;
+    }
+
+    // If no new images uploaded, just proceed to next step
+    if (images.length === 0) {
+      onNext();
       return;
     }
 
@@ -161,9 +178,17 @@ if (validFiles.length > 0) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '32px'
+                  overflow: 'hidden'
                 }}>
-                  🖼️
+                  <img 
+                    src={URL.createObjectURL(image)} 
+                    alt={image.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
                 </div>
                 <p style={{
                   fontSize: '12px',

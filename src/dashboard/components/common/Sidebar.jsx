@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, FolderKanban, Network, FileText, Award, BookOpen, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BarChart3, UserCog, Shield, Building2, UsersRound } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, Network, FileText, Award, BookOpen, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, BarChart3, UserCog, Shield, Building2, UsersRound, Settings, Image } from 'lucide-react';
 import { dashboardColors } from "../../styles/colors";
 import logo from '../../../assets/landvest-logo.jpeg';
 import { authService } from '../../../services/authService';
@@ -10,6 +10,7 @@ import { permissionService } from '../../../services/permissionService';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const [orgTreeOpen, setOrgTreeOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
 
@@ -38,8 +39,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     { icon: FileText, label: 'Reports', path: '/dashboard/reports/associate-reports', permission: { module: 'Reports', action: 'view' } },
     { icon: Award, label: 'Designation', path: '/dashboard/designations/management', adminOnly: true },
     { icon: BookOpen, label: 'Directory', path: '/dashboard/directory/management', adminOnly: true },
-    // { icon: BarChart3, label: 'Key Reports', path: '/dashboard/key-reports/reports' },
-    { icon: Shield, label: 'Permissions', path: '/dashboard/permissions/management', adminOnly: true }
+    { icon: Shield, label: 'Permissions', path: '/dashboard/permissions/management', adminOnly: true },
+    { 
+      icon: Settings, 
+      label: 'Settings', 
+      path: '/dashboard/settings',
+      adminOnly: true,
+      subItems: [
+        { label: 'Gallery', path: '/dashboard/settings/gallery', icon: Image }
+      ]
+    }
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -105,7 +114,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               onClick={(e) => {
                 if (item.subItems) {
                   e.preventDefault();
-                  setOrgTreeOpen(!orgTreeOpen);
+                  if (item.label === 'Org Tree') {
+                    setOrgTreeOpen(!orgTreeOpen);
+                  } else if (item.label === 'Settings') {
+                    setSettingsOpen(!settingsOpen);
+                  }
                 }
               }}
               style={{
@@ -137,11 +150,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 {isOpen && <span style={{ fontSize: '15px' }}>{item.label}</span>}
               </div>
               {isOpen && item.subItems && (
-                orgTreeOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />
+                (item.label === 'Org Tree' ? orgTreeOpen : settingsOpen) ? <ChevronUp size={18} /> : <ChevronDown size={18} />
               )}
             </Link>
 
-            {item.subItems && orgTreeOpen && isOpen && (
+            {item.subItems && ((item.label === 'Org Tree' && orgTreeOpen) || (item.label === 'Settings' && settingsOpen)) && isOpen && (
               <div style={{ backgroundColor: 'rgba(0,0,0,0.1)' }}>
                 {item.subItems.filter(subItem => !subItem.adminOnly || isAdmin).map((subItem, subIndex) => (
                   <Link

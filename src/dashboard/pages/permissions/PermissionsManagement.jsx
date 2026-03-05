@@ -20,7 +20,7 @@ const PermissionsManagement = () => {
   const fetchRoles = async () => {
     try {
       const token = sessionStorage.getItem('authToken');
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/admin/roles/list', {}, {
+      const response = await axios.post('https://api.landvestinfra.com/api/v1/admin/roles/list', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -34,7 +34,7 @@ const PermissionsManagement = () => {
   const fetchModules = async () => {
     try {
       const token = sessionStorage.getItem('authToken');
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/admin/modules/list', {}, {
+      const response = await axios.post('https://api.landvestinfra.com/api/v1/admin/modules/list', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
@@ -63,7 +63,7 @@ const PermissionsManagement = () => {
     
     try {
       const token = sessionStorage.getItem('authToken');
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/admin/role/info', 
+      const response = await axios.post('https://api.landvestinfra.com/api/v1/admin/role/info', 
         { id: role._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -139,7 +139,7 @@ const PermissionsManagement = () => {
         permissions: permissionsArray
       };
 
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/admin/role/update', payload, {
+      const response = await axios.post('https://api.landvestinfra.com/api/v1/admin/role/update', payload, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

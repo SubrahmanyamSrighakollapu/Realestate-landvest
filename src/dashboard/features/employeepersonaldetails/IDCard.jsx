@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import idCardTemplate from '../../assets/Real estate ID.jpeg';
 import html2canvas from 'html2canvas';
 
@@ -10,13 +10,14 @@ const IDCard = () => {
   const employee = location.state?.employee;
   const autoDownload = location.state?.autoDownload;
   const cardRef = useRef(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    if (autoDownload && employee) {
+    if (autoDownload && employee && imageLoaded) {
       const timer = setTimeout(() => handleDownload(), 500);
       return () => clearTimeout(timer);
     }
-  }, [autoDownload, employee]);
+  }, [autoDownload, employee, imageLoaded]);
 
   if (!employee) {
     return <div>No employee data available</div>;
@@ -44,9 +45,14 @@ const IDCard = () => {
       const canvas = await html2canvas(element, {
         scale: 3,
         useCORS: true,
-        allowTaint: true,
         logging: false,
-        backgroundColor: null
+        backgroundColor: null,
+        onclone: (clonedDoc) => {
+          const images = clonedDoc.querySelectorAll('img');
+          images.forEach(img => {
+            img.style.display = 'block';
+          });
+        }
       });
 
       canvas.toBlob((blob) => {
@@ -108,38 +114,48 @@ const IDCard = () => {
         }}>
           {/* Profile Image */}
           <div style={{
-            position: 'absolute',
-            top: '145px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '180px',
-            height: '180px',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            border: '4px solid white',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                position: 'absolute',
+    top: '145px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '180px',
+    height: '180px',
+    borderRadius: '50%',
+    border: '4px solid white',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff'
           }}>
             {getProfileImage() ? (
               <img 
                 src={getProfileImage()} 
                 alt="Profile" 
+                onLoad={() => setImageLoaded(true)}
+                onError={(e) => {
+                  console.error('Image load error');
+                  setImageLoaded(true);
+                }}
                 style={{
                   width: '100%',
-                  height: '100%',
-                  objectFit: 'cover'
+        height: '100%',
+        objectFit: 'cover',
+        borderRadius: '50%'   // 🔥 IMPORTANT
                 }} 
               />
             ) : (
               <div style={{
                 width: '100%',
-                height: '100%',
-                backgroundColor: 'rgba(31, 111, 84, 1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '48px',
-                fontWeight: '600',
-                color: 'white'
+        height: '100%',
+        borderRadius: '50%',   // 🔥 IMPORTANT
+        backgroundColor: 'rgba(31, 111, 84, 1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '48px',
+        fontWeight: '600',
+        color: 'white'
               }}>
                 {getInitials(employee.name)}
               </div>
@@ -179,7 +195,7 @@ const IDCard = () => {
             <div style={{ display: 'flex', marginBottom: '8px' }}>
               <span style={{ fontWeight: '600', color: '#374151', minWidth: '140px' }}>POSITION</span>
               <span style={{ margin: '0 8px' }}>:</span>
-              <span style={{ color: '#6b7280' }}>{employee.role?.name || 'N/A'}</span>
+              <span style={{ color: '#6b7280' }}>Property advisor</span>
             </div>
             <div style={{ display: 'flex', marginBottom: '8px' }}>
               <span style={{ fontWeight: '600', color: '#374151', minWidth: '140px' }}>MOBILE NUMBER</span>

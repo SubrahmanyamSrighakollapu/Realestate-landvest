@@ -46,7 +46,7 @@ const Signup = () => {
 
   const fetchEmployeeInfo = async (code) => {
     try {
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/employeeinfo', { code });
+      const response = await axios.post('https://api.landvestinfra.com/api/v1/employeeinfo', { code });
       if (response.data.success) {
         setEmployeeInfo(response.data.data);
         setShowEmployeeDropdown(true);
@@ -72,7 +72,7 @@ const Signup = () => {
 
   const fetchRoles = async (roleId) => {
     try {
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/roles/list', { parent: roleId });
+      const response = await axios.post('https://api.landvestinfra.com/api/v1/roles/list', { parent: roleId });
       if (response.data.success) {
         setRoles(response.data.data);
       }

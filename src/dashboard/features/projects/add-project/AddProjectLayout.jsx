@@ -7,11 +7,29 @@ import Location from './Location';
 import Layout from './Layout';
 import Gallery from './Gallery';
 import Review from './Review';
+import { projectService } from '../../../../services/projectService';
 
 const AddProjectLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isEdit, projectId: initialProjectId } = location.state || {};
   const [projectData, setProjectData] = useState({});
+  const [projectId, setProjectId] = useState(initialProjectId);
+
+  const fetchProjectData = async () => {
+    const currentProjectId = projectId || projectData._id;
+    if (currentProjectId) {
+      try {
+        const response = await projectService.getProjectInfo(currentProjectId);
+        if (response.success) {
+          setProjectData(response.data);
+          if (!projectId) setProjectId(response.data._id);
+        }
+      } catch (error) {
+        console.error('Failed to fetch project data:', error);
+      }
+    }
+  };
 
   const steps = [
     { number: 1, label: 'Basic Info', component: BasicInfo, path: '/dashboard/projects/add/basic-info' },
@@ -41,23 +59,35 @@ const AddProjectLayout = () => {
 
   const CurrentStepComponent = steps[currentStep - 1]?.component || BasicInfo;
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    await fetchProjectData();
     if (currentStep < 7) {
       navigate(steps[currentStep].path);
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = async () => {
+    await fetchProjectData();
     if (currentStep > 1) {
       navigate(steps[currentStep - 2].path);
     }
   };
 
+  useEffect(() => {
+    if (projectData._id) {
+      setProjectId(projectData._id);
+    }
+  }, [projectData]);
+
+  useEffect(() => {
+    fetchProjectData();
+  }, [currentStep, projectId]);
+
   return (
     <div>
       <div style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '24px', fontWeight: '600', color: 'var(--dashboard-primary)', margin: '0 0 8px 0' }}>
-          Add Projects
+          {isEdit ? 'Update Project' : 'Add Projects'}
         </h2>
         <p style={{ fontSize: '14px', color: 'var(--dashboard-text-light)', margin: 0 }}>
           Manage and monitor all plot projects
@@ -141,6 +171,8 @@ const AddProjectLayout = () => {
           currentStep={currentStep}
           projectData={projectData}
           setProjectData={setProjectData}
+          refreshProjectData={fetchProjectData}
+          isEdit={isEdit}
         />
       </div>
     </div>

@@ -108,7 +108,8 @@ const AddAssociate = () => {
     try {
       const response = await designationService.getChildRoles(sponsorRoleId);
       if (response.success) {
-        setDesignations(response.data);
+        const filteredRoles = response.data.filter(role => role._id !== sponsorRoleId);
+        setDesignations(filteredRoles);
       }
     } catch (error) {
       console.error('Error fetching roles by sponsor:', error);

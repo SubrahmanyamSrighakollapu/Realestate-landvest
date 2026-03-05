@@ -6,22 +6,44 @@ import Pagination from '../../components/common/Pagination';
 import { employeeService } from '../../../services/employeeService';
 import { toastService } from '../../../services/toastService';
 import { authService } from '../../../services/authService';
+import { reportService } from '../../../services/reportService';
 
 
 const TeamAndRoles = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredMembers, setFilteredMembers] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [stats, setStats] = useState({
+    totalSales: 0,
+    commissionEarned: 0,
+    pendingCommission: 0,
+    teamSize: 0
+  });
   const itemsPerPage = 5;
 
   useEffect(() => {
     fetchEmployees();
+    fetchTransactionReport();
     const employeeInfo = authService.getEmployeeData();
     if (employeeInfo && employeeInfo.role && employeeInfo.role.name === 'Admin') {
       setIsAdmin(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (searchTerm) {
+      const filtered = teamMembers.filter(member => 
+        member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.code?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredMembers(filtered);
+    } else {
+      setFilteredMembers(teamMembers);
+    }
+  }, [searchTerm, teamMembers]);
 
   const fetchEmployees = async () => {
     try {
@@ -31,6 +53,39 @@ const TeamAndRoles = () => {
       }
     } catch (error) {
       toastService.error('Failed to load employees');
+    }
+  };
+
+  const fetchTransactionReport = async () => {
+    try {
+      const response = await reportService.getTransactionReport();
+      if (response.success) {
+        const transactions = response.data;
+        
+        const totalSales = transactions.reduce((sum, txn) => 
+          sum + (txn.lead?.basePrice || 0), 0
+        );
+        
+        const commissionEarned = transactions
+          .filter(txn => txn.status === 'paid')
+          .reduce((sum, txn) => sum + (txn.advanceAmount || 0), 0);
+        
+        const pendingCommission = transactions
+          .filter(txn => txn.status === 'pending')
+          .reduce((sum, txn) => sum + (txn.nextPayAmount || 0), 0);
+        
+        const pendingCount = transactions.filter(txn => txn.status === 'pending').length;
+        
+        setStats({
+          totalSales,
+          commissionEarned,
+          pendingCommission,
+          teamSize: teamMembers.length,
+          pendingCount
+        });
+      }
+    } catch (error) {
+      toastService.error('Failed to load transaction report');
     }
   };
 
@@ -87,6 +142,8 @@ const TeamAndRoles = () => {
             <input
               type="text"
               placeholder="Search by ID, Name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: '80%',
                 padding: '10px 10px 10px 40px',
@@ -108,10 +165,10 @@ const TeamAndRoles = () => {
         marginBottom: '32px',
       }}>
         {[
-          { label: 'Total Sales', value: '₹1,24,50,000', change: '+124.4 %', sub: 'Target: ₹10,000' },
-          { label: 'Commission Earned', value: '₹1,24,50,000', change: '+124.4 %', sub: '' },
-          { label: 'Pending Commission', value: '₹1,24,50,000', change: '+124.4 %', sub: '4 invoices awaiting approval' },
-          { label: 'Team Size', value: '50', change: '+124.4 %', sub: 'Active across 3 regions' },
+          { label: 'Total Sales', value: `₹${stats.totalSales.toLocaleString('en-IN')}`, sub: '' },
+          { label: 'Commission Earned', value: `₹${stats.commissionEarned.toLocaleString('en-IN')}`, sub: '' },
+          { label: 'Pending Commission', value: `₹${stats.pendingCommission.toLocaleString('en-IN')}`, sub: `${stats.pendingCount || 0} transactions awaiting payment` },
+          { label: 'Team Size', value: `${teamMembers.length}`, sub: 'Active members' },
         ].map((stat, i) => (
           <div key={i} style={{
             backgroundColor: dashboardColors.white,
@@ -134,15 +191,6 @@ const TeamAndRoles = () => {
             }}>
               {stat.value}
             </h3>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '13px',
-              color: '#10b981', // green for positive change
-            }}>
-              <span>{stat.change}</span>
-            </div>
             {stat.sub && (
               <p style={{
                 fontSize: '12px',
@@ -211,12 +259,12 @@ const TeamAndRoles = () => {
               </tr>
             </thead>
             <tbody>
-              {teamMembers.length === 0 ? (
+              {filteredMembers.length === 0 ? (
                 <tr>
                   <td colSpan={isAdmin ? "5" : "4"} style={{ textAlign: 'center', padding: '40px' }}>No employees found</td>
                 </tr>
               ) : (
-                teamMembers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((member) => (
+                filteredMembers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((member) => (
                 <tr key={member._id}>
                   <td>{member.name}</td>
                   <td>{member.role?.name || 'N/A'}</td>
@@ -268,7 +316,7 @@ const TeamAndRoles = () => {
 
         <Pagination
           currentPage={currentPage}
-          totalItems={teamMembers.length}
+          totalItems={filteredMembers.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
         />

@@ -1,4 +1,4 @@
-import { Bell, Search, User, LogOut } from 'lucide-react';
+import { Bell, Search, User, LogOut, LogOutIcon } from 'lucide-react';
 import { authService } from '../../../services/authService';
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,18 +10,26 @@ const DashboardNavbar = ({ sidebarOpen }) => {
   const profileRef = useRef(null);
   const navigate = useNavigate();
 
-  console.log('DashboardNavbar Render - showProfileDropdown:', showProfileDropdown);
-  console.log('DashboardNavbar Render - employeeInfo:', employeeInfo);
+  const getProfileImage = () => {
+    if (employeeInfo?.profileImage) {
+      return `https://realestate.vsahasoft.com${employeeInfo.profileImage}`;
+    }
+    return null;
+  };
+
+  const getInitials = (name) => {
+    if (!name) return 'NA';
+    const names = name.trim().split(' ');
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  };
 
   useEffect(() => {
     const info = authService.getEmployeeData();
-    console.log('Loading Employee Info:', info);
     setEmployeeInfo(info);
 
     const handleClickOutside = (event) => {
-      console.log('Click outside detected');
       if (profileRef.current && !profileRef.current.contains(event.target)) {
-        console.log('Closing dropdown');
         setShowProfileDropdown(false);
       }
     };
@@ -97,10 +105,7 @@ const DashboardNavbar = ({ sidebarOpen }) => {
             onClick={(e) => { 
               e.preventDefault();
               e.stopPropagation();
-              console.log("Profile clicked - Current state:", showProfileDropdown);
-              const newState = !showProfileDropdown;
-              console.log("Setting new state to:", newState);
-              setShowProfileDropdown(newState);
+              setShowProfileDropdown(!showProfileDropdown);
             }}
             style={{
               display: 'flex',
@@ -112,7 +117,9 @@ const DashboardNavbar = ({ sidebarOpen }) => {
               backgroundColor: '#1F6F54',
               border: 'none',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s',
+              overflow: 'hidden',
+              padding: 0
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.05)';
@@ -123,15 +130,16 @@ const DashboardNavbar = ({ sidebarOpen }) => {
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            <User size={22} color="#fff" />
+            {getProfileImage() ? (
+              <img src={getProfileImage()} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <User size={22} color="#fff" />
+            )}
           </button>
 
           {showProfileDropdown && (
             <div 
-              onClick={(e) => {
-                console.log('Dropdown content clicked');
-                e.stopPropagation();
-              }}
+              onClick={(e) => e.stopPropagation()}
               style={{
                 position: 'absolute',
                 top: 'calc(100% + 12px)',
@@ -160,9 +168,14 @@ const DashboardNavbar = ({ sidebarOpen }) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 12px',
-                  border: '3px solid rgba(255,255,255,0.3)'
+                  border: '3px solid rgba(255,255,255,0.3)',
+                  overflow: 'hidden'
                 }}>
-                  <User size={30} />
+                  {getProfileImage() ? (
+                    <img src={getProfileImage()} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ fontSize: '24px', fontWeight: '600' }}>{getInitials(employeeInfo?.name)}</div>
+                  )}
                 </div>
                 <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '2px' }}>
                   {employeeInfo?.name || 'Admin User'}
@@ -255,53 +268,61 @@ const DashboardNavbar = ({ sidebarOpen }) => {
           <div style={{
             backgroundColor: 'white',
             borderRadius: '12px',
-            padding: '24px',
+            padding: '32px',
             maxWidth: '400px',
             width: '90%',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
           }}>
-            <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600', color: '#111827' }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <LogOutIcon
+                size={64}
+                color="#dc2626"
+                style={{ marginBottom: '16px' }}
+              />
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#111827',
+                marginBottom: '12px',
+              }}>
                 Confirm Logout
               </h3>
-              <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>
-                Are you sure you want to logout?
+              <p style={{
+                fontSize: '14px',
+                color: '#6b7280',
+                margin: 0,
+              }}>
+                Are you sure you want to logout from your account?
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button
                 onClick={() => setShowLogoutModal(false)}
                 style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#f3f4f6',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: '#374151',
+                  padding: '10px 24px',
+                  backgroundColor: 'white',
+                  color: '#111827',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '6px',
                   fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  fontWeight: '500',
+                  cursor: 'pointer'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmLogout}
                 style={{
-                  padding: '10px 20px',
+                  padding: '10px 24px',
                   backgroundColor: '#dc2626',
-                  border: 'none',
-                  borderRadius: '8px',
                   color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
                   fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  fontWeight: '500',
+                  cursor: 'pointer'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
               >
                 Logout
               </button>

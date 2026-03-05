@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock } from 'lucide-react';
+import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { authService } from '../services/authService';
 import { toastService } from '../services/toastService';
 import LoginBgImage from '../assets/login-bg.png'
@@ -11,6 +11,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ code: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -180,14 +181,14 @@ const Login = () => {
                   <Lock size={20} color="#ffffff" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   required
                   style={{
                     width: '100%',
-                    padding: '15px 15px 15px 65px',
+                    padding: '15px 60px 15px 65px',
                     border: 'none',
                     backgroundColor: 'rgba(31, 111, 84, 0.15)',
                     borderRadius: '1px',
@@ -195,6 +196,19 @@ const Login = () => {
                     outline: 'none',
                   }}
                 />
+                <div
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '15px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: 'rgba(31, 111, 84, 1)'
+                  }}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </div>
               </div>
             </div>
 

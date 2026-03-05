@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, User, Edit, TrendingUp, X, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, Mail, Phone, MapPin, Calendar, User, Edit, TrendingUp, X, Lock, Eye, EyeOff, CheckCircle, ToggleLeft } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import profileImage from '../../assets/associate-profile.jpg';
 import { employeeService } from '../../../services/employeeService';
@@ -13,6 +13,7 @@ import '../../styles/global.css';
 const AssociateProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [employee, setEmployee] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -202,7 +203,7 @@ const AssociateProfile = () => {
     return (
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-          <button onClick={() => navigate('/dashboard/associates/management')} style={{
+          <button onClick={() => navigate(location.state?.from || '/dashboard/associates/management')} style={{
             padding: '8px',
             border: '1px solid var(--dashboard-border)',
             borderRadius: '6px',
@@ -227,7 +228,7 @@ const AssociateProfile = () => {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <button onClick={() => navigate('/dashboard/associates/management')} style={{
+        <button onClick={() => navigate(location.state?.from || '/dashboard/associates/management')} style={{
           padding: '8px',
           border: '1px solid var(--dashboard-border)',
           borderRadius: '6px',
@@ -408,6 +409,7 @@ const AssociateProfile = () => {
           <input
             type="date"
             value={startDate}
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => setStartDate(e.target.value)}
             style={{
               padding: '10px 16px',
@@ -421,6 +423,7 @@ const AssociateProfile = () => {
           <input
             type="date"
             value={endDate}
+            max={new Date().toISOString().split('T')[0]}
             onChange={(e) => setEndDate(e.target.value)}
             style={{
               padding: '10px 16px',
@@ -925,26 +928,38 @@ const AssociateProfile = () => {
           <div style={{
             backgroundColor: 'white',
             borderRadius: '12px',
-            padding: '24px',
+            padding: '32px',
             maxWidth: '400px',
             width: '90%',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '600', margin: 0 }}>Confirm Status Change</h3>
-              <X size={20} style={{ cursor: 'pointer' }} onClick={() => setShowConfirmModal(false)} />
+            <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+              <ToggleLeft
+                size={64}
+                color={pendingStatus === 'active' ? 'rgb(16, 185, 129)' : '#dc2626'}
+                style={{ marginBottom: '16px' }}
+              />
+              <h3 style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#111827',
+                marginBottom: '12px',
+              }}>
+                Confirm Status Change
+              </h3>
+              <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+                Are you sure you want to change the status to <strong style={{ color: pendingStatus === 'active' ? '#10b981' : '#ef4444' }}>{pendingStatus}</strong>?<br/>
+                <span style={{ fontSize: '13px' }}>This will {pendingStatus === 'active' ? 'activate' : 'deactivate'} the associate's account.</span>
+              </p>
             </div>
-            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '24px' }}>
-              Are you sure you want to change the status to <strong style={{ color: pendingStatus === 'active' ? '#10b981' : '#ef4444' }}>{pendingStatus}</strong>?<br/>
-              <span style={{ fontSize: '13px' }}>This will {pendingStatus === 'active' ? 'activate' : 'deactivate'} the associate's account.</span>
-            </p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button
                 onClick={() => setShowConfirmModal(false)}
                 style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#f3f4f6',
-                  border: 'none',
+                  padding: '10px 24px',
+                  backgroundColor: 'white',
+                  color: '#111827',
+                  border: '1px solid #e5e7eb',
                   borderRadius: '6px',
                   fontSize: '14px',
                   cursor: 'pointer',
@@ -956,7 +971,7 @@ const AssociateProfile = () => {
               <button
                 onClick={confirmStatusChange}
                 style={{
-                  padding: '10px 20px',
+                  padding: '10px 24px',
                   backgroundColor: 'var(--dashboard-primary)',
                   border: 'none',
                   borderRadius: '6px',

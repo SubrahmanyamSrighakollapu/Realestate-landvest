@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 import dashboardColors from '../../../styles/colors';
 import { projectService } from '../../../../services/projectService';
@@ -8,6 +8,12 @@ const Highlights = ({ onNext, onPrevious, currentStep, projectData, setProjectDa
   const [highlights, setHighlights] = useState([]);
   const [currentHighlight, setCurrentHighlight] = useState({ title: '', description: '' });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (projectData?.highlights && projectData.highlights.length > 0) {
+      setHighlights(projectData.highlights);
+    }
+  }, [projectData]);
 
   const handleAddHighlight = () => {
     if (!currentHighlight.title || !currentHighlight.description) {

@@ -18,7 +18,7 @@ const ProjectView = () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('authToken');
-      const response = await axios.post('https://realestate.vsahasoft.com/api/v1/admin/projects/list', {}, {
+      const response = await axios.post('https://api.landvestinfra.com/api/v1/admin/projects/list', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
