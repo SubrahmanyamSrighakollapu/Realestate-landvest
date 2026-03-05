@@ -465,7 +465,7 @@ const EditLead = () => {
                   {selectedFile ? (
                     <span>{selectedFile.name}</span>
                   ) : existingImage ? (
-                    <span>Current: <a href={`https://realestate.vsahasoft.com${existingImage}`} target="_blank" rel="noopener noreferrer" style={{ color: dashboardColors.primary, textDecoration: 'underline', cursor: 'pointer', fontSize: '13px' }}>View File</a></span>
+                    <span>Current: <a href={`https://api.landvestinfra.com${existingImage}`} target="_blank" rel="noopener noreferrer" style={{ color: dashboardColors.primary, textDecoration: 'underline', cursor: 'pointer', fontSize: '13px' }}>View File</a></span>
                   ) : (
                     <span style={{ color: '#9ca3af' }}>No file chosen</span>
                   )}

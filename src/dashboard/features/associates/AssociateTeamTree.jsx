@@ -49,7 +49,7 @@ const AssociateTeamTree = () => {
 
   const getProfileImage = (profileImage) => {
     if (profileImage) {
-      return `https://realestate.vsahasoft.com${profileImage}`;
+      return `https://api.landvestinfra.com${profileImage}`;
     }
     return null;
   };

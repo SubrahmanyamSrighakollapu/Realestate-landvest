@@ -762,7 +762,7 @@ const AddAssociate = () => {
                     {files.profileImage ? (
                       <span>{files.profileImage.name}</span>
                     ) : existingFiles.profileImage ? (
-                      <span>Current: <a href={`https://realestate.vsahasoft.com${existingFiles.profileImage}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
+                      <span>Current: <a href={`https://api.landvestinfra.com${existingFiles.profileImage}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
                     ) : (
                       <span style={{ color: '#9ca3af' }}>No file chosen</span>
                     )}
@@ -784,7 +784,7 @@ const AddAssociate = () => {
                       {files.residentialProof ? (
                         <span>{files.residentialProof.name}</span>
                       ) : existingFiles.residentialProof ? (
-                        <span>Current: <a href={`https://realestate.vsahasoft.com${existingFiles.residentialProof}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
+                        <span>Current: <a href={`https://api.landvestinfra.com${existingFiles.residentialProof}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
                       ) : (
                         <span style={{ color: '#9ca3af' }}>No file chosen</span>
                       )}
@@ -805,7 +805,7 @@ const AddAssociate = () => {
                       {files.panProof ? (
                         <span>{files.panProof.name}</span>
                       ) : existingFiles.panProof ? (
-                        <span>Current: <a href={`https://realestate.vsahasoft.com${existingFiles.panProof}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
+                        <span>Current: <a href={`https://api.landvestinfra.com${existingFiles.panProof}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
                       ) : (
                         <span style={{ color: '#9ca3af' }}>No file chosen</span>
                       )}
@@ -826,7 +826,7 @@ const AddAssociate = () => {
                       {files.aadharProof ? (
                         <span>{files.aadharProof.name}</span>
                       ) : existingFiles.aadharProof ? (
-                        <span>Current: <a href={`https://realestate.vsahasoft.com${existingFiles.aadharProof}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
+                        <span>Current: <a href={`https://api.landvestinfra.com${existingFiles.aadharProof}`} target="_blank" rel="noopener noreferrer" className="existing-file-link">View File</a></span>
                       ) : (
                         <span style={{ color: '#9ca3af' }}>No file chosen</span>
                       )}

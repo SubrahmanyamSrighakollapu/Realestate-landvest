@@ -51,7 +51,7 @@ const ProjectDetails = () => {
     <div>
       {/* Hero Section */}
       <section style={{
-        backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(https://realestate.vsahasoft.com${project.bannerImage || project.thumbnnailImage})`,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(https://api.landvestinfra.com${project.bannerImage || project.thumbnnailImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         minHeight: '300px',
@@ -148,7 +148,7 @@ const ProjectDetails = () => {
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
                 <img 
-                  src={project.layouts?.length > 0 ? `https://realestate.vsahasoft.com/${project.layouts[0].url}` : `https://realestate.vsahasoft.com${project.thumbnnailImage}`}
+                  src={project.layouts?.length > 0 ? `https://api.landvestinfra.com/${project.layouts[0].url}` : `https://api.landvestinfra.com${project.thumbnnailImage}`}
                   alt="Plot Layout" 
                   style={{ width: '100%', borderRadius: '8px' }}
                 />
@@ -176,7 +176,7 @@ const ProjectDetails = () => {
                 flexWrap: 'wrap'
               }}>
                 <img 
-                  src={`https://realestate.vsahasoft.com${project.contentImage || project.thumbnnailImage}`}
+                  src={`https://api.landvestinfra.com${project.contentImage || project.thumbnnailImage}`}
                   alt="Project" 
                   className="project-info-img"
                   style={{ 

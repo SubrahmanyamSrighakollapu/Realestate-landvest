@@ -12,7 +12,7 @@ const DashboardNavbar = ({ sidebarOpen }) => {
 
   const getProfileImage = () => {
     if (employeeInfo?.profileImage) {
-      return `https://realestate.vsahasoft.com${employeeInfo.profileImage}`;
+      return `https://api.landvestinfra.com${employeeInfo.profileImage}`;
     }
     return null;
   };

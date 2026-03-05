@@ -161,7 +161,7 @@ const Projects = () => {
                 transition: 'transform 0.2s'
               }}>
                 <img
-                  src={`https://realestate.vsahasoft.com${project.contentImage || project.bannerImage}`}
+                  src={`https://api.landvestinfra.com${project.contentImage || project.bannerImage}`}
                   alt={project.title}
                   style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                   onError={(e) => e.target.src = 'https://via.placeholder.com/400x200?text=No+Image'}

@@ -47,6 +47,33 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
     }
   }, [isEdit, projectId]);
 
+  useEffect(() => {
+    if (projectData) {
+      setFormData({
+        title: projectData.title || '',
+        shortTitle: projectData.shortTitle || '',
+        thumbnailTitle: projectData.thumbnailTitle || '',
+        status: projectData.status || 'active',
+        location: projectData.location || '',
+        date: projectData.date ? projectData.date.split('T')[0] : '',
+        approvedBy: projectData.approvedBy || '',
+        startingPrice: projectData.startingPrice || '',
+        plotSize: projectData.plotSize || '',
+        totalPlots: projectData.totalPlots || '',
+        description: projectData.description || '',
+        contentImageCaption: projectData.contentImageCaption || '',
+        metaTitle: projectData.metaTitle || '',
+        metaKeywords: projectData.metaKeywords || '',
+        metaDescription: projectData.metaDescription || ''
+      });
+      setExistingImages({
+        bannerImage: projectData.bannerImage || '',
+        thumbnailImage: projectData.thumbnnailImage || '',
+        contentImage: projectData.contentImage || ''
+      });
+    }
+  }, [projectData]);
+
   const fetchProjectInfo = async () => {
     try {
       const response = await projectService.getProjectInfo(projectId);
@@ -213,7 +240,7 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
           {(bannerPreview || existingImages.bannerImage) ? (
             <>
               <img 
-                src={bannerPreview || `https://realestate.vsahasoft.com${existingImages.bannerImage}`} 
+                src={bannerPreview || `https://api.landvestinfra.com${existingImages.bannerImage}`} 
                 alt="Banner Preview" 
                 style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'contain', borderRadius: '8px', marginBottom: '16px' }} 
               />
@@ -298,7 +325,7 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
           {(thumbnailPreview || existingImages.thumbnailImage) ? (
             <>
               <img 
-                src={thumbnailPreview || `https://realestate.vsahasoft.com${existingImages.thumbnailImage}`} 
+                src={thumbnailPreview || `https://api.landvestinfra.com${existingImages.thumbnailImage}`} 
                 alt="Thumbnail Preview" 
                 style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'contain', borderRadius: '8px', marginBottom: '16px' }} 
               />
@@ -457,7 +484,7 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
             value={formData.status}
             onChange={handleInputChange}
             style={{
-              width: '90%',
+              width: '94%',
               padding: '12px',
               border: '1px solid var(--dashboard-border)',
               borderRadius: '8px',
@@ -643,7 +670,7 @@ const BasicInfo = ({ onNext, onPrevious, currentStep, projectData, setProjectDat
             {(contentPreview || existingImages.contentImage) ? (
               <>
                 <img 
-                  src={contentPreview || `https://realestate.vsahasoft.com${existingImages.contentImage}`} 
+                  src={contentPreview || `https://api.landvestinfra.com${existingImages.contentImage}`} 
                   alt="Content Preview" 
                   style={{ width: '100%', height: 'auto', maxHeight: '300px', objectFit: 'contain', borderRadius: '8px', marginBottom: '16px' }} 
                 />

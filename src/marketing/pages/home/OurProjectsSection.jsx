@@ -91,7 +91,7 @@ const OurProjectsSection = () => {
             >
               <div style={{ height: '250px', overflow: 'hidden' }}>
                 <img
-                  src={`https://realestate.vsahasoft.com${project.thumbnnailImage}`}
+                  src={`https://api.landvestinfra.com${project.thumbnnailImage}`}
                   alt={project.title}
                   style={{
                     width: '100%',

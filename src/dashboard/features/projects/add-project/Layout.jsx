@@ -4,21 +4,31 @@ import dashboardColors from '../../../styles/colors';
 import { projectService } from '../../../../services/projectService';
 import { toastService } from '../../../../services/toastService';
 
-const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
+const Layout = ({ onNext, onPrevious, currentStep, projectData, refreshProjectData }) => {
   const fileInputRef = useRef(null);
   const [layouts, setLayouts] = useState([]);
+  const [newLayouts, setNewLayouts] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (projectData?.layouts?.length > 0) {
-      // Don't populate layouts on navigation back - user needs to re-upload if they want to change
-      // Existing layouts are stored as URLs on the server
+      const existingLayouts = projectData.layouts.map((item, index) => ({
+        name: `Layout ${index + 1}`,
+        size: 0,
+        preview: `https://api.landvestinfra.com/${item.url}`,
+        isExisting: true
+      }));
+      // Merge existing layouts with any new layouts already in state
+      setLayouts(prev => {
+        const newFiles = prev.filter(l => l instanceof File);
+        return [...existingLayouts, ...newFiles];
+      });
     }
-  }, [projectData]);
+  }, [projectData?.layouts]);
 
   const calculateTotalFileSize = () => {
-    return layouts.reduce((total, layout) => total + layout.size, 0);
+    return newLayouts.reduce((total, layout) => total + layout.size, 0);
   };
 
   const handleFileChange = (e) => {
@@ -26,7 +36,8 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
     const MAX_TOTAL_SIZE = 5 * 1024 * 1024; // 5MB
 
     if (files.length > 0) {
-      const newTotalSize = calculateTotalFileSize() + files.reduce((sum, f) => sum + f.size, 0);
+      const currentNewFiles = layouts.filter(l => l instanceof File);
+      const newTotalSize = currentNewFiles.reduce((sum, f) => sum + f.size, 0) + files.reduce((sum, f) => sum + f.size, 0);
       
       if (newTotalSize > MAX_TOTAL_SIZE) {
         toastService.error(
@@ -36,6 +47,7 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
       }
       
       setLayouts(prev => [...prev, ...files]);
+      setNewLayouts(prev => [...prev, ...files]);
       toastService.success(`${files.length} file(s) uploaded successfully!`);
     }
   };
@@ -58,7 +70,8 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
     if (e.dataTransfer.files) {
       const files = Array.from(e.dataTransfer.files);
       const MAX_TOTAL_SIZE = 5 * 1024 * 1024;
-      const newTotalSize = calculateTotalFileSize() + files.reduce((sum, f) => sum + f.size, 0);
+      const currentNewFiles = layouts.filter(l => l instanceof File);
+      const newTotalSize = currentNewFiles.reduce((sum, f) => sum + f.size, 0) + files.reduce((sum, f) => sum + f.size, 0);
       
       if (newTotalSize > MAX_TOTAL_SIZE) {
         toastService.error(
@@ -68,11 +81,14 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
       }
       
       setLayouts(prev => [...prev, ...files]);
+      setNewLayouts(prev => [...prev, ...files]);
     }
   };
 
   const removeLayout = (index) => {
+    const layoutToRemove = layouts[index];
     setLayouts(prev => prev.filter((_, i) => i !== index));
+    setNewLayouts(prev => prev.filter(l => l !== layoutToRemove));
   };
 
   const handleClick = () => {
@@ -80,7 +96,10 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
 };
 
   const handleSaveAndContinue = async () => {
-    if (layouts.length === 0 && (!projectData?.layouts || projectData.layouts.length === 0)) {
+    // Get all File objects (not existing server images)
+    const allFilesToUpload = layouts.filter(l => l instanceof File);
+    
+    if (allFilesToUpload.length === 0 && (!projectData?.layouts || projectData.layouts.length === 0)) {
       toastService.error('Please upload at least one layout');
       return;
     }
@@ -90,8 +109,8 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
       return;
     }
 
-    // If no new layouts uploaded, just proceed to next step
-    if (layouts.length === 0) {
+    // If no new layouts to upload, just proceed to next step
+    if (allFilesToUpload.length === 0) {
       onNext();
       return;
     }
@@ -101,7 +120,7 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
       const data = new FormData();
       data.append('id', projectData._id);
       data.append('code', projectData.code);
-      layouts.forEach(layout => {
+      allFilesToUpload.forEach(layout => {
         data.append('layouts', layout);
       });
 
@@ -183,7 +202,7 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
                   overflow: 'hidden'
                 }}>
                   <img 
-                    src={URL.createObjectURL(layout)} 
+                    src={layout.isExisting ? layout.preview : URL.createObjectURL(layout)} 
                     alt={layout.name}
                     style={{
                       width: '100%',
@@ -207,7 +226,7 @@ const Layout = ({ onNext, onPrevious, currentStep, projectData }) => {
                   color: dashboardColors.textLight,
                   margin: '4px 0 0 0'
                 }}>
-                  {Math.round(layout.size / 1024)} KB
+                  {layout.isExisting ? 'Existing' : `${Math.round(layout.size / 1024)} KB`}
                 </p>
               </div>
             ))}

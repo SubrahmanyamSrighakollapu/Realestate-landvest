@@ -164,7 +164,7 @@ const ProjectsCompleted = () => {
             <div key={project._id} className="project-card">
               <div className="card-image" style={{ position: 'relative', overflow: 'hidden' }}>
                 <img 
-                  src={`https://realestate.vsahasoft.com${project.thumbnnailImage}`}
+                  src={`https://api.landvestinfra.com${project.thumbnnailImage}`}
                   alt={project.title}
                   style={{ width: '100%', height: '240px', objectFit: 'cover' }}
                 />

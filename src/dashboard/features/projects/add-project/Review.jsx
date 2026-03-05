@@ -17,6 +17,7 @@ const Review = ({ onPrevious, currentStep, projectData, isEdit }) => {
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [testimonials, setTestimonials] = useState([]);
+  const [newTestimonials, setNewTestimonials] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -30,7 +31,7 @@ const Review = ({ onPrevious, currentStep, projectData, isEdit }) => {
     let total = 0;
     if (userImage) total += userImage.size;
     if (file) total += file.size;
-    testimonials.forEach(t => {
+    newTestimonials.forEach(t => {
       if (t.userImage && typeof t.userImage !== 'string') total += t.userImage.size;
       if (t.file && typeof t.file !== 'string') total += t.file.size;
     });
@@ -100,6 +101,7 @@ const handleDrop = (e, type) => {
     };
 
     setTestimonials(prev => [...prev, testimonial]);
+    setNewTestimonials(prev => [...prev, testimonial]);
     
     // Clear form
     setUserName('');
@@ -112,14 +114,22 @@ const handleDrop = (e, type) => {
   };
 
   const removeTestimonial = (index) => {
+    const testimonialToRemove = testimonials[index];
     setTestimonials(prev => prev.filter((_, i) => i !== index));
+    setNewTestimonials(prev => prev.filter(t => t !== testimonialToRemove));
   };
 
   const handleSubmit = async () => {
-    if (testimonials.length === 0) {
+    if (newTestimonials.length === 0 && testimonials.length === 0) {
       toastService.error('Please add at least one testimonial');
       return;
     }
+
+    // if (newTestimonials.length === 0) {
+    //   toastService.info('No new testimonials to submit');
+    //   setShowSuccess(true);
+    //   return;
+    // }
 
     if (!projectData?._id || !projectData?.code) {
       toastService.error('Project data is missing');
@@ -128,7 +138,7 @@ const handleDrop = (e, type) => {
 
     setLoading(true);
     try {
-      for (const testimonial of testimonials) {
+      for (const testimonial of newTestimonials) {
         const data = new FormData();
         data.append('id', projectData._id);
         data.append('code', projectData.code);
@@ -264,36 +274,81 @@ const handleDrop = (e, type) => {
           }}>
             User Image
           </label>
-          <div style={{
-            border: `2px dashed ${dashboardColors.border}`,
-            borderRadius: '8px',
-            padding: '30px 20px',
-            textAlign: 'center',
-            cursor: 'pointer',
-          }}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={(e) => handleDrop(e, 'userImage')}
-            onClick={() => userImageRef.current?.click()}
-          >
-            <input
-              ref={userImageRef}
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-  const selectedFile = e.target.files[0];
-  if (validateFileSize(selectedFile, 'User Image')) {
-    setUserImage(selectedFile);
-  }
-}}
-              style={{ display: 'none' }}
-            />
-            <Upload size={24} color={dashboardColors.primary} style={{ margin: '0 auto 8px' }} />
-            <p style={{ fontSize: '13px', color: dashboardColors.textLight, margin: 0 }}>
-              {userImage ? userImage.name : 'Click or drag image'}
-            </p>
-          </div>
+          {userImage ? (
+            <div style={{ position: 'relative' }}>
+              <img
+                src={URL.createObjectURL(userImage)}
+                alt="User preview"
+                style={{
+                  width: '100%',
+                  height: '250px',
+                  objectFit: 'cover',
+                  borderRadius: '8px',
+                  marginBottom: '8px'
+                }}
+              />
+              <input
+                ref={userImageRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const selectedFile = e.target.files[0];
+                  if (validateFileSize(selectedFile, 'User Image')) {
+                    setUserImage(selectedFile);
+                  }
+                }}
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={() => userImageRef.current?.click()}
+                style={{
+                  width: '100%',
+                  padding: '10px 24px',
+                  backgroundColor: dashboardColors.primary,
+                  color: dashboardColors.white,
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Choose File
+              </button>
+            </div>
+          ) : (
+            <div style={{
+              border: `2px dashed ${dashboardColors.border}`,
+              borderRadius: '8px',
+              padding: '30px 20px',
+              textAlign: 'center',
+              cursor: 'pointer',
+            }}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={(e) => handleDrop(e, 'userImage')}
+              onClick={() => userImageRef.current?.click()}
+            >
+              <input
+                ref={userImageRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const selectedFile = e.target.files[0];
+                  if (validateFileSize(selectedFile, 'User Image')) {
+                    setUserImage(selectedFile);
+                  }
+                }}
+                style={{ display: 'none' }}
+              />
+              <Upload size={24} color={dashboardColors.primary} style={{ margin: '0 auto 8px' }} />
+              <p style={{ fontSize: '13px', color: dashboardColors.textLight, margin: 0 }}>
+                Click or drag image
+              </p>
+            </div>
+          )}
         </div>
 
         {/* File (Video/Image) */}
@@ -307,36 +362,96 @@ const handleDrop = (e, type) => {
           }}>
             File (Video/Image)
           </label>
-          <div style={{
-            border: `2px dashed ${dashboardColors.border}`,
-            borderRadius: '8px',
-            padding: '30px 20px',
-            textAlign: 'center',
-            cursor: 'pointer',
-          }}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={(e) => handleDrop(e, 'file')}
-            onClick={() => fileRef.current?.click()}
-          >
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*,video/*"
-              onChange={(e) => {
-  const selectedFile = e.target.files[0];
-  if (validateFileSize(selectedFile, 'File')) {
-    setFile(selectedFile);
-  }
-}}
-              style={{ display: 'none' }}
-            />
-            <Upload size={24} color={dashboardColors.primary} style={{ margin: '0 auto 8px' }} />
-            <p style={{ fontSize: '13px', color: dashboardColors.textLight, margin: 0 }}>
-              {file ? file.name : 'Click or drag video/image'}
-            </p>
-          </div>
+          {file ? (
+            <div style={{ position: 'relative' }}>
+              {file.type?.startsWith('image/') ? (
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="File preview"
+                  style={{
+                    width: '100%',
+                    height: '250px',
+                    objectFit: 'cover',
+                    borderRadius: '8px',
+                    marginBottom: '8px'
+                  }}
+                />
+              ) : (
+                <div style={{
+                  width: '100%',
+                  height: '150px',
+                  backgroundColor: dashboardColors.secondary,
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '8px'
+                }}>
+                  <p style={{ fontSize: '14px', color: dashboardColors.text }}>{file.name}</p>
+                </div>
+              )}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*,video/*"
+                onChange={(e) => {
+                  const selectedFile = e.target.files[0];
+                  if (validateFileSize(selectedFile, 'File')) {
+                    setFile(selectedFile);
+                  }
+                }}
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                style={{
+                  width: '100%',
+                  padding: '10px 24px',
+                  backgroundColor: dashboardColors.primary,
+                  color: dashboardColors.white,
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer'
+                }}
+              >
+                Choose File
+              </button>
+            </div>
+          ) : (
+            <div style={{
+              border: `2px dashed ${dashboardColors.border}`,
+              borderRadius: '8px',
+              padding: '30px 20px',
+              textAlign: 'center',
+              cursor: 'pointer',
+            }}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={(e) => handleDrop(e, 'file')}
+              onClick={() => fileRef.current?.click()}
+            >
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*,video/*"
+                onChange={(e) => {
+                  const selectedFile = e.target.files[0];
+                  if (validateFileSize(selectedFile, 'File')) {
+                    setFile(selectedFile);
+                  }
+                }}
+                style={{ display: 'none' }}
+              />
+              <Upload size={24} color={dashboardColors.primary} style={{ margin: '0 auto 8px' }} />
+              <p style={{ fontSize: '13px', color: dashboardColors.textLight, margin: 0 }}>
+                Click or drag video/image
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -455,12 +570,30 @@ const handleDrop = (e, type) => {
                   </div>
                   {testimonial.userImage && (
                     <div>
-                      <strong style={{ fontSize: '14px' }}>User Image:</strong> {typeof testimonial.userImage === 'string' ? testimonial.userImage : testimonial.userImage.name}
+                      <strong style={{ fontSize: '14px', display: 'block', marginBottom: '8px' }}>User Image:</strong>
+                      {typeof testimonial.userImage === 'string' ? (
+                        <img src={`https://api.landvestinfra.com/${testimonial.userImage}`} alt="User" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px' }} />
+                      ) : (
+                        <img src={URL.createObjectURL(testimonial.userImage)} alt="User" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px' }} />
+                      )}
                     </div>
                   )}
                   {testimonial.file && (
                     <div>
-                      <strong style={{ fontSize: '14px' }}>File:</strong> {typeof testimonial.file === 'string' ? testimonial.file : testimonial.file.name}
+                      <strong style={{ fontSize: '14px', display: 'block', marginBottom: '8px' }}>File:</strong>
+                      {typeof testimonial.file === 'string' ? (
+                        testimonial.file.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                          <img src={`https://api.landvestinfra.com/${testimonial.file}`} alt="File" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px' }} />
+                        ) : (
+                          <span style={{ fontSize: '13px' }}>{testimonial.file}</span>
+                        )
+                      ) : (
+                        testimonial.file.type?.startsWith('image/') ? (
+                          <img src={URL.createObjectURL(testimonial.file)} alt="File" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '6px' }} />
+                        ) : (
+                          <span style={{ fontSize: '13px' }}>{testimonial.file.name}</span>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
@@ -495,7 +628,7 @@ const handleDrop = (e, type) => {
 
         <button
           onClick={handleSubmit}
-          disabled={testimonials.length === 0 || loading}
+          disabled={loading}
           style={{
             padding: '12px 32px',
             backgroundColor: dashboardColors.primary,
@@ -504,8 +637,8 @@ const handleDrop = (e, type) => {
             borderRadius: '8px',
             fontSize: '14px',
             fontWeight: '500',
-            cursor: testimonials.length === 0 || loading ? 'not-allowed' : 'pointer',
-            opacity: testimonials.length === 0 || loading ? 0.5 : 1
+            cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading ? 0.5 : 1
           }}
         >
           {loading ? 'Submitting...' : 'Submit'}

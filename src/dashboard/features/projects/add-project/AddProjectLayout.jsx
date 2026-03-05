@@ -12,9 +12,10 @@ import { projectService } from '../../../../services/projectService';
 const AddProjectLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isEdit, projectId: initialProjectId } = location.state || {};
+  const { isEdit: initialIsEdit, projectId: initialProjectId } = location.state || {};
   const [projectData, setProjectData] = useState({});
   const [projectId, setProjectId] = useState(initialProjectId);
+  const [isEditMode, setIsEditMode] = useState(initialIsEdit || false);
 
   const fetchProjectData = async () => {
     const currentProjectId = projectId || projectData._id;
@@ -57,6 +58,14 @@ const AddProjectLayout = () => {
     }
   }, [location.pathname, navigate]);
 
+  // Initial fetch when component mounts in edit mode
+  useEffect(() => {
+    if (initialIsEdit && initialProjectId) {
+      setIsEditMode(true);
+      fetchProjectData();
+    }
+  }, []);
+
   const CurrentStepComponent = steps[currentStep - 1]?.component || BasicInfo;
 
   const handleNext = async () => {
@@ -80,14 +89,16 @@ const AddProjectLayout = () => {
   }, [projectData]);
 
   useEffect(() => {
-    fetchProjectData();
+    if (projectId && !isEditMode) {
+      fetchProjectData();
+    }
   }, [currentStep, projectId]);
 
   return (
     <div>
       <div style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '24px', fontWeight: '600', color: 'var(--dashboard-primary)', margin: '0 0 8px 0' }}>
-          {isEdit ? 'Update Project' : 'Add Projects'}
+          {isEditMode ? 'Update Project' : 'Add Projects'}
         </h2>
         <p style={{ fontSize: '14px', color: 'var(--dashboard-text-light)', margin: 0 }}>
           Manage and monitor all plot projects
@@ -172,7 +183,7 @@ const AddProjectLayout = () => {
           projectData={projectData}
           setProjectData={setProjectData}
           refreshProjectData={fetchProjectData}
-          isEdit={isEdit}
+          isEdit={isEditMode}
         />
       </div>
     </div>

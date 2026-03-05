@@ -74,7 +74,7 @@ const ProjectView = () => {
 
       {/* Hero Image */}
       <img
-        src={`https://realestate.vsahasoft.com${project.bannerImage || project.contentImage}`}
+        src={`https://api.landvestinfra.com${project.bannerImage || project.contentImage}`}
         alt={project.title}
         style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '12px', marginBottom: '32px' }}
         onError={(e) => e.target.src = 'https://via.placeholder.com/1200x400?text=Project+Image'}
@@ -90,7 +90,7 @@ const ProjectView = () => {
             {project.layouts.map((layout, idx) => (
               <img
                 key={idx}
-                src={`https://realestate.vsahasoft.com/${layout.url}`}
+                src={`https://api.landvestinfra.com/${layout.url}`}
                 alt={`Layout ${idx + 1}`}
                 style={{ width: '100%', borderRadius: '8px', border: `2px solid ${dashboardColors.primary}` }}
                 onError={(e) => e.target.src = 'https://via.placeholder.com/400x300?text=Layout'}
@@ -187,7 +187,7 @@ const ProjectView = () => {
             {project.images.map((img, idx) => (
               <img
                 key={idx}
-                src={`https://realestate.vsahasoft.com/${img.url}`}
+                src={`https://api.landvestinfra.com/${img.url}`}
                 alt={`Development ${idx + 1}`}
                 style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', border: `2px solid ${dashboardColors.primary}` }}
                 onError={(e) => e.target.src = 'https://via.placeholder.com/400x300?text=Image'}

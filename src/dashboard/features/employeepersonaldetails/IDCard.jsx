@@ -32,7 +32,7 @@ const IDCard = () => {
 
   const getProfileImage = () => {
     if (employee?.profileImage) {
-      return `https://realestate.vsahasoft.com${employee.profileImage}`;
+      return `https://api.landvestinfra.com${employee.profileImage}`;
     }
     return null;
   };

@@ -4,21 +4,31 @@ import dashboardColors from '../../../styles/colors';
 import { projectService } from '../../../../services/projectService';
 import { toastService } from '../../../../services/toastService';
 
-const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
+const Gallery = ({ onNext, onPrevious, currentStep, projectData, refreshProjectData }) => {
   const fileInputRef = useRef(null);
   const [images, setImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (projectData?.images?.length > 0) {
-      // Don't populate images on navigation back - user needs to re-upload if they want to change
-      // Existing images are stored as URLs on the server
+      const existingImages = projectData.images.map((item, index) => ({
+        name: `Image ${index + 1}`,
+        size: 0,
+        preview: `https://api.landvestinfra.com/${item.url}`,
+        isExisting: true
+      }));
+      // Merge existing images with any new images already in state
+      setImages(prev => {
+        const newFiles = prev.filter(i => i instanceof File);
+        return [...existingImages, ...newFiles];
+      });
     }
-  }, [projectData]);
+  }, [projectData?.images]);
 
   const calculateTotalFileSize = () => {
-    return images.reduce((total, image) => total + image.size, 0);
+    return newImages.reduce((total, image) => total + image.size, 0);
   };
 
   const handleFileChange = (e) => {
@@ -26,7 +36,8 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
     const MAX_TOTAL_SIZE = 5 * 1024 * 1024; // 5MB
 
     if (files.length > 0) {
-      const newTotalSize = calculateTotalFileSize() + files.reduce((sum, f) => sum + f.size, 0);
+      const currentNewFiles = images.filter(i => i instanceof File);
+      const newTotalSize = currentNewFiles.reduce((sum, f) => sum + f.size, 0) + files.reduce((sum, f) => sum + f.size, 0);
       
       if (newTotalSize > MAX_TOTAL_SIZE) {
         toastService.error(
@@ -36,6 +47,7 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
       }
       
       setImages(prev => [...prev, ...files]);
+      setNewImages(prev => [...prev, ...files]);
       toastService.success(`${files.length} file(s) uploaded successfully!`);
     }
   };
@@ -58,7 +70,8 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
     if (e.dataTransfer.files) {
       const files = Array.from(e.dataTransfer.files);
       const MAX_TOTAL_SIZE = 5 * 1024 * 1024;
-      const newTotalSize = calculateTotalFileSize() + files.reduce((sum, f) => sum + f.size, 0);
+      const currentNewFiles = images.filter(i => i instanceof File);
+      const newTotalSize = currentNewFiles.reduce((sum, f) => sum + f.size, 0) + files.reduce((sum, f) => sum + f.size, 0);
       
       if (newTotalSize > MAX_TOTAL_SIZE) {
         toastService.error(
@@ -68,15 +81,21 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
       }
       
       setImages(prev => [...prev, ...files]);
+      setNewImages(prev => [...prev, ...files]);
     }
   };
 
   const removeImage = (index) => {
+    const imageToRemove = images[index];
     setImages(prev => prev.filter((_, i) => i !== index));
+    setNewImages(prev => prev.filter(img => img !== imageToRemove));
   };
 
   const handleSaveAndContinue = async () => {
-    if (images.length === 0 && (!projectData?.images || projectData.images.length === 0)) {
+    // Get all File objects (not existing server images)
+    const allFilesToUpload = images.filter(i => i instanceof File);
+    
+    if (allFilesToUpload.length === 0 && (!projectData?.images || projectData.images.length === 0)) {
       toastService.error('Please upload at least one image');
       return;
     }
@@ -86,8 +105,8 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
       return;
     }
 
-    // If no new images uploaded, just proceed to next step
-    if (images.length === 0) {
+    // If no new images to upload, just proceed to next step
+    if (allFilesToUpload.length === 0) {
       onNext();
       return;
     }
@@ -97,7 +116,7 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
       const data = new FormData();
       data.append('id', projectData._id);
       data.append('code', projectData.code);
-      images.forEach(image => {
+      allFilesToUpload.forEach(image => {
         data.append('images', image);
       });
 
@@ -183,7 +202,7 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
                   overflow: 'hidden'
                 }}>
                   <img 
-                    src={URL.createObjectURL(image)} 
+                    src={image.isExisting ? image.preview : URL.createObjectURL(image)} 
                     alt={image.name}
                     style={{
                       width: '100%',
@@ -207,7 +226,7 @@ const Gallery = ({ onNext, onPrevious, currentStep, projectData }) => {
                   color: dashboardColors.textLight,
                   margin: '4px 0 0 0'
                 }}>
-                  {Math.round(image.size / 1024)} KB
+                  {image.isExisting ? 'Existing' : `${Math.round(image.size / 1024)} KB`}
                 </p>
               </div>
             ))}
