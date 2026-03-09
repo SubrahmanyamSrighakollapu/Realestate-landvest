@@ -42,7 +42,7 @@ const ProjectDetails = () => {
     { id: 'info', label: 'Project Info' },
     { id: 'payment', label: 'Payment Options' },
     { id: 'amenities', label: 'Amenities' },
-    // { id: 'highlights', label: 'Highlights' },
+    { id: 'highlights', label: 'Highlights' },
     { id: 'development', label: 'Project Development' },
     { id: 'location', label: 'Location Highlights' }
   ];
@@ -230,20 +230,70 @@ const ProjectDetails = () => {
                 borderRadius: '10px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-                  <div style={{ padding: '20px', border: '2px solid #1F6F54', borderRadius: '8px' }}>
-                    <h3 style={{ color: '#1F6F54', marginBottom: '10px' }}>Down Payment</h3>
-                    <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>20% at booking</p>
+                {project.pricingOptions?.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+                    {project.pricingOptions.map((option, idx) => (
+                      <div key={idx} style={{
+                        padding: '24px',
+                        border: '2px solid #1F6F54',
+                        borderRadius: '12px',
+                        backgroundColor: '#f9fffe',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 8px 16px rgba(31, 111, 84, 0.15)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}>
+                        <h3 style={{ color: '#1F6F54', marginBottom: '16px', fontSize: '1.3rem', fontWeight: '600' }}>
+                          {typeof option.pricingOption === 'object' ? option.pricingOption.title : 'Payment Plan'}
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '12px', borderBottom: '1px solid #e0e0e0' }}>
+                            <span style={{ fontSize: '0.9rem', color: '#666' }}>Price per Sq. Yd</span>
+                            <span style={{ fontSize: '1.3rem', fontWeight: '700', color: '#e74c3c' }}>₹{option.mrp?.toLocaleString('en-IN')}</span>
+                          </div>
+                          {option.duration && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.9rem', color: '#666' }}>Duration</span>
+                              <span style={{ fontSize: '1rem', fontWeight: '600', color: '#333' }}>{option.duration} Months</span>
+                            </div>
+                          )}
+                          {option.installment && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.9rem', color: '#666' }}>Installments</span>
+                              <span style={{ fontSize: '1rem', fontWeight: '600', color: '#333' }}>{option.installment}</span>
+                            </div>
+                          )}
+                          {option.advancePayment && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                              <span style={{ fontSize: '0.85rem', padding: '4px 12px', backgroundColor: '#d1fae5', color: '#065f46', borderRadius: '12px', fontWeight: '500' }}>Advance Payment Available</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div style={{ padding: '20px', border: '2px solid #1F6F54', borderRadius: '8px' }}>
-                    <h3 style={{ color: '#1F6F54', marginBottom: '10px' }}>EMI Options</h3>
-                    <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>Up to 24 months</p>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                    <div style={{ padding: '20px', border: '2px solid #1F6F54', borderRadius: '8px' }}>
+                      <h3 style={{ color: '#1F6F54', marginBottom: '10px' }}>Down Payment</h3>
+                      <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>20% at booking</p>
+                    </div>
+                    <div style={{ padding: '20px', border: '2px solid #1F6F54', borderRadius: '8px' }}>
+                      <h3 style={{ color: '#1F6F54', marginBottom: '10px' }}>EMI Options</h3>
+                      <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>Up to 24 months</p>
+                    </div>
+                    <div style={{ padding: '20px', border: '2px solid #1F6F54', borderRadius: '8px' }}>
+                      <h3 style={{ color: '#1F6F54', marginBottom: '10px' }}>Bank Loans</h3>
+                      <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>Available</p>
+                    </div>
                   </div>
-                  <div style={{ padding: '20px', border: '2px solid #1F6F54', borderRadius: '8px' }}>
-                    <h3 style={{ color: '#1F6F54', marginBottom: '10px' }}>Bank Loans</h3>
-                    <p style={{ fontSize: '1.2rem', fontWeight: '600' }}>Available</p>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -309,7 +359,7 @@ const ProjectDetails = () => {
           )}
 
           {/* Highlights */}
-          {/* {activeTab === 'highlights' && (
+          {activeTab === 'highlights' && (
             <div>
               <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '16px' }}>
                 Project Highlights
@@ -318,35 +368,47 @@ const ProjectDetails = () => {
                 Key features and benefits that make this project special.
               </p>
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '20px'
+                backgroundColor: 'white',
+                padding: '30px',
+                borderRadius: '10px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
                 {project.highlights?.length > 0 ? (
-                  project.highlights.map((highlight, idx) => (
-                    <div key={idx} style={{
-                      backgroundColor: 'white',
-                      padding: '25px',
-                      borderRadius: '12px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                      border: '1px solid #f0f0f0'
-                    }}>
-                      <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1F6F54', marginBottom: '12px' }}>
-                        {highlight.title}
-                      </h4>
-                      <p style={{ fontSize: '14px', color: '#666', margin: 0, lineHeight: '1.6' }}>
-                        {highlight.description}
-                      </p>
-                    </div>
-                  ))
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    {project.highlights.map((highlight, idx) => (
+                      <div key={idx}>
+                        {/* <h4 style={{ fontSize: '18px', fontWeight: '600', color: '#1F6F54', marginBottom: '12px' }}>
+                          {highlight.title}
+                        </h4> */}
+                        <ul style={{ 
+                          listStyleType: 'disc', 
+                          paddingLeft: '24px', 
+                          margin: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}>
+                          {highlight.description.split('\n').filter(item => item.trim()).map((point, pointIdx) => (
+                            <li key={pointIdx} style={{ 
+                              fontSize: '14px', 
+                              color: '#666', 
+                              lineHeight: '1.6',
+                              paddingLeft: '8px'
+                            }}>
+                              {point.trim()}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <div style={{
                     backgroundColor: 'white',
                     padding: '40px',
                     borderRadius: '12px',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                    textAlign: 'center',
-                    gridColumn: '1 / -1'
+                    textAlign: 'center'
                   }}>
                     <p style={{ fontSize: '16px', color: '#666', margin: 0 }}>
                       Project highlights will be updated soon.
@@ -355,7 +417,7 @@ const ProjectDetails = () => {
                 )}
               </div>
             </div>
-          )} */}
+          )}
           {activeTab === 'development' && (
             <div>
               <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '16px' }}>
@@ -403,36 +465,55 @@ const ProjectDetails = () => {
                 borderRadius: '10px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
               }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-                  {project.locations?.length > 0 ? (
-                    project.locations.map((location, idx) => (
+                {project.locations?.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    {project.locations.map((location, idx) => (
                       <div key={idx}>
-                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>{location.title}</h4>
-                        <p>{location.description}</p>
+                        {/* <h4 style={{ color: '#1F6F54', marginBottom: '16px', fontSize: '1.2rem', fontWeight: '600' }}>
+                          {location.title}
+                        </h4> */}
+                        <ul style={{ 
+                          listStyleType: 'disc', 
+                          paddingLeft: '24px', 
+                          margin: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}>
+                          {location.description.split('\n').filter(item => item.trim()).map((point, pointIdx) => (
+                            <li key={pointIdx} style={{ 
+                              fontSize: '1rem', 
+                              color: '#555', 
+                              lineHeight: '1.6',
+                              paddingLeft: '8px'
+                            }}>
+                              {point.trim()}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
-                    ))
-                  ) : (
-                    // Default location highlights
-                    <>
-                      <div>
-                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>🏥 Healthcare</h4>
-                        <p>Hospitals nearby - 5 km</p>
-                      </div>
-                      <div>
-                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>🏫 Education</h4>
-                        <p>Schools & Colleges - 3 km</p>
-                      </div>
-                      <div>
-                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>🛒 Shopping</h4>
-                        <p>Shopping Centers - 4 km</p>
-                      </div>
-                      <div>
-                        <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>✈️ Connectivity</h4>
-                        <p>Major Roads & Transport</p>
-                      </div>
-                    </>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+                    <div>
+                      <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>🏥 Healthcare</h4>
+                      <p>Hospitals nearby - 5 km</p>
+                    </div>
+                    <div>
+                      <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>🏫 Education</h4>
+                      <p>Schools & Colleges - 3 km</p>
+                    </div>
+                    <div>
+                      <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>🛒 Shopping</h4>
+                      <p>Shopping Centers - 4 km</p>
+                    </div>
+                    <div>
+                      <h4 style={{ color: '#1F6F54', marginBottom: '10px' }}>✈️ Connectivity</h4>
+                      <p>Major Roads & Transport</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
