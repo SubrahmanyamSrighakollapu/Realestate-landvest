@@ -1,27 +1,31 @@
-import gallery1 from '../../../assets/gallery1.png';
-import gallery2 from '../../../assets/gallery2.jpg';
-import gallery3 from '../../../assets/gallery3.jpg';
-import gallery4 from '../../../assets/gallery4.jpg';
-import gallery5 from '../../../assets/gallery5.jpg';
-import gallery6 from '../../../assets/gallery6.jpg';
-import gallery7 from '../../../assets/gallery7.jpg';
-import gallery8 from '../../../assets/gallery8.png';
-
+import { useState, useEffect } from 'react';
+import { publicGalleryService } from '../../../services/publicGalleryService';
 
 export default function GalleryCollection() {
-  const tabs = ['All Photos', 'Site Layout', 'Open Plots', 'Infrastructure', 'Videos'];
+  const [activeTab, setActiveTab] = useState('All');
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Use imported images here
-  const galleryImages = [
-    gallery1,
-    gallery2,
-    gallery3,
-    gallery4,
-    gallery5,
-    gallery6,
-    gallery7,
-    gallery8,
-  ];
+  const tabs = ['All', 'Site Layout', 'Open Plots', 'Infrastructure', 'Videos'];
+
+  useEffect(() => {
+    fetchGalleryImages();
+  }, [activeTab]);
+
+  const fetchGalleryImages = async () => {
+    setLoading(true);
+    try {
+      const category = activeTab === 'All' ? '' : activeTab;
+      const response = await publicGalleryService.listImages(category);
+      if (response.success) {
+        setGalleryImages(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load gallery images:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', color: '#333', padding: '2rem 1rem' }}>
@@ -39,18 +43,19 @@ export default function GalleryCollection() {
         {tabs.map((tab) => (
           <button
             key={tab}
+            onClick={() => setActiveTab(tab)}
             style={{
               padding: '0.65rem 1.25rem',
               fontSize: '0.9rem',
-              fontWeight: tab === 'All Photos' ? 'bold' : '500',
-              color: tab === 'All Photos' ? '#fff' : '#333',
-              backgroundColor: tab === 'All Photos' ? '#e67e22' : '#f0f0f0',
+              fontWeight: tab === activeTab ? 'bold' : '500',
+              color: tab === activeTab ? '#fff' : '#333',
+              backgroundColor: tab === activeTab ? '#e67e22' : '#f0f0f0',
               border: 'none',
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.2s',
               boxShadow:
-                tab === 'All Photos'
+                tab === activeTab
                   ? '0 4px 12px rgba(230,126,34,0.3)'
                   : 'none',
             }}
@@ -72,54 +77,80 @@ export default function GalleryCollection() {
         }}
         className="gallery-heading"
       >
-        Showing All Photos
+        Showing {activeTab}
       </h2>
 
-      {/* Gallery Grid */}
-      <div
-        className="gallery-grid"
-        style={{
-          display: 'grid',
-          gap: '1.25rem',
-          maxWidth: '1400px',
-          margin: '0 auto',
-        }}
-      >
-        {galleryImages.map((src, index) => (
-          <div
-            key={index}
-            style={{
-              borderRadius: '12px',
-              overflow: 'hidden',
-              boxShadow: '0 6px 20px rgba(0,0,0,0.12)',
-              transition: 'transform 0.25s, box-shadow 0.25s',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.04)';
-              e.currentTarget.style.boxShadow =
-                '0 12px 30px rgba(0,0,0,0.18)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow =
-                '0 6px 20px rgba(0,0,0,0.12)';
-            }}
-          >
-            <img
-              src={src}
-              alt={`Gallery image ${index + 1}`}
+      {/* Loading State */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#666' }}>
+          Loading images...
+        </div>
+      ) : galleryImages.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#666' }}>
+          No images found in this category
+        </div>
+      ) : (
+        /* Gallery Grid */
+        <div
+          className="gallery-grid"
+          style={{
+            display: 'grid',
+            gap: '1.25rem',
+            maxWidth: '1400px',
+            margin: '0 auto',
+          }}
+        >
+          {galleryImages.map((image) => (
+            <div
+              key={image._id}
               style={{
-                width: '100%',
-                height: 'auto',
-                display: 'block',
-                objectFit: 'cover',
-                aspectRatio: '4 / 3',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.12)',
+                transition: 'transform 0.25s, box-shadow 0.25s',
+                cursor: 'pointer',
               }}
-            />
-          </div>
-        ))}
-      </div>
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.04)';
+                e.currentTarget.style.boxShadow =
+                  '0 12px 30px rgba(0,0,0,0.18)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow =
+                  '0 6px 20px rgba(0,0,0,0.12)';
+              }}
+            >
+              {image.category === 'Videos' ? (
+                <video
+                  src={`https://api.landvestinfra.com/${image.file}`}
+                  controls
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block',
+                    objectFit: 'cover',
+                    aspectRatio: '4 / 3',
+                    backgroundColor: '#000',
+                  }}
+                />
+              ) : (
+                <img
+                  src={`https://api.landvestinfra.com/${image.file}`}
+                  alt={image.category}
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block',
+                    objectFit: 'cover',
+                    aspectRatio: '4 / 3',
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       <style>{`
         .gallery-grid {
