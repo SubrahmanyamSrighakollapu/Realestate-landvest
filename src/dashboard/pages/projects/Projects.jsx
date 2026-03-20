@@ -20,7 +20,7 @@ const Projects = () => {
     inactiveCount: 0,
     newCount: 0
   });
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchProjects();
@@ -67,10 +67,12 @@ const Projects = () => {
     { label: 'New Projects', value: dashboardData.newCount, subtext: 'Recently added' }
   ];
 
-  const filteredProjects = projects.filter(project =>
-    project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.location?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProjects = projects
+    .filter(p => ['ongoing', 'completed', 'upcoming'].includes(p.status))
+    .filter(project =>
+      project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.location?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   const handlePrevious = () => {
     setCarouselIndex(prev => Math.max(0, prev - 3));
@@ -362,6 +364,7 @@ const Projects = () => {
           totalItems={filteredProjects.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
         />
     </div>
   );

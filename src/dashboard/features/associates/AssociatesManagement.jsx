@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Users, UserCheck, UserX, UserPlus, Search, Filter, Download
+  Users, UserCheck, UserX, UserPlus, Search, Filter, Download, ChevronUp, ChevronDown
 } from 'lucide-react';
 import dashboardColors from '../../styles/colors';
 import Pagination from '../../components/common/Pagination';
@@ -25,7 +25,8 @@ const AssociatesManagement = () => {
   const [selectedDate, setSelectedDate] = useState('');
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, new: 0 });
   const [canEdit, setCanEdit] = useState(false);
-  const itemsPerPage = 5;
+  const [dojSort, setDojSort] = useState('desc');
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const handleExport = async () => {
     try {
@@ -118,9 +119,15 @@ const AssociatesManagement = () => {
       });
     }
 
+    filtered = [...filtered].sort((a, b) => {
+      const dateA = a.doj ? new Date(a.doj) : new Date(0);
+      const dateB = b.doj ? new Date(b.doj) : new Date(0);
+      return dojSort === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+
     setFilteredAssociates(filtered);
     setTotalItems(filtered.length);
-  }, [searchTerm, selectedRole, selectedDate, associates]);
+  }, [searchTerm, selectedRole, selectedDate, associates, dojSort]);
 
   return (
     <div style={{ padding: '24px' }}>
@@ -383,20 +390,31 @@ const AssociatesManagement = () => {
                 <th>ID</th>
                 <th>Associate Name</th>
                 <th>Role</th>
+                <th>Sponsored By</th>
                 <th>Mobile Number</th>
                 <th>Status</th>
-                <th>Date Of Join</th>
+                <th>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    Date Of Join
+                    <div style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+                      onClick={() => setDojSort(prev => prev === 'desc' ? 'asc' : 'desc')}
+                    >
+                      <ChevronUp size={13} color={dojSort === 'asc' ? dashboardColors.primary : '#9ca3af'} style={{ marginBottom: '-3px' }} />
+                      <ChevronDown size={13} color={dojSort === 'desc' ? dashboardColors.primary : '#9ca3af'} />
+                    </div>
+                  </div>
+                </th>
                 <th>Profile</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>Loading...</td>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '40px' }}>Loading...</td>
                 </tr>
               ) : filteredAssociates.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ textAlign: 'center', padding: '40px' }}>No associates found</td>
+                  <td colSpan="8" style={{ textAlign: 'center', padding: '40px' }}>No associates found</td>
                 </tr>
               ) : (
                 filteredAssociates
@@ -406,6 +424,7 @@ const AssociatesManagement = () => {
                     <td>{assoc.code}</td>
                     <td>{assoc.name}</td>
                     <td>{assoc.role?.name || 'N/A'}</td>
+                    <td>{assoc.sponser?.name || 'N/A'}</td>
                     <td>{assoc.phone}</td>
                     <td>
                       <span className={`status-badge ${assoc.status === 'active' ? 'status-completed' : 'status-pending'}`}>
@@ -442,6 +461,7 @@ const AssociatesManagement = () => {
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
         />
       </div>
     </div>

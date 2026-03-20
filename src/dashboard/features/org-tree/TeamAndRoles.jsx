@@ -22,7 +22,7 @@ const TeamAndRoles = () => {
     pendingCommission: 0,
     teamSize: 0
   });
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchEmployees();
@@ -319,6 +319,7 @@ const TeamAndRoles = () => {
           totalItems={filteredMembers.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
         />
       </div>
     </div>

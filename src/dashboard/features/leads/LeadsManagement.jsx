@@ -20,7 +20,7 @@ const LeadsManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, new: 0 });
   const [canEdit, setCanEdit] = useState(false);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchLeads();
@@ -410,6 +410,7 @@ const LeadsManagement = () => {
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
         />
       </div>
     </div>

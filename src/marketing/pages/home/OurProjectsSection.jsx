@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, MapPin } from 'lucide-react';
 import { colors } from '../../colors';
 import { publicProjectService } from '../../../services/publicProjectService';
@@ -6,6 +7,7 @@ import { publicProjectService } from '../../../services/publicProjectService';
 const OurProjectsSection = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProjects();
@@ -80,6 +82,7 @@ const OurProjectsSection = () => {
                 boxShadow: '0 6px 18px rgba(0,0,0,0.07)',
                 cursor: 'pointer',
               }}
+              onClick={() => navigate(`/projects/${project.status}/${project._id}`)}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-6px)';
                 e.currentTarget.style.boxShadow = '0 14px 32px rgba(0,0,0,0.12)';
@@ -164,6 +167,7 @@ const OurProjectsSection = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
+                    onClick={(e) => { e.stopPropagation(); navigate(`/projects/${project.status}/${project._id}`); }}
                   >
                     <ArrowUpRight
                       size={20}

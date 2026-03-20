@@ -43,7 +43,7 @@ const ProjectDetails = () => {
     { id: 'payment', label: 'Payment Options' },
     { id: 'amenities', label: 'Amenities' },
     { id: 'highlights', label: 'Highlights' },
-    { id: 'development', label: 'Project Development' },
+    { id: 'reviews', label: 'Reviews' },
     { id: 'location', label: 'Location Highlights' }
   ];
 
@@ -418,35 +418,47 @@ const ProjectDetails = () => {
               </div>
             </div>
           )}
-          {activeTab === 'development' && (
+          {activeTab === 'reviews' && (
             <div>
               <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '16px' }}>
-                Project Development
+                Customer Reviews
               </h2>
               <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '30px', lineHeight: '1.6' }}>
-                Track the progress of infrastructure development and upcoming milestones.
+                What our customers say about this project.
               </p>
-              <div style={{
-                backgroundColor: 'white',
-                padding: '30px',
-                borderRadius: '10px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-              }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1F6F54' }}></div>
-                    <span style={{ fontSize: '1.1rem', fontWeight: '500' }}>Land Survey & Planning - Completed</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#1F6F54' }}></div>
-                    <span style={{ fontSize: '1.1rem', fontWeight: '500' }}>Road Infrastructure - In Progress</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: '#ccc' }}></div>
-                    <span style={{ fontSize: '1.1rem', fontWeight: '500' }}>Utilities Setup - Upcoming</span>
-                  </div>
+              {project.testimonials?.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {project.testimonials.map((testimonial, idx) => (
+                    <div key={idx} style={{
+                      backgroundColor: 'white',
+                      padding: '24px',
+                      borderRadius: '12px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                      display: 'flex',
+                      gap: '20px',
+                      alignItems: 'flex-start'
+                    }}>
+                      <img
+                        src={`https://api.landvestinfra.com${testimonial.userImage}`}
+                        alt={testimonial.name}
+                        style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #1F6F54', flexShrink: 0 }}
+                        onError={(e) => { e.target.src = 'https://via.placeholder.com/60?text=User'; }}
+                      />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <h4 style={{ fontSize: '1.1rem', fontWeight: '600', color: '#1F6F54', margin: 0 }}>{testimonial.name}</h4>
+                          <span style={{ fontSize: '0.85rem', color: '#888' }}>{new Date(testimonial.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        </div>
+                        <p style={{ fontSize: '0.95rem', color: '#555', lineHeight: '1.6', margin: 0 }}>{testimonial.description}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              ) : (
+                <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+                  <p style={{ fontSize: '1rem', color: '#888', margin: 0 }}>No reviews yet for this project.</p>
+                </div>
+              )}
             </div>
           )}
 

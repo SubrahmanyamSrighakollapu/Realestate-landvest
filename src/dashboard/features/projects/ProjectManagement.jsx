@@ -23,7 +23,7 @@ const ProjectManagement = () => {
     inactiveCount: 0,
     newCount: 0
   });
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchProjects();
@@ -101,7 +101,6 @@ const ProjectManagement = () => {
           (proj) => proj.status?.toLowerCase() === statusFilter
         );
 
-  // ✅ PAGINATION ON FILTERED DATA
   const paginatedProjects = filteredProjects.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -427,6 +426,7 @@ const ProjectManagement = () => {
           totalItems={filteredProjects.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
         />
       </div>
 

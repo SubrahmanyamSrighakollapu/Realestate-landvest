@@ -22,7 +22,9 @@ const ProjectView = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.data.success) {
-        const projectData = response.data.data.find(p => p._id === id);
+        const projectData = response.data.data
+          .filter(p => ['ongoing', 'completed', 'upcoming'].includes(p.status))
+          .find(p => p._id === id);
         setProject(projectData);
       }
     } catch (error) {

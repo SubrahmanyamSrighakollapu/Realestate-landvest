@@ -9,7 +9,7 @@ import { toastService } from '../../../services/toastService';
 
 const DirectoryManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [directoryData, setDirectoryData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -331,6 +331,7 @@ const DirectoryManagement = () => {
           totalItems={filteredData.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
         />
       </div>
     </div>

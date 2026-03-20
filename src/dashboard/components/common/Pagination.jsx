@@ -5,6 +5,7 @@ const Pagination = ({
   totalItems, 
   itemsPerPage = 10, 
   onPageChange,
+  onItemsPerPageChange,
   showResultsText = true 
 }) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -40,15 +41,42 @@ const Pagination = ({
       alignItems: 'center',
       marginTop: '16px',
       fontSize: '14px',
-      color: 'var(--dashboard-text-light)'
+      color: 'var(--dashboard-text-light)',
+      flexWrap: 'wrap',
+      gap: '12px'
     }}>
-      {showResultsText && (
-        <div>
-          Showing {startItem} to {endItem} of {totalItems} results
-        </div>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {showResultsText && (
+          <span>Showing {totalItems === 0 ? 0 : startItem} to {endItem} of {totalItems} results</span>
+        )}
+        {onItemsPerPageChange && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ whiteSpace: 'nowrap' }}>Rows per page:</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                onItemsPerPageChange(Number(e.target.value));
+                onPageChange(1);
+              }}
+              style={{
+                padding: '6px 10px',
+                border: '1px solid var(--dashboard-border)',
+                borderRadius: '6px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                outline: 'none',
+                backgroundColor: 'var(--dashboard-white)'
+              }}
+            >
+              {[10, 20, 30, 50].map(n => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <button
           disabled={currentPage === 1}
           onClick={() => onPageChange(currentPage - 1)}
@@ -87,15 +115,15 @@ const Pagination = ({
         ))}
 
         <button
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || totalPages === 0}
           onClick={() => onPageChange(currentPage + 1)}
           style={{
             padding: '8px 12px',
             border: '1px solid var(--dashboard-border)',
             borderRadius: '6px',
             background: 'var(--dashboard-white)',
-            cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-            opacity: currentPage === totalPages ? 0.5 : 1,
+            cursor: currentPage === totalPages || totalPages === 0 ? 'not-allowed' : 'pointer',
+            opacity: currentPage === totalPages || totalPages === 0 ? 0.5 : 1,
             display: 'flex',
             alignItems: 'center'
           }}

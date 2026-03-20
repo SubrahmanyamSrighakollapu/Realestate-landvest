@@ -32,7 +32,7 @@ const Associates = () => {
   const [salesOverviewData, setSalesOverviewData] = useState([]);
   const [canDownload, setCanDownload] = useState(false);
   const [recentActivity, setRecentActivity] = useState([]);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchDashboardData();
@@ -682,6 +682,7 @@ const Associates = () => {
           totalItems={associatesData.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
         />
       </div>
 {/* 

@@ -28,7 +28,7 @@ const AssociateReports = () => {
   const [showAllRoles, setShowAllRoles] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [exportLoading, setExportLoading] = useState(false);
-  const itemsPerPage = 5;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const isAdmin = permissionService.isAdmin();
@@ -475,6 +475,7 @@ const AssociateReports = () => {
           totalItems={filteredTotal}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
         />
       </div>
     </div>
