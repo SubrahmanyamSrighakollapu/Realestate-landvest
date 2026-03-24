@@ -30,6 +30,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const employeeRef = useRef(null);
   const roleRef = useRef(null);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -60,13 +61,13 @@ const Signup = () => {
   const handleEmployeeCodeChange = (value) => {
     setEmployeeCode(value);
     setSelectedEmployee('');
-    if (value.length === 9 && value.startsWith('EMP')) {
-      fetchEmployeeInfo(value);
-    } else {
-      setEmployeeInfo(null);
-      setShowEmployeeDropdown(false);
-      setRoles([]);
-      setSelectedRole('');
+    setEmployeeInfo(null);
+    setShowEmployeeDropdown(false);
+    setRoles([]);
+    setSelectedRole('');
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (value.length >= 6) {
+      debounceRef.current = setTimeout(() => fetchEmployeeInfo(value), 500);
     }
   };
 
@@ -112,7 +113,7 @@ const Signup = () => {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('role', formData.role);
-      formDataToSend.append('password', formData.password);
+      if (formData.password) formDataToSend.append('password', formData.password);
       formDataToSend.append('referedBy', formData.referedBy);
       if (formData.aadharNumber) {
         formDataToSend.append('aadharNumber', formData.aadharNumber);
@@ -366,7 +367,6 @@ const Signup = () => {
                   placeholder="Password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  required
                   style={{
                     width: '100%',
                     padding: '15px 15px 15px 65px',
