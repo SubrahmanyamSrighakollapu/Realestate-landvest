@@ -143,7 +143,7 @@ const EditLead = () => {
         leadService.getLeadStatuses()
       ]);
 
-      if (projectsRes.success) setProjects(projectsRes.data);
+      if (projectsRes.success) setProjects(projectsRes.data.filter(p => ['ongoing', 'completed', 'upcoming'].includes(p.status?.toLowerCase())));
       if (propertyTypesRes.success) setPropertyTypes(propertyTypesRes.data);
       if (buyingPurposesRes.success) setBuyingPurposes(buyingPurposesRes.data);
       if (leadStatusesRes.success) setLeadStatuses(leadStatusesRes.data.filter(status => status.status === 'active'));
@@ -672,7 +672,7 @@ const EditLead = () => {
                           {selectedOption.pricingOption.title}
                         </div>
                         <div style={{ fontSize: '13px', color: dashboardColors.textLight }}>
-                          Base Price: ₹{selectedOption.mrp.toLocaleString('en-IN')} • {selectedOption.duration} Months • {selectedOption.installment} Installments
+                          Base Price: ₹{selectedOption.mrp.toLocaleString('en-IN')} • {selectedOption.duration} Days • {selectedOption.installment} Installments
                         </div>
                       </div>
                     ) : null;

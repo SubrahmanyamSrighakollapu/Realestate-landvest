@@ -77,7 +77,7 @@ const AddLeads = () => {
         leadService.getLeadStatuses()
       ]);
 
-      if (projectsRes.success) setProjects(projectsRes.data);
+      if (projectsRes.success) setProjects(projectsRes.data.filter(p => ['ongoing', 'completed', 'upcoming'].includes(p.status?.toLowerCase())));
       if (propertyTypesRes.success) setPropertyTypes(propertyTypesRes.data);
       if (buyingPurposesRes.success) setBuyingPurposes(buyingPurposesRes.data);
       if (leadStatusesRes.success) setLeadStatuses(leadStatusesRes.data.filter(status => status.status === 'active'));
@@ -645,7 +645,7 @@ const AddLeads = () => {
                       <option value="">Select Payment Plan</option>
                       {pricingOptions.map(option => (
                         <option key={option.pricingOption._id} value={option.pricingOption._id}>
-                          {option.pricingOption.title} - Base Price: ₹{option.mrp.toLocaleString('en-IN')} • {option.duration} Months • {option.installment} Installments
+                          {option.pricingOption.title} - Base Price: ₹{option.mrp.toLocaleString('en-IN')} • {option.duration} Days • {option.installment} Installments
                         </option>
                       ))}
                     </select>

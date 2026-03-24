@@ -260,7 +260,7 @@ const ProjectDetails = () => {
                           {option.duration && (
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ fontSize: '0.9rem', color: '#666' }}>Duration</span>
-                              <span style={{ fontSize: '1rem', fontWeight: '600', color: '#333' }}>{option.duration} Months</span>
+                              <span style={{ fontSize: '1rem', fontWeight: '600', color: '#333' }}>{option.duration} Days</span>
                             </div>
                           )}
                           {option.installment && (
