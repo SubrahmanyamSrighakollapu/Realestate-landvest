@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Home, Navigation, Lightbulb, Trees, Baby, Droplet, Shield } from 'lucide-react';
 import { publicProjectService } from '../../../services/publicProjectService';
-import project1 from '../../../assets/our-projects-image1.png';
+import PlotLayout from './PlotLayout';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -135,24 +135,13 @@ const ProjectDetails = () => {
           {/* Online Plot Availability */}
           {activeTab === 'availability' && (
             <div>
-              <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '16px' }}>
+              <h2 style={{ fontSize: '2rem', color: '#1F6F54', marginBottom: '8px' }}>
                 Online Plot Availability
               </h2>
-              <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '30px', lineHeight: '1.6' }}>
-                Check real-time availability of plots across various sizes and facing options. Our interactive layout helps you easily identify available, booked, and sold plots, making your selection process transparent and hassle-free.
+              <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '24px', lineHeight: '1.6' }}>
+                Click on a plot to view details. Use scroll to zoom and drag to pan the layout.
               </p>
-              <div style={{
-                backgroundColor: 'white',
-                padding: '30px',
-                borderRadius: '10px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
-              }}>
-                <img 
-                  src={project.layouts?.length > 0 ? `https://api.landvestinfra.com/${project.layouts[0].url}` : `https://api.landvestinfra.com${project.thumbnnailImage}`}
-                  alt="Plot Layout" 
-                  style={{ width: '100%', borderRadius: '8px' }}
-                />
-              </div>
+              <PlotLayout project={project} />
             </div>
           )}
 
