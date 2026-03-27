@@ -6,16 +6,17 @@ import {
   LuClipboardList, LuBookmark, LuPhone, LuMap,
 } from 'react-icons/lu';
 
-const STATUS_COLORS  = { Available: '#22c55e', Sold: '#ef4444', Reserved: '#f59e0b', Booked: '#3b82f6' };
-const STATUS_DARK    = { Available: '#15803d', Sold: '#b91c1c', Reserved: '#b45309', Booked: '#1d4ed8' };
-const STATUS_LABEL   = { Available: '#bbf7d0', Sold: '#fecaca', Reserved: '#fde68a', Booked: '#bfdbfe' };
+const STATUS_COLORS  = { Available: '#22c55e', Sold: '#ef4444', Reserved: '#f59e0b', Booked: '#3b82f6', Mortgage: '#8b5cf6' };
+const STATUS_DARK    = { Available: '#15803d', Sold: '#b91c1c', Reserved: '#b45309', Booked: '#1d4ed8', Mortgage: '#6d28d9' };
+const STATUS_LABEL   = { Available: '#bbf7d0', Sold: '#fecaca', Reserved: '#fde68a', Booked: '#bfdbfe', Mortgage: '#ede9fe' };
+const CROSSED_STATUS = new Set(['Mortgage']);
 
 // Real estate: 1 Sq.Yd ≈ 0.84 m². Typical plot frontage (width) ~9 yds, depth varies.
 // We fix canvas width per plot and scale height proportionally to area.
 const PLOT_W = 56;   // fixed canvas width per plot (frontage)
 const BASE_AREA = 120; // reference area → BASE_H height
 const BASE_H    = 48;  // canvas height for 120 Sq.Yds
-const GAP = 3, RW = 44, COLS = 6;
+const GAP = 0, RW = 44, COLS = 6;
 
 // Returns canvas height for a given area, proportional to BASE
 function plotH(area) { return Math.round(BASE_H * (area / BASE_AREA)); }
@@ -51,10 +52,11 @@ function buildPlots(total) {
   const PRICE_PER_SQYD = 15000;
 
   const pool = shuffle([
-    ...Array(Math.ceil(count * 0.5)).fill('Available'),
-    ...Array(Math.ceil(count * 0.2)).fill('Sold'),
-    ...Array(Math.ceil(count * 0.15)).fill('Reserved'),
-    ...Array(Math.ceil(count * 0.15)).fill('Booked'),
+    ...Array(Math.ceil(count * 0.45)).fill('Available'),
+    ...Array(Math.ceil(count * 0.20)).fill('Sold'),
+    ...Array(Math.ceil(count * 0.12)).fill('Reserved'),
+    ...Array(Math.ceil(count * 0.13)).fill('Booked'),
+    ...Array(Math.ceil(count * 0.10)).fill('Mortgage'),
   ].slice(0, count));
 
   const areaPool = shuffle(
@@ -269,12 +271,12 @@ export default function PlotLayout({ project }) {
 
             {/* Plots */}
             {plots.map(p => {
-              const isSel  = selected?.id === p.id;
-              const dimmed = filter!=='All' && p.status!==filter;
-              const c      = STATUS_COLORS[p.status];
-              const cd     = STATUS_DARK[p.status];
-              // Polygon: slight irregular shape per plot using id as seed
-              const jitter = (seed, max) => ((seed * 2654435761) % 100) / 100 * max;
+              const isSel   = selected?.id === p.id;
+              const dimmed  = filter!=='All' && p.status!==filter;
+              const c       = STATUS_COLORS[p.status];
+              const cd      = STATUS_DARK[p.status];
+              const crossed = CROSSED_STATUS.has(p.status);
+              const jitter  = (seed, max) => ((seed * 2654435761) % 100) / 100 * max;
               const j = (n) => jitter(p.id * 7 + n, 4) - 2;
               const pts = [
                 j(1), j(2),
@@ -288,8 +290,7 @@ export default function PlotLayout({ project }) {
                   <Line points={pts.map((v,i) => i%2===0 ? v+2 : v+2)} closed fill='rgba(0,0,0,0.35)' listening={false} />
                   {/* Plot polygon */}
                   <Line
-                    points={pts} closed
-                    fill={c}
+                    points={pts} closed fill={c}
                     stroke={isSel ? '#fff' : cd}
                     strokeWidth={isSel ? 2.5 : 1}
                     opacity={dimmed ? 0.15 : 1}
@@ -310,6 +311,13 @@ export default function PlotLayout({ project }) {
                       setHover(null);
                     }}
                   />
+                  {/* Cross lines for Sold & Mortgage */}
+                  {crossed && (
+                    <>
+                      <Line points={[2, 2, p.w-2, p.h-2]} stroke='rgba(0,0,0,0.55)' strokeWidth={1.5} listening={false} opacity={dimmed ? 0.2 : 1} />
+                      <Line points={[p.w-2, 2, 2, p.h-2]} stroke='rgba(0,0,0,0.55)' strokeWidth={1.5} listening={false} opacity={dimmed ? 0.2 : 1} />
+                    </>
+                  )}
                   <Text text={p.plotNo} width={p.w} height={p.h}
                     align='center' verticalAlign='middle'
                     fontSize={10} fill='white' fontStyle='bold'
@@ -577,13 +585,15 @@ export default function PlotLayout({ project }) {
             */}
 
             {/* CTA Buttons */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
+            <div style={{ display:'grid', gridTemplateColumns: CROSSED_STATUS.has(selected.status) ? '1fr 1fr' : '1fr 1fr 1fr', gap:8 }}>
               <button style={{ padding:'10px', borderRadius:10, background:'#22c55e', border:'none', color:'white', fontWeight:700, fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
                 <LuClipboardList size={14}/> View Details
               </button>
-              <button style={{ padding:'10px', borderRadius:10, background:'#3b82f6', border:'none', color:'white', fontWeight:700, fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
-                <LuBookmark size={14}/> Book Now
-              </button>
+              {!CROSSED_STATUS.has(selected.status) && (
+                <button style={{ padding:'10px', borderRadius:10, background:'#3b82f6', border:'none', color:'white', fontWeight:700, fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
+                  <LuBookmark size={14}/> Book Now
+                </button>
+              )}
               <button style={{ padding:'10px', borderRadius:10, background:'#1e293b', border:`1px solid ${CARDBR}`, color: TXTSUB, fontWeight:700, fontSize:12, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>
                 <LuPhone size={14}/> Contact
               </button>
@@ -615,10 +625,10 @@ export default function PlotLayout({ project }) {
 
       {/* ── BELOW MAP: Stats row ── */}
       <div style={{ background: STATSBG, padding:'14px 20px', display:'flex', gap:0, borderTop:`1px solid ${CARDBR}`, borderRadius:'0 0 16px 16px', transition:'background 0.3s' }}>
-        {[['Total Plots',plots.length,'#6ee7b7'],['Available',counts.Available||0,'#22c55e'],['Sold',counts.Sold||0,'#ef4444'],['Reserved',counts.Reserved||0,'#f59e0b'],['Booked',counts.Booked||0,'#3b82f6']].map(([l,v,c],i,arr)=>(
-          <div key={l} style={{ flex:1, textAlign:'center', borderRight: i<arr.length-1?`1px solid ${CARDBR}`:'none', padding:'0 8px' }}>
-            <div style={{ fontSize:20, fontWeight:800, color:c }}>{v}</div>
-            <div style={{ fontSize:11, color: TXTSUB, marginTop:2 }}>{l}</div>
+        {[['Total Plots',plots.length,'#6ee7b7'],['Available',counts.Available||0,'#22c55e'],['Sold',counts.Sold||0,'#ef4444'],['Reserved',counts.Reserved||0,'#f59e0b'],['Booked',counts.Booked||0,'#3b82f6'],['Mortgage',counts.Mortgage||0,'#8b5cf6']].map(([l,v,c],i,arr)=>(
+          <div key={l} style={{ flex:1, textAlign:'center', borderRight: i<arr.length-1?`1px solid ${CARDBR}`:'none', padding:'0 6px' }}>
+            <div style={{ fontSize:18, fontWeight:800, color:c }}>{v}</div>
+            <div style={{ fontSize:10, color: TXTSUB, marginTop:2 }}>{l}</div>
           </div>
         ))}
       </div>
