@@ -13,12 +13,11 @@ const CROSSED_STATUS = new Set(['Mortgage']);
 
 // Real estate: 1 Sq.Yd ≈ 0.84 m². Typical plot frontage (width) ~9 yds, depth varies.
 // We fix canvas width per plot and scale height proportionally to area.
-const PLOT_W = 56;   // fixed canvas width per plot (frontage)
-const BASE_AREA = 120; // reference area → BASE_H height
-const BASE_H    = 48;  // canvas height for 120 Sq.Yds
-const GAP = 0, RW = 44, COLS = 6;
+const PLOT_W = 52;
+const BASE_AREA = 120;
+const BASE_H    = 44;
+const COLS = 10;
 
-// Returns canvas height for a given area, proportional to BASE
 function plotH(area) { return Math.round(BASE_H * (area / BASE_AREA)); }
 
 // Real-world dimensions (width × depth in yards) for display
@@ -29,6 +28,17 @@ const PLOT_DIMS = {
   150: { w: '10\'0"', d: '15\'0"' },
   160: { w: '10\'0"', d: '16\'0"' },
   180: { w: '12\'0"', d: '15\'0"' },
+};
+
+// Boundary side lengths in feet for each area size
+// North/South = frontage width, East/West = depth
+const SIDE_DIMS = {
+  100: { N: 27, S: 27, E: 33, W: 33 },
+  120: { N: 27, S: 27, E: 40, W: 40 },
+  140: { N: 27, S: 28, E: 46, W: 47 },
+  150: { N: 30, S: 30, E: 45, W: 45 },
+  160: { N: 30, S: 30, E: 48, W: 48 },
+  180: { N: 36, S: 36, E: 45, W: 45 },
 };
 
 function shuffle(arr) {
@@ -44,11 +54,10 @@ function shuffle(arr) {
 // const AMENITIES = [...]; // removed
 
 function buildPlots(total) {
-  const count   = Math.min(total || 72, 120);
+  const count   = Math.min(total || 150, 200);
   const facings = ['East','West','North','South'];
   const areas   = [100, 120, 140, 150, 160, 180];
   const plots   = [];
-  const half    = Math.ceil(count / 2);
   const PRICE_PER_SQYD = 15000;
 
   const pool = shuffle([
@@ -63,55 +72,73 @@ function buildPlots(total) {
     Array.from({ length: count }, (_, i) => areas[i % areas.length])
   );
 
-  function buildBlock(startIdx, endIdx, blockLabel, startY) {
-    const blockPlots = [];
-    const colY = Array(COLS).fill(startY);
-    const totalCols = COLS;
-    for (let i = startIdx; i < endIdx; i++) {
-      const col      = (i - startIdx) % totalCols;
-      const row      = Math.floor((i - startIdx) / totalCols);
-      const area     = areaPool[i];
-      const h        = plotH(area);
-      const rawPrice = area * PRICE_PER_SQYD;
-      const isCorner = col === 0 || col === totalCols - 1;
-      const isParkFacing = (i % 7 === 0);
-      const isMainRoad   = row === 0;
-      const distToRoad   = isMainRoad ? 5 : row * 12 + 5;
-      const distToGate   = Math.round(Math.sqrt(col * col + row * row) * 14 + 20);
-      blockPlots.push({
-        id: i + 1, plotNo: String(i + 1),
-        x: RW + col * (PLOT_W + GAP),
-        y: colY[col],
-        w: PLOT_W, h,
-        block: blockLabel,
-        status: pool[i],
-        facing: facings[i % 4],
-        area,
-        dims: PLOT_DIMS[area] || { w: '9\'0"', d: '13\'4"' },
-        price: rawPrice.toLocaleString('en-IN'),
+  // 10 columns — each with its own staggered top offset and row count.
+  // Strong variation between adjacent columns = organic, non-rectangular silhouette.
+  // No internal gaps: every column is a solid stack from colTopY to colBotY.
+  const COL_TOP  = [3, 0, 4, 1, 5, 0, 3, 1, 4, 2].map(v => v * BASE_H);
+  const COL_ROWS = [12, 16, 13, 17, 11, 15, 14, 16, 12, 14];
+
+  const canvasW = COLS * PLOT_W;
+  const colTopY = [];
+  const colBotY = [];
+  let idx = 0;
+
+  for (let col = 0; col < COLS; col++) {
+    let y = COL_TOP[col];
+    colTopY.push(y);
+    for (let row = 0; row < COL_ROWS[col]; row++) {
+      const area = areaPool[idx % areaPool.length];
+      const h    = plotH(area);
+      plots.push({
+        id: idx + 1, plotNo: String(idx + 1),
+        x: col * PLOT_W, y, w: PLOT_W, h,
+        block: row < Math.floor(COL_ROWS[col] / 2) ? 'A' : 'B',
+        status: pool[idx % pool.length],
+        facing: facings[idx % 4], area,
+        dims: PLOT_DIMS[area] || { w: "9'0\"", d: "13'4\"" },
+        sides: SIDE_DIMS[area] || { N: 27, S: 27, E: 40, W: 40 },
+        price: (area * PRICE_PER_SQYD).toLocaleString('en-IN'),
         pricePerSqYd: PRICE_PER_SQYD.toLocaleString('en-IN'),
-        isCorner,
-        isParkFacing,
-        isMainRoad,
-        distToRoad,
-        distToGate,
+        isCorner: col === 0 || col === COLS - 1,
+        distToRoad: Math.floor(Math.random() * 30) + 5,
+        distToGate: Math.floor(Math.random() * 120) + 20,
       });
-      colY[col] += h + GAP;
+      y += h;
+      idx++;
     }
-    return blockPlots;
+    colBotY.push(y);
   }
 
-  const blockA = buildBlock(0, half, 'A', RW);
-  const maxYA  = Math.max(...blockA.map(p => p.y + p.h));
-  const midRoadY = maxYA + GAP;
-  const blockB = buildBlock(half, count, 'B', midRoadY + RW);
-  const maxYB  = Math.max(...blockB.map(p => p.y + p.h));
+  const canvasH = Math.max(...colBotY) + 4;
 
-  plots.push(...blockA, ...blockB);
+  // Boundary: stepped top (left→right) + stepped bottom (right→left)
+  const bPts = [];
+  // TOP edge
+  for (let col = 0; col < COLS; col++) {
+    if (col === 0) {
+      bPts.push([0, colTopY[0]]);
+    } else if (colTopY[col] !== colTopY[col - 1]) {
+      bPts.push([col * PLOT_W, colTopY[col - 1]]);
+      bPts.push([col * PLOT_W, colTopY[col]]);
+    }
+    if (col === COLS - 1) bPts.push([canvasW, colTopY[col]]);
+  }
+  // RIGHT side down
+  bPts.push([canvasW, colBotY[COLS - 1]]);
+  // BOTTOM edge
+  for (let col = COLS - 1; col >= 0; col--) {
+    if (col === COLS - 1) {
+      bPts.push([(col + 1) * PLOT_W, colBotY[col]]);
+    } else if (colBotY[col] !== colBotY[col + 1]) {
+      bPts.push([(col + 1) * PLOT_W, colBotY[col + 1]]);
+      bPts.push([(col + 1) * PLOT_W, colBotY[col]]);
+    }
+    if (col === 0) bPts.push([0, colBotY[0]]);
+  }
+  // LEFT side up
+  bPts.push([0, colTopY[0]]);
 
-  const canvasW = RW + COLS * (PLOT_W + GAP) + RW;
-  const canvasH = maxYB + RW;
-  return { plots, midRoadY, canvasW, canvasH };
+  return { plots, canvasW, canvasH, boundaryPts: bPts };
 }
 
 export default function PlotLayout({ project }) {
@@ -119,7 +146,7 @@ export default function PlotLayout({ project }) {
   const stageRef = useRef(null);
   const animRef  = useRef(null);
   const [size, setSize]       = useState({ w: 800, h: 580 });
-  const [scale, setScale]     = useState(1);
+  const [scale, setScale]     = useState(0.6);
   const [pos, setPos]         = useState({ x: 30, y: 30 });
   const [hover, setHover]     = useState(null);
   const [hPos, setHPos]       = useState({ x:0, y:0 });
@@ -133,7 +160,7 @@ export default function PlotLayout({ project }) {
   const [amenityPos, setAmenityPos]     = useState({ x:0, y:0 });
   // nearby & amenities state kept but unused
 
-  const { plots, midRoadY, canvasW, canvasH } = useMemo(() => buildPlots(project?.totalPlots), [project?.totalPlots]);
+  const { plots, canvasW, canvasH, boundaryPts } = useMemo(() => buildPlots(project?.totalPlots), [project?.totalPlots]);
   const counts = plots.reduce((a,p) => ({...a,[p.status]:(a[p.status]||0)+1}),{});
 
   useEffect(() => {
@@ -189,10 +216,8 @@ export default function PlotLayout({ project }) {
     ? plots.filter(p => p.plotNo.startsWith(search.trim())).slice(0, 6)
     : [];
 
-  const reset = () => { setScale(1); setPos({ x:30, y:30 }); };
+  const reset = () => { setScale(0.6); setPos({ x:20, y:20 }); };
 
-  const ROAD    = night ? '#334155' : '#94a3b8';
-  const ROAD2   = night ? '#1e293b' : '#cbd5e1';
   const GRASS   = night ? '#1a3a2a' : '#d1fae5';
   const BG      = night ? '#0f1923' : '#f0fdf4';
   const PANEL   = night ? 'rgba(15,25,35,0.97)' : 'rgba(255,255,255,0.97)';
@@ -232,46 +257,23 @@ export default function PlotLayout({ project }) {
           onDragEnd={e => setPos({ x:e.target.x(), y:e.target.y() })}
         >
           <Layer>
-            {/* Satellite-style dark background */}
+            {/* Background */}
             <Rect x={-200} y={-200} width={canvasW+400} height={canvasH+400} fill={GRASS} />
-            {/* Top */}
-            <Rect x={0} y={0} width={canvasW} height={RW} fill={ROAD} />
-            {/* Bottom */}
-            <Rect x={0} y={canvasH-RW} width={canvasW} height={RW} fill={ROAD} />
-            {/* Left */}
-            <Rect x={0} y={0} width={RW} height={canvasH} fill={ROAD} />
-            {/* Right */}
-            <Rect x={canvasW-RW} y={0} width={RW} height={canvasH} fill={ROAD} />
-            {/* Middle */}
-            <Rect x={0} y={midRoadY} width={canvasW} height={RW} fill={ROAD2} />
-
-            {/* Road center dashes */}
-            {[...Array(8)].map((_,i) => (
-              <Rect key={i} x={RW+i*((canvasW-2*RW)/8)} y={midRoadY+RW/2-2} width={(canvasW-2*RW)/16} height={4} fill="#64748b" cornerRadius={2} />
-            ))}
-
-            {/* Road labels */}
-            <Text text="40' WIDE ROAD" x={canvasW/2-38} y={14} fontSize={9} fill="#94a3b8" fontStyle="bold" letterSpacing={1} />
-            <Text text="40' WIDE ROAD" x={canvasW/2-38} y={canvasH-RW+14} fontSize={9} fill="#94a3b8" fontStyle="bold" letterSpacing={1} />
-            <Text text="33' WIDE ROAD" x={canvasW/2-38} y={midRoadY+16} fontSize={9} fill="#94a3b8" fontStyle="bold" letterSpacing={1} />
-            <Text text="33' ROAD" x={8} y={canvasH/2+28} fontSize={8} fill="#94a3b8" fontStyle="bold" rotation={-90} />
-            <Text text="33' ROAD" x={canvasW-6} y={canvasH/2+28} fontSize={8} fill="#94a3b8" fontStyle="bold" rotation={-90} />
-
-            {/* Block labels */}
-            <Rect x={RW+4} y={RW+4} width={52} height={16} fill="rgba(0,0,0,0.5)" cornerRadius={4} />
-            <Text text="BLOCK  A" x={RW+8} y={RW+8} fontSize={8} fill="#94a3b8" fontStyle="bold" letterSpacing={1} />
-            <Rect x={RW+4} y={midRoadY+RW+4} width={52} height={16} fill="rgba(0,0,0,0.5)" cornerRadius={4} />
-            <Text text="BLOCK  B" x={RW+8} y={midRoadY+RW+8} fontSize={8} fill="#94a3b8" fontStyle="bold" letterSpacing={1} />
+            {/* Interior fill — clips visual noise outside plot area */}
+            <Line points={boundaryPts.flat()} closed fill={night ? '#0f1923' : '#f8fafc'} strokeWidth={0} listening={false} />
+            {/* Outer boundary — solid stepped line from actual plot edges */}
+            <Line points={boundaryPts.flat()} closed fill="transparent" stroke={night ? '#94a3b8' : '#475569'} strokeWidth={2.5} listening={false} />
 
             {/* Compass */}
-            <Circle x={canvasW-RW+22} y={22} radius={18} fill="rgba(15,25,35,0.85)" stroke="#475569" strokeWidth={1} />
-            <Text text="N" x={canvasW-RW+16} y={12} fontSize={11} fill="#f8fafc" fontStyle="bold" />
-            <Arrow points={[canvasW-RW+22,30,canvasW-RW+22,20]} stroke="#ef4444" strokeWidth={2} fill="#ef4444" pointerLength={4} pointerWidth={4} />
-            <Arrow points={[canvasW-RW+22,14,canvasW-RW+22,24]} stroke="#94a3b8" strokeWidth={2} fill="#94a3b8" pointerLength={4} pointerWidth={4} />
+            <Circle x={canvasW-24} y={24} radius={18} fill="rgba(15,25,35,0.85)" stroke="#475569" strokeWidth={1} />
+            <Text text="N" x={canvasW-30} y={14} fontSize={11} fill="#f8fafc" fontStyle="bold" />
+            <Arrow points={[canvasW-24,32,canvasW-24,22]} stroke="#ef4444" strokeWidth={2} fill="#ef4444" pointerLength={4} pointerWidth={4} />
+            <Arrow points={[canvasW-24,16,canvasW-24,26]} stroke="#94a3b8" strokeWidth={2} fill="#94a3b8" pointerLength={4} pointerWidth={4} />
 
             {/* Plots */}
             {plots.map(p => {
               const isSel   = selected?.id === p.id;
+              const isHov   = hover?.id === p.id;
               const dimmed  = filter!=='All' && p.status!==filter;
               const c       = STATUS_COLORS[p.status];
               const cd      = STATUS_DARK[p.status];
@@ -284,6 +286,15 @@ export default function PlotLayout({ project }) {
                 p.w + j(5), p.h + j(6),
                 j(7), p.h + j(8),
               ];
+              // Compass rose centre — middle of plot
+              const cx = p.w / 2, cy = p.h / 2;
+              const R = Math.min(p.w, p.h) * 0.36; // arrow radius
+              const DIRS = [
+                { label:'N', angle:-90, color: p.facing==='North' ? '#fbbf24' : 'rgba(255,255,255,0.55)' },
+                { label:'E', angle:  0, color: p.facing==='East'  ? '#fbbf24' : 'rgba(255,255,255,0.55)' },
+                { label:'S', angle: 90, color: p.facing==='South' ? '#fbbf24' : 'rgba(255,255,255,0.55)' },
+                { label:'W', angle:180, color: p.facing==='West'  ? '#fbbf24' : 'rgba(255,255,255,0.55)' },
+              ];
               return (
                 <Group key={p.id} x={p.x} y={p.y}>
                   {/* Shadow polygon */}
@@ -291,8 +302,8 @@ export default function PlotLayout({ project }) {
                   {/* Plot polygon */}
                   <Line
                     points={pts} closed fill={c}
-                    stroke={isSel ? '#fff' : cd}
-                    strokeWidth={isSel ? 2.5 : 1}
+                    stroke={isSel ? '#fff' : isHov ? '#fff' : cd}
+                    strokeWidth={isSel ? 2.5 : isHov ? 2 : 1}
                     opacity={dimmed ? 0.15 : 1}
                     shadowColor={isSel ? '#fff' : 'transparent'}
                     shadowBlur={isSel ? 10 : 0}
@@ -318,12 +329,63 @@ export default function PlotLayout({ project }) {
                       <Line points={[p.w-2, 2, 2, p.h-2]} stroke='rgba(0,0,0,0.55)' strokeWidth={1.5} listening={false} opacity={dimmed ? 0.2 : 1} />
                     </>
                   )}
-                  <Text text={p.plotNo} width={p.w} height={p.h}
-                    align='center' verticalAlign='middle'
-                    fontSize={10} fill='white' fontStyle='bold'
-                    opacity={dimmed ? 0.2 : 1}
-                    listening={false}
-                  />
+                  {/* Plot number — hide on hover to make room for compass */}
+                  {!isHov && (
+                    <Text text={p.plotNo} width={p.w} height={p.h}
+                      align='center' verticalAlign='middle'
+                      fontSize={10} fill='white' fontStyle='bold'
+                      opacity={dimmed ? 0.2 : 1}
+                      listening={false}
+                    />
+                  )}
+                  {/* ── COMPASS ROSE on hover ── */}
+                  {isHov && !dimmed && (
+                    <Group listening={false}>
+                      {/* dark semi-transparent overlay on the plot */}
+                      <Rect x={0} y={0} width={p.w} height={p.h} fill='rgba(0,0,0,0.45)' cornerRadius={2} />
+                      {/* outer ring */}
+                      <Circle x={cx} y={cy} radius={R+4} fill='rgba(0,0,0,0.35)' stroke='rgba(255,255,255,0.2)' strokeWidth={0.5} />
+                      {/* 4 direction arrows + labels */}
+                      {DIRS.map(({ label, angle, color }) => {
+                        const rad = (angle * Math.PI) / 180;
+                        const tx = cx + Math.cos(rad) * (R + 9);
+                        const ty = cy + Math.sin(rad) * (R + 9);
+                        const ax = cx + Math.cos(rad) * (R - 2);
+                        const ay = cy + Math.sin(rad) * (R - 2);
+                        const isFacing = color === '#fbbf24';
+                        return (
+                          <Group key={label}>
+                            {/* arrow from centre toward direction */}
+                            <Arrow
+                              points={[cx, cy, ax, ay]}
+                              stroke={color}
+                              strokeWidth={isFacing ? 2 : 1}
+                              fill={color}
+                              pointerLength={isFacing ? 5 : 3}
+                              pointerWidth={isFacing ? 4 : 2.5}
+                            />
+                            {/* direction label */}
+                            <Text
+                              text={label}
+                              x={tx - 5} y={ty - 5}
+                              fontSize={isFacing ? 8 : 7}
+                              fill={color}
+                              fontStyle={isFacing ? 'bold' : 'normal'}
+                            />
+                          </Group>
+                        );
+                      })}
+                      {/* plot number small at top-left */}
+                      <Text text={`#${p.plotNo}`} x={3} y={3} fontSize={7} fill='rgba(255,255,255,0.7)' fontStyle='bold' />
+                      {/* facing label at bottom centre */}
+                      <Text
+                        text={`${p.facing} Facing`}
+                        width={p.w} y={p.h - 11}
+                        align='center' fontSize={7}
+                        fill='#fbbf24' fontStyle='bold'
+                      />
+                    </Group>
+                  )}
                   {isSel && (
                     <Circle x={p.w/2} y={-8} radius={6} fill='#fff' stroke={c} strokeWidth={2} listening={false} />
                   )}
@@ -486,23 +548,66 @@ export default function PlotLayout({ project }) {
         {hover && !selected && (
           <div style={{
             position:'absolute',
-            left: Math.min(hPos.x+16, size.w-200),
-            top:  Math.max(hPos.y-130, 8),
+            left: Math.min(hPos.x+16, size.w-220),
+            top:  Math.max(hPos.y-160, 8),
             background: TTIPBG, backdropFilter:'blur(12px)',
             border:`1px solid ${STATUS_COLORS[hover.status]}55`,
-            borderRadius:10, padding:'10px 14px',
+            borderRadius:12, padding:'12px 14px',
             pointerEvents:'none',
             boxShadow:`0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px ${STATUS_COLORS[hover.status]}33`,
-            zIndex:30, minWidth:175,
+            zIndex:30, minWidth:190,
           }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+            {/* header */}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }}>
               <span style={{ color: TXT, fontWeight:700, fontSize:14 }}>Plot #{hover.plotNo}</span>
               <span style={{
                 fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:20,
                 background: STATUS_DARK[hover.status], color: STATUS_LABEL[hover.status],
               }}>{hover.status}</span>
             </div>
-            {[['Block',hover.block],['Area',`${hover.area} Sq.Yds`],['Dimensions',`${hover.dims.w} × ${hover.dims.d}`],['Facing',hover.facing],['Est. Price',`₹${hover.price}`],['Price/Sq.Yd',`₹${hover.pricePerSqYd}`]].map(([l,v])=>(
+
+            {/* Boundary dimensions diagram */}
+            <div style={{
+              position:'relative', margin:'0 auto 10px',
+              width:120, height:90,
+              border:`1.5px solid ${night?'rgba(255,255,255,0.25)':'rgba(0,0,0,0.2)'}`,
+              borderRadius:4,
+              background: night?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.03)',
+            }}>
+              {/* North — top centre */}
+              <div style={{ position:'absolute', top:-10, left:0, right:0, textAlign:'center' }}>
+                <span style={{ fontSize:10, fontWeight:700, color: hover.facing==='North'?'#fbbf24':TXTSUB }}>
+                  N: {hover.sides.N} ft
+                </span>
+              </div>
+              {/* South — bottom centre */}
+              <div style={{ position:'absolute', bottom:-10, left:0, right:0, textAlign:'center' }}>
+                <span style={{ fontSize:10, fontWeight:700, color: hover.facing==='South'?'#fbbf24':TXTSUB }}>
+                  S: {hover.sides.S} ft
+                </span>
+              </div>
+              {/* West — left middle */}
+              <div style={{ position:'absolute', left:-28, top:0, bottom:0, display:'flex', alignItems:'center' }}>
+                <span style={{ fontSize:10, fontWeight:700, color: hover.facing==='West'?'#fbbf24':TXTSUB, whiteSpace:'nowrap' }}>
+                  W: {hover.sides.W} ft
+                </span>
+              </div>
+              {/* East — right middle */}
+              <div style={{ position:'absolute', right:-28, top:0, bottom:0, display:'flex', alignItems:'center' }}>
+                <span style={{ fontSize:10, fontWeight:700, color: hover.facing==='East'?'#fbbf24':TXTSUB, whiteSpace:'nowrap' }}>
+                  E: {hover.sides.E} ft
+                </span>
+              </div>
+              {/* facing label inside box */}
+              <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <span style={{ fontSize:9, color:'#fbbf24', fontWeight:700, letterSpacing:0.5 }}>
+                  {hover.facing} Facing
+                </span>
+              </div>
+            </div>
+
+            {/* details */}
+            {[['Block',hover.block],['Area',`${hover.area} Sq.Yds`],['Price',`₹${hover.price}`]].map(([l,v])=>(
               <div key={l} style={{ display:'flex', justifyContent:'space-between', fontSize:12, marginBottom:4 }}>
                 <span style={{ color: TXTSUB }}>{l}</span>
                 <span style={{ color: TXT, fontWeight:600 }}>{v}</span>
@@ -553,6 +658,48 @@ export default function PlotLayout({ project }) {
                   <div style={{ fontSize:13, fontWeight:700, color: TXT }}>{v}</div>
                 </div>
               ))}
+            </div>
+
+            {/* Boundary side dimensions */}
+            <div style={{ marginBottom:10 }}>
+              <div style={{ fontSize:11, color: TXTSUB, textTransform:'uppercase', letterSpacing:0.5, marginBottom:8, fontWeight:600 }}>Boundary Dimensions</div>
+              <div style={{ display:'flex', gap:8, alignItems:'stretch' }}>
+                {/* visual boundary box */}
+                <div style={{
+                  position:'relative', width:110, flexShrink:0, height:80,
+                  border:`2px solid ${night?'rgba(255,255,255,0.3)':'rgba(0,0,0,0.25)'}`,
+                  borderRadius:4,
+                  background: night?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.03)',
+                }}>
+                  <div style={{ position:'absolute', top:-11, left:0, right:0, textAlign:'center' }}>
+                    <span style={{ fontSize:10, fontWeight:700, color: selected.facing==='North'?'#fbbf24':TXT }}>N: {selected.sides.N} ft</span>
+                  </div>
+                  <div style={{ position:'absolute', bottom:-11, left:0, right:0, textAlign:'center' }}>
+                    <span style={{ fontSize:10, fontWeight:700, color: selected.facing==='South'?'#fbbf24':TXT }}>S: {selected.sides.S} ft</span>
+                  </div>
+                  <div style={{ position:'absolute', left:-30, top:0, bottom:0, display:'flex', alignItems:'center' }}>
+                    <span style={{ fontSize:10, fontWeight:700, color: selected.facing==='West'?'#fbbf24':TXT, whiteSpace:'nowrap' }}>W: {selected.sides.W} ft</span>
+                  </div>
+                  <div style={{ position:'absolute', right:-30, top:0, bottom:0, display:'flex', alignItems:'center' }}>
+                    <span style={{ fontSize:10, fontWeight:700, color: selected.facing==='East'?'#fbbf24':TXT, whiteSpace:'nowrap' }}>E: {selected.sides.E} ft</span>
+                  </div>
+                  <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                    <span style={{ fontSize:9, color:'#fbbf24', fontWeight:700 }}>{selected.facing}</span>
+                  </div>
+                </div>
+                {/* side list */}
+                <div style={{ flex:1, display:'grid', gridTemplateColumns:'1fr 1fr', gap:6 }}>
+                  {[['North','N'],['South','S'],['East','E'],['West','W']].map(([dir, key]) => (
+                    <div key={dir} style={{
+                      background: CARD, borderRadius:6, padding:'6px 10px',
+                      border:`1px solid ${selected.facing===dir ? '#fbbf2466' : CARDBR}`,
+                    }}>
+                      <div style={{ fontSize:9, color: selected.facing===dir?'#fbbf24':TXTSUB, fontWeight:600, marginBottom:2 }}>{dir}{selected.facing===dir?' ★':''}</div>
+                      <div style={{ fontSize:13, fontWeight:700, color: TXT }}>{selected.sides[key]} ft</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Distance indicators */}
