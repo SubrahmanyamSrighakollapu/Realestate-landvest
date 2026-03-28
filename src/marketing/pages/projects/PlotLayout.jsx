@@ -11,15 +11,6 @@ const STATUS_DARK    = { Available: '#15803d', Sold: '#b91c1c', Reserved: '#b453
 const STATUS_LABEL   = { Available: '#bbf7d0', Sold: '#fecaca', Reserved: '#fde68a', Booked: '#bfdbfe', Mortgage: '#ede9fe' };
 const CROSSED_STATUS = new Set(['Mortgage']);
 
-// Real estate: 1 Sq.Yd ≈ 0.84 m². Typical plot frontage (width) ~9 yds, depth varies.
-// We fix canvas width per plot and scale height proportionally to area.
-const PLOT_W = 52;
-const BASE_AREA = 120;
-const BASE_H    = 44;
-const COLS = 10;
-
-function plotH(area) { return Math.round(BASE_H * (area / BASE_AREA)); }
-
 // Real-world dimensions (width × depth in yards) for display
 const PLOT_DIMS = {
   100: { w: '9\'0"', d: '11\'1"' },
@@ -50,95 +41,185 @@ function shuffle(arr) {
   return a;
 }
 
-// const NEARBY = [...]; // removed
-// const AMENITIES = [...]; // removed
+// ─── LAYOUT CONSTANTS ───────────────────────────────────────────────
+const PW   = 48;   // plot width (frontage)
+const PH   = 72;   // plot height (depth) — fixed for clean look
+const RW   = 36;   // internal road width
+const AREAS = [100, 120, 140, 150, 160, 180];
+const PRICE_PER_SQYD = 15000;
+
+function makePlot(id, x, y, area, status, facing, block) {
+  return {
+    id, plotNo: String(id),
+    x, y, w: PW, h: PH,
+    block, status, facing, area,
+    dims: PLOT_DIMS[area] || { w:"9'0\"", d:"13'4\"" },
+    sides: SIDE_DIMS[area] || { N:27, S:27, E:40, W:40 },
+    price: (area * PRICE_PER_SQYD).toLocaleString('en-IN'),
+    pricePerSqYd: PRICE_PER_SQYD.toLocaleString('en-IN'),
+    distToRoad: Math.floor(Math.random()*30)+5,
+    distToGate: Math.floor(Math.random()*120)+20,
+  };
+}
 
 function buildPlots(total) {
-  const count   = Math.min(total || 150, 200);
+  const count  = Math.min(total || 120, 200);
   const facings = ['East','West','North','South'];
-  const areas   = [100, 120, 140, 150, 160, 180];
-  const plots   = [];
-  const PRICE_PER_SQYD = 15000;
-
   const pool = shuffle([
-    ...Array(Math.ceil(count * 0.45)).fill('Available'),
-    ...Array(Math.ceil(count * 0.20)).fill('Sold'),
-    ...Array(Math.ceil(count * 0.12)).fill('Reserved'),
-    ...Array(Math.ceil(count * 0.13)).fill('Booked'),
-    ...Array(Math.ceil(count * 0.10)).fill('Mortgage'),
+    ...Array(Math.ceil(count*0.45)).fill('Available'),
+    ...Array(Math.ceil(count*0.20)).fill('Sold'),
+    ...Array(Math.ceil(count*0.12)).fill('Reserved'),
+    ...Array(Math.ceil(count*0.13)).fill('Booked'),
+    ...Array(Math.ceil(count*0.10)).fill('Mortgage'),
   ].slice(0, count));
+  const areaPool = shuffle(Array.from({ length: count }, (_,i) => AREAS[i % AREAS.length]));
 
-  const areaPool = shuffle(
-    Array.from({ length: count }, (_, i) => areas[i % areas.length])
-  );
+  const plots = [];
+  let pid = 0;
+  const st  = () => pool[pid % pool.length];
+  const ar  = () => areaPool[pid % areaPool.length];
+  const fac = () => facings[pid % 4];
 
-  // 10 columns — each with its own staggered top offset and row count.
-  // Strong variation between adjacent columns = organic, non-rectangular silhouette.
-  // No internal gaps: every column is a solid stack from colTopY to colBotY.
-  const COL_TOP  = [3, 0, 4, 1, 5, 0, 3, 1, 4, 2].map(v => v * BASE_H);
-  const COL_ROWS = [12, 16, 13, 17, 11, 15, 14, 16, 12, 14];
+  // ── LAYOUT (matches reference image structure) ──────────────────────
+  //
+  //  [SECTION TOP-RIGHT A]   [SECTION TOP-RIGHT B]
+  //         road
+  //  [SECTION MID-LEFT]  [CLUB HOUSE]  [SECTION MID-RIGHT]
+  //         road
+  //  [COMMON PLOT]  [SECTION BOTTOM-CENTER]
+  //         road
+  //  [SECTION BOTTOM ROW]
+  //
+  // All coordinates are absolute canvas pixels.
+  // Origin (0,0) = top-left of canvas.
 
-  const canvasW = COLS * PLOT_W;
-  const colTopY = [];
-  const colBotY = [];
-  let idx = 0;
+  // ── dimensions ──
+  const leftColW  = PW * 1;
+  const midSecW   = PW * 5;
+  const rightSecW = PW * 2;
+  const clubW     = PW * 3;
+  const clubH     = PH * 3;
 
-  for (let col = 0; col < COLS; col++) {
-    let y = COL_TOP[col];
-    colTopY.push(y);
-    for (let row = 0; row < COL_ROWS[col]; row++) {
-      const area = areaPool[idx % areaPool.length];
-      const h    = plotH(area);
-      plots.push({
-        id: idx + 1, plotNo: String(idx + 1),
-        x: col * PLOT_W, y, w: PLOT_W, h,
-        block: row < Math.floor(COL_ROWS[col] / 2) ? 'A' : 'B',
-        status: pool[idx % pool.length],
-        facing: facings[idx % 4], area,
-        dims: PLOT_DIMS[area] || { w: "9'0\"", d: "13'4\"" },
-        sides: SIDE_DIMS[area] || { N: 27, S: 27, E: 40, W: 40 },
-        price: (area * PRICE_PER_SQYD).toLocaleString('en-IN'),
-        pricePerSqYd: PRICE_PER_SQYD.toLocaleString('en-IN'),
-        isCorner: col === 0 || col === COLS - 1,
-        distToRoad: Math.floor(Math.random() * 30) + 5,
-        distToGate: Math.floor(Math.random() * 120) + 20,
-      });
-      y += h;
-      idx++;
+  // ── Y positions ──
+  const topSecY   = 0;
+  const topSecH   = PH * 4;
+  const midRoadY  = topSecY + topSecH;
+  const midSecY   = midRoadY + RW;
+  const midSecH   = PH * 5;
+  const botRoadY  = midSecY + midSecH;
+  const botSecY   = botRoadY + RW;
+  const botSecH   = PH * 3;
+  const canvasH   = botSecY + botSecH + 4;
+
+  // ── X positions ──
+  const leftX     = 0;
+  const midX      = leftColW + RW;
+  const clubX     = midX + midSecW + RW;
+  const rightX    = clubX + clubW + RW;
+  const canvasW   = rightX + rightSecW;
+
+  function fillGrid(x0, y0, cols, rows, block, facingOverride) {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        plots.push(makePlot(++pid, x0 + col*PW, y0 + row*PH, ar(), st(), facingOverride || fac(), block));
+      }
     }
-    colBotY.push(y);
   }
 
-  const canvasH = Math.max(...colBotY) + 4;
+  // ── SECTION A: Left strip mid (1 col × 5 rows) ──
+  fillGrid(leftX, midSecY, 1, 5, 'A', 'East');
+  // ── SECTION B: Top-center — staggered: col 0-1 start 1 row lower, col 4 starts 2 rows lower ──
+  fillGrid(midX,          topSecY + PH,     2, 3, 'B', 'South');  // cols 0-1: 3 rows
+  fillGrid(midX + 2*PW,   topSecY,          2, 4, 'B', 'South');  // cols 2-3: 4 rows (tallest)
+  fillGrid(midX + 4*PW,   topSecY + PH*2,   1, 2, 'B', 'South');  // col 4: 2 rows (shortest)
+  // ── SECTION C: Mid-left (5 cols × 5 rows) ──
+  fillGrid(midX, midSecY, 5, 5, 'A', 'North');
+  // ── Club House gap fill below club ──
+  const clubBotRows = Math.floor((midSecH - clubH) / PH);
+  if (clubBotRows > 0) fillGrid(clubX, midSecY + clubH, Math.floor(clubW / PW), clubBotRows, 'A', 'North');
+  // ── SECTION D: Top-right — staggered: col 0 full 4 rows, col 1 only 3 rows ──
+  fillGrid(rightX,        topSecY,          1, 4, 'B', 'West');
+  fillGrid(rightX + PW,   topSecY + PH,     1, 3, 'B', 'West');
+  // ── SECTION E: Mid-right (2 cols × 5 rows) ──
+  fillGrid(rightX, midSecY, 2, 5, 'A', 'West');
+  // ── SECTION F: Bottom row — staggered ends ──
+  const botCols = Math.floor(canvasW / PW);
+  fillGrid(leftX,              botSecY,          botCols - 1, 3, 'C', 'North'); // all but last col
+  fillGrid(leftX + (botCols-1)*PW, botSecY,      1,           2, 'C', 'North'); // last col: 2 rows only
 
-  // Boundary: stepped top (left→right) + stepped bottom (right→left)
-  const bPts = [];
-  // TOP edge
-  for (let col = 0; col < COLS; col++) {
-    if (col === 0) {
-      bPts.push([0, colTopY[0]]);
-    } else if (colTopY[col] !== colTopY[col - 1]) {
-      bPts.push([col * PLOT_W, colTopY[col - 1]]);
-      bPts.push([col * PLOT_W, colTopY[col]]);
-    }
-    if (col === COLS - 1) bPts.push([canvasW, colTopY[col]]);
-  }
-  // RIGHT side down
-  bPts.push([canvasW, colBotY[COLS - 1]]);
-  // BOTTOM edge
-  for (let col = COLS - 1; col >= 0; col--) {
-    if (col === COLS - 1) {
-      bPts.push([(col + 1) * PLOT_W, colBotY[col]]);
-    } else if (colBotY[col] !== colBotY[col + 1]) {
-      bPts.push([(col + 1) * PLOT_W, colBotY[col + 1]]);
-      bPts.push([(col + 1) * PLOT_W, colBotY[col]]);
-    }
-    if (col === 0) bPts.push([0, colBotY[0]]);
-  }
-  // LEFT side up
-  bPts.push([0, colTopY[0]]);
+  // ── ROADS ──
+  const roads = [
+    { x:0,           y:midRoadY, w:canvasW,  h:RW, label:'9.00 MT WIDE ROAD',  dir:'h' },
+    { x:0,           y:botRoadY, w:canvasW,  h:RW, label:'12.00 MT WIDE ROAD', dir:'h' },
+    { x:leftColW,    y:topSecY,  w:RW,       h:canvasH, label:'9.00 MT WIDE ROAD',  dir:'v' },
+    { x:clubX+clubW, y:midSecY,  w:RW,       h:midSecH, label:'7.50 MT WIDE ROAD', dir:'v' },
+  ];
 
-  return { plots, canvasW, canvasH, boundaryPts: bPts };
+  // ── INTERNAL AMENITIES ──
+  // Top-left gap (leftX, topSecY) — Common Plot
+  // Top gap above staggered sections — fill with amenity buildings
+  // Club House in its column
+  const amenities = [
+    {
+      id:'club', label:'CLUB HOUSE', icon:'🏛',
+      x: clubX, y: midSecY,
+      w: clubW, h: clubH,
+      color:'#c9a24d', fill:'#1a2e1a',
+    },
+    {
+      id:'common', label:'COMMON PLOT 2', icon:'🌳',
+      x: leftX, y: topSecY,
+      w: leftColW, h: topSecH,
+      color:'#22c55e', fill:'#14532d',
+    },
+    // Top gap amenities — fill the empty space above staggered top sections
+    {
+      id:'park',     label:'PARK',       icon:'🌳',
+      x: midX,           y: topSecY,
+      w: PW*2,           h: PH,
+      color:'#16a34a', fill:'#14532d',
+    },
+    {
+      id:'temple',   label:'TEMPLE',     icon:'🛕',
+      x: midX + 4*PW,    y: topSecY,
+      w: PW,             h: PH*2,
+      color:'#a855f7', fill:'#2e1a4a',
+    },
+    {
+      id:'hospital', label:'HOSPITAL',   icon:'🏥',
+      x: rightX + PW,    y: topSecY,
+      w: PW,             h: PH,
+      color:'#ef4444', fill:'#3a1a1a',
+    },
+  ];
+
+  // ── OUTER BOUNDARY — irregular stepped polygon (not a rectangle) ──
+  // Follows the actual outer edges of all sections
+  const boundaryPts = [
+    // top-left corner (Common Plot top-left)
+    [leftX,              topSecY],
+    // step right to where top-center section starts (staggered)
+    [midX,               topSecY],
+    [midX,               topSecY + PH],       // cols 0-1 start 1 row lower
+    [midX + 2*PW,        topSecY + PH],
+    [midX + 2*PW,        topSecY],             // cols 2-3 at top
+    [midX + 4*PW,        topSecY],
+    [midX + 4*PW,        topSecY + PH*2],      // col 4 starts 2 rows lower
+    [rightX,             topSecY + PH*2],
+    [rightX,             topSecY],             // right col 0 at top
+    [rightX + PW,        topSecY],
+    [rightX + PW,        topSecY + PH],        // right col 1 starts 1 row lower
+    [canvasW,            topSecY + PH],
+    // right side down
+    [canvasW,            botSecY + PH*2],      // last col of bottom only 2 rows
+    [(botCols-1)*PW,     botSecY + PH*2],
+    [(botCols-1)*PW,     botSecY + PH*3],      // rest of bottom 3 rows
+    [leftX,              botSecY + PH*3],
+    // left side up
+    [leftX,              topSecY],
+  ];
+
+  return { plots, roads, amenities, canvasW, canvasH, boundaryPts };
 }
 
 export default function PlotLayout({ project }) {
@@ -160,7 +241,7 @@ export default function PlotLayout({ project }) {
   const [amenityPos, setAmenityPos]     = useState({ x:0, y:0 });
   // nearby & amenities state kept but unused
 
-  const { plots, canvasW, canvasH, boundaryPts } = useMemo(() => buildPlots(project?.totalPlots), [project?.totalPlots]);
+  const { plots, roads, amenities, canvasW, canvasH, boundaryPts } = useMemo(() => buildPlots(project?.totalPlots), [project?.totalPlots]);
   const counts = plots.reduce((a,p) => ({...a,[p.status]:(a[p.status]||0)+1}),{});
 
   useEffect(() => {
@@ -257,18 +338,106 @@ export default function PlotLayout({ project }) {
           onDragEnd={e => setPos({ x:e.target.x(), y:e.target.y() })}
         >
           <Layer>
-            {/* Background */}
-            <Rect x={-200} y={-200} width={canvasW+400} height={canvasH+400} fill={GRASS} />
-            {/* Interior fill — clips visual noise outside plot area */}
-            <Line points={boundaryPts.flat()} closed fill={night ? '#0f1923' : '#f8fafc'} strokeWidth={0} listening={false} />
-            {/* Outer boundary — solid stepped line from actual plot edges */}
-            <Line points={boundaryPts.flat()} closed fill="transparent" stroke={night ? '#94a3b8' : '#475569'} strokeWidth={2.5} listening={false} />
+            {/* 1. Grass background */}
+            <Rect x={-300} y={-300} width={canvasW+600} height={canvasH+600} fill={night?'#1a3a2a':'#4ade80'} listening={false}/>
 
-            {/* Compass */}
-            <Circle x={canvasW-24} y={24} radius={18} fill="rgba(15,25,35,0.85)" stroke="#475569" strokeWidth={1} />
-            <Text text="N" x={canvasW-30} y={14} fontSize={11} fill="#f8fafc" fontStyle="bold" />
-            <Arrow points={[canvasW-24,32,canvasW-24,22]} stroke="#ef4444" strokeWidth={2} fill="#ef4444" pointerLength={4} pointerWidth={4} />
-            <Arrow points={[canvasW-24,16,canvasW-24,26]} stroke="#94a3b8" strokeWidth={2} fill="#94a3b8" pointerLength={4} pointerWidth={4} />
+            {/* 2. Boundary interior fill */}
+            <Line points={boundaryPts.flat()} closed fill={night?'#0f1923':'#f0fdf4'} strokeWidth={0} listening={false}/>
+
+            {/* 3. Roads */}
+            {roads.map((r,i) => {
+              const ROAD_COL  = night ? '#1e293b' : '#94a3b8';
+              const ROAD_EDGE = night ? '#334155' : '#64748b';
+              return (
+                <Group key={i} listening={false}>
+                  <Rect x={r.x} y={r.y} width={r.w} height={r.h} fill={ROAD_COL}/>
+                  {/* edge lines */}
+                  <Rect x={r.x} y={r.y} width={r.w} height={2} fill={ROAD_EDGE}/>
+                  <Rect x={r.x} y={r.y+r.h-2} width={r.w} height={2} fill={ROAD_EDGE}/>
+                  {/* centre dash */}
+                  {r.dir==='h' && [...Array(Math.floor(r.w/24))].map((_,k)=>(
+                    <Rect key={k} x={r.x+k*24+4} y={r.y+r.h/2-1.5} width={12} height={3} fill='#475569' cornerRadius={1}/>
+                  ))}
+                  {r.dir==='v' && [...Array(Math.floor(r.h/24))].map((_,k)=>(
+                    <Rect key={k} x={r.x+r.w/2-1.5} y={r.y+k*24+4} width={3} height={12} fill='#475569' cornerRadius={1}/>
+                  ))}
+                  {/* road label */}
+                  <Text
+                    text={r.label}
+                    x={r.dir==='h' ? r.x+r.w/2-50 : r.x+r.w/2+4}
+                    y={r.dir==='h' ? r.y+r.h/2-5  : r.y+r.h/2-40}
+                    fontSize={8} fill='#fbbf24' fontStyle='bold' letterSpacing={0.5}
+                    rotation={r.dir==='v' ? 90 : 0}
+                  />
+                </Group>
+              );
+            })}
+
+            {/* 4. Outer boundary outline */}
+            <Line points={boundaryPts.flat()} closed fill='transparent' stroke={night?'#94a3b8':'#475569'} strokeWidth={2.5} listening={false}/>
+
+            {/* 5. Internal amenities — Club House & Common Plot */}
+            {amenities.map(a => (
+              <Group key={a.id}
+                onMouseEnter={e=>{ e.target.getStage().container().style.cursor='pointer'; const pt=e.target.getStage().getPointerPosition(); setAmenityHover(a); setAmenityPos({x:pt.x,y:pt.y}); }}
+                onMouseMove={e=>{ const pt=e.target.getStage().getPointerPosition(); setAmenityPos({x:pt.x,y:pt.y}); }}
+                onMouseLeave={e=>{ e.target.getStage().container().style.cursor='default'; setAmenityHover(null); }}
+              >
+                {/* shadow */}
+                <Rect x={a.x+4} y={a.y+4} width={a.w} height={a.h} fill='rgba(0,0,0,0.3)' cornerRadius={4} listening={false}/>
+                {/* body */}
+                <Rect x={a.x} y={a.y} width={a.w} height={a.h} fill={a.fill} stroke={a.color} strokeWidth={2} cornerRadius={4}/>
+                {/* roof strip */}
+                <Rect x={a.x} y={a.y} width={a.w} height={10} fill={a.color} opacity={0.9} cornerRadius={[4,4,0,0]} listening={false}/>
+                {/* icon */}
+                <Text text={a.icon} x={a.x+a.w/2-10} y={a.y+a.h/2-14} fontSize={20} listening={false}/>
+                {/* label */}
+                <Text text={a.label} x={a.x} y={a.y+a.h/2+8} width={a.w} align='center' fontSize={9} fill={a.color} fontStyle='bold' listening={false}/>
+              </Group>
+            ))}
+
+            {/* 6. Perimeter trees — dots along outer boundary */}
+            {(() => {
+              const trees = [];
+              const TREE_GAP = 28;
+              const pts = boundaryPts;
+              for (let i = 0; i < pts.length - 1; i++) {
+                const [x1,y1] = pts[i], [x2,y2] = pts[i+1];
+                const dx = x2-x1, dy = y2-y1;
+                const len = Math.sqrt(dx*dx+dy*dy);
+                const steps = Math.floor(len/TREE_GAP);
+                for (let s = 0; s <= steps; s++) {
+                  const t = steps===0 ? 0 : s/steps;
+                  const tx = x1+dx*t, ty = y1+dy*t;
+                  // offset outward by 10px
+                  const nx = -dy/len, ny = dx/len;
+                  trees.push({ x: tx+nx*10, y: ty+ny*10, r: 6+((s*7)%4) });
+                }
+              }
+              return trees.map((tr,i) => (
+                <Group key={i} listening={false}>
+                  <Circle x={tr.x} y={tr.y} radius={tr.r+1} fill='rgba(0,0,0,0.2)'/>
+                  <Circle x={tr.x} y={tr.y} radius={tr.r} fill={night?'#166534':'#16a34a'}/>
+                  <Circle x={tr.x-1} y={tr.y-1} radius={tr.r*0.4} fill={night?'#15803d':'#4ade80'} opacity={0.5}/>
+                </Group>
+              ));
+            })()}
+
+            {/* 7. Entry arrow at bottom-left */}
+            <Group listening={false}>
+              <Rect x={0} y={canvasH-RW} width={PW*2} height={RW} fill={night?'#1e293b':'#94a3b8'}/>
+              <Arrow points={[PW*0.5, canvasH-RW/2, PW*1.5, canvasH-RW/2]} stroke='#fbbf24' strokeWidth={3} fill='#fbbf24' pointerLength={8} pointerWidth={8}/>
+              <Text text='ENTRY' x={2} y={canvasH-RW+2} fontSize={8} fill='#fbbf24' fontStyle='bold'/>
+            </Group>
+
+            {/* 8. Compass — placed bottom-right in grass area, outside plots */}
+            <Circle x={canvasW+50} y={50} radius={22} fill='rgba(15,25,35,0.92)' stroke='#475569' strokeWidth={1.5}/>
+            <Text text='N' x={canvasW+44} y={36} fontSize={12} fill='#f8fafc' fontStyle='bold'/>
+            <Arrow points={[canvasW+50,58,canvasW+50,44]} stroke='#ef4444' strokeWidth={2.5} fill='#ef4444' pointerLength={6} pointerWidth={6}/>
+            <Arrow points={[canvasW+50,42,canvasW+50,56]} stroke='#94a3b8' strokeWidth={2} fill='#94a3b8' pointerLength={4} pointerWidth={4}/>
+            <Text text='E' x={canvasW+62} y={46} fontSize={9} fill='#94a3b8' fontStyle='bold'/>
+            <Text text='W' x={canvasW+32} y={46} fontSize={9} fill='#94a3b8' fontStyle='bold'/>
+            <Text text='S' x={canvasW+46} y={62} fontSize={9} fill='#94a3b8' fontStyle='bold'/>
 
             {/* Plots */}
             {plots.map(p => {
@@ -302,11 +471,12 @@ export default function PlotLayout({ project }) {
                   {/* Plot polygon */}
                   <Line
                     points={pts} closed fill={c}
-                    stroke={isSel ? '#fff' : isHov ? '#fff' : cd}
-                    strokeWidth={isSel ? 2.5 : isHov ? 2 : 1}
+                    stroke={isSel ? '#ffffff' : isHov ? '#ffffff' : cd}
+                    strokeWidth={isSel ? 3 : isHov ? 2 : 1}
                     opacity={dimmed ? 0.15 : 1}
-                    shadowColor={isSel ? '#fff' : 'transparent'}
-                    shadowBlur={isSel ? 10 : 0}
+                    shadowColor={isSel ? '#ffffff' : 'transparent'}
+                    shadowBlur={isSel ? 14 : 0}
+                    shadowOpacity={isSel ? 1 : 0}
                     onClick={() => handleSelect(p)}
                     onMouseEnter={e => {
                       e.target.getStage().container().style.cursor='pointer';
@@ -322,6 +492,19 @@ export default function PlotLayout({ project }) {
                       setHover(null);
                     }}
                   />
+                  {/* Selected: white inner border overlay + centre pin dot */}
+                  {isSel && (
+                    <>
+                      <Rect x={2} y={2} width={p.w-4} height={p.h-4}
+                        fill='transparent' stroke='rgba(255,255,255,0.6)' strokeWidth={1.5}
+                        cornerRadius={1} listening={false}
+                      />
+                      <Circle x={p.w/2} y={p.h/2} radius={7}
+                        fill='#ffffff' stroke={c} strokeWidth={2.5}
+                        shadowColor='#fff' shadowBlur={8} listening={false}
+                      />
+                    </>
+                  )}
                   {/* Cross lines for Sold & Mortgage */}
                   {crossed && (
                     <>
@@ -386,58 +569,36 @@ export default function PlotLayout({ project }) {
                       />
                     </Group>
                   )}
-                  {isSel && (
-                    <Circle x={p.w/2} y={-8} radius={6} fill='#fff' stroke={c} strokeWidth={2} listening={false} />
-                  )}
+
                 </Group>
               );
             })}
-            {/* Amenities layer — commented out
-            {AMENITIES.map(a => {
-              const ax = a.cx * canvasW;
-              const ay = a.cy * canvasH;
-              return (
-                <Group key={a.id} x={ax} y={ay}
-                  onMouseEnter={e => {
-                    const pt = e.target.getStage().getPointerPosition();
-                    setAmenityHover(a);
-                    setAmenityPos({ x: pt.x, y: pt.y });
-                  }}
-                  onMouseMove={e => {
-                    const pt = e.target.getStage().getPointerPosition();
-                    setAmenityPos({ x: pt.x, y: pt.y });
-                  }}
-                  onMouseLeave={() => setAmenityHover(null)}
-                >
-                  <Circle radius={14} fill={night ? 'rgba(15,25,35,0.92)' : 'rgba(255,255,255,0.92)'} stroke={a.color} strokeWidth={2} shadowColor={a.color} shadowBlur={6} />
-                  <Text text='+' fontSize={10} fill={a.color} offsetX={3} offsetY={5} listening={false} />
-                </Group>
-              );
-            })}
-            */}
+            {/* ── AMENITIES render removed — now handled by internal amenities above ── */}
           </Layer>
         </Stage>
 
-        {/* Amenity tooltip — commented out
+        {/* ── INTERNAL AMENITY TOOLTIP ── */}
         {amenityHover && (
           <div style={{
             position:'absolute',
-            left: Math.min(amenityPos.x + 14, size.w - 160),
-            top:  Math.max(amenityPos.y - 44, 4),
-            background: night ? 'rgba(15,25,35,0.97)' : 'rgba(255,255,255,0.97)',
-            border:`1px solid ${amenityHover.color}`,
-            borderRadius:8, padding:'6px 12px',
+            left: Math.min(amenityPos.x+14, size.w-190),
+            top:  Math.max(amenityPos.y-70, 4),
+            background: TTIPBG, backdropFilter:'blur(12px)',
+            border:`1.5px solid ${amenityHover.color}`,
+            borderRadius:10, padding:'10px 14px',
             pointerEvents:'none', zIndex:60,
-            color: TXT, fontSize:12, fontWeight:600,
-            boxShadow:'0 4px 16px rgba(0,0,0,0.4)',
-            display:'flex', alignItems:'center', gap:6,
-            whiteSpace:'nowrap',
+            boxShadow:`0 4px 20px rgba(0,0,0,0.4)`,
+            minWidth:150,
           }}>
-            <amenityHover.Icon size={14} color={amenityHover.color} />
-            {amenityHover.label}
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <span style={{ fontSize:22 }}>{amenityHover.icon}</span>
+              <div>
+                <div style={{ color: TXT, fontWeight:700, fontSize:13 }}>{amenityHover.label}</div>
+                <div style={{ color: amenityHover.color, fontSize:10, fontWeight:600, marginTop:2 }}>Internal Amenity</div>
+              </div>
+            </div>
           </div>
         )}
-        */}
 
         {/* ── FLOATING: Day/Night toggle ── */}
         <button onClick={() => setNight(n => !n)} style={{
@@ -664,8 +825,7 @@ export default function PlotLayout({ project }) {
             <div style={{ marginBottom:10 }}>
               <div style={{ fontSize:11, color: TXTSUB, textTransform:'uppercase', letterSpacing:0.5, marginBottom:8, fontWeight:600 }}>Boundary Dimensions</div>
               <div style={{ display:'flex', gap:8, alignItems:'stretch' }}>
-                {/* visual boundary box */}
-                <div style={{
+                {/* <div style={{
                   position:'relative', width:110, flexShrink:0, height:80,
                   border:`2px solid ${night?'rgba(255,255,255,0.3)':'rgba(0,0,0,0.25)'}`,
                   borderRadius:4,
@@ -686,8 +846,7 @@ export default function PlotLayout({ project }) {
                   <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
                     <span style={{ fontSize:9, color:'#fbbf24', fontWeight:700 }}>{selected.facing}</span>
                   </div>
-                </div>
-                {/* side list */}
+                </div> */}
                 <div style={{ flex:1, display:'grid', gridTemplateColumns:'1fr 1fr', gap:6 }}>
                   {[['North','N'],['South','S'],['East','E'],['West','W']].map(([dir, key]) => (
                     <div key={dir} style={{
