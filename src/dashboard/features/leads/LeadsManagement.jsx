@@ -13,30 +13,48 @@ import { toastService } from '../../../services/toastService';
 const LeadsManagement = () => {
   const navigate = useNavigate();
   const [leads, setLeads] = useState([]);
-  const [filteredLeads, setFilteredLeads] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, new: 0 });
   const [canEdit, setCanEdit] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchLeads();
+    fetchStats();
     const isAdmin = permissionService.isAdmin();
     setCanEdit(isAdmin || permissionService.canEdit('Leads'));
-  }, [currentPage]);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    fetchLeads();
+  }, [currentPage, itemsPerPage, debouncedSearch]);
 
   const fetchLeads = async () => {
     setLoading(true);
     try {
-      const response = await leadService.getLeadReports({ exportExcel: 0 });
+      const response = await leadService.getLeadReports({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debouncedSearch,
+        exportExcel: 0
+      });
       if (response.data.success) {
-        setLeads(response.data.data);
-        setFilteredLeads(response.data.data);
-        setTotalItems(response.data.data.length);
-        calculateStats(response.data.data);
+        setLeads(response.data.data || []);
+        setTotalItems(response.data.totalCount ?? (response.data.data ? response.data.data.length : 0));
       }
     } catch (error) {
       console.error('Error fetching leads:', error);
@@ -45,8 +63,19 @@ const LeadsManagement = () => {
     }
   };
 
-  const calculateStats = (data) => {
-    const total = data.length;
+  const fetchStats = async () => {
+    try {
+      const response = await leadService.getLeadReports({ page: 1, limit: 10000, exportExcel: 0 });
+      if (response.data.success && response.data.data) {
+        calculateStats(response.data.data, response.data.totalCount);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const calculateStats = (data, totalFromApi) => {
+    const total = totalFromApi || data.length;
     const active = data.filter(l => l.status === 'active').length;
     const inactive = data.filter(l => l.status === 'inactive').length;
     const tenDaysAgo = new Date();
@@ -54,23 +83,6 @@ const LeadsManagement = () => {
     const newLeads = data.filter(l => new Date(l.createdAt) >= tenDaysAgo).length;
     setStats({ total, active, inactive, new: newLeads });
   };
-
-  useEffect(() => {
-    let filtered = leads;
-
-    if (searchTerm) {
-      filtered = filtered.filter(l => 
-        l.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        l.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        l.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        l.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        l.mobile.includes(searchTerm)
-      );
-    }
-
-    setFilteredLeads(filtered);
-    setTotalItems(filtered.length);
-  }, [searchTerm, leads]);
 
   const getLeadStatusColor = (statusName) => {
     const colors = {
@@ -345,12 +357,12 @@ const LeadsManagement = () => {
                 <tr>
                   <td colSpan={canEdit ? "8" : "7"} style={{ textAlign: 'center', padding: '40px' }}>Loading...</td>
                 </tr>
-              ) : filteredLeads.length === 0 ? (
+              ) : leads.length === 0 ? (
                 <tr>
                   <td colSpan={canEdit ? "8" : "7"} style={{ textAlign: 'center', padding: '40px' }}>No leads found</td>
                 </tr>
               ) : (
-                filteredLeads.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((lead) => (
+                leads.map((lead) => (
                   <tr key={lead._id}>
                     <td>{lead.code}</td>
                     <td>{lead.firstName} {lead.lastName}</td>

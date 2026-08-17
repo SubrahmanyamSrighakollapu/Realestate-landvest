@@ -21,6 +21,7 @@ const AssociatesManagement = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [roles, setRoles] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, new: 0 });
@@ -53,21 +54,41 @@ const AssociatesManagement = () => {
   };
 
   useEffect(() => {
-    fetchAssociates();
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     fetchRoles();
+    fetchStats();
     const isAdmin = permissionService.isAdmin();
     setCanEdit(isAdmin || permissionService.canEdit('Associates'));
   }, []);
 
+  // Whenever search term or role filter changes, reset to page 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, selectedRole]);
+
+  // Fetch page data whenever currentPage, itemsPerPage, debouncedSearch, or selectedRole changes
+  useEffect(() => {
+    fetchAssociates();
+  }, [currentPage, itemsPerPage, debouncedSearch, selectedRole]);
+
   const fetchAssociates = async () => {
     setLoading(true);
     try {
-      const response = await employeeService.listEmployees('');
+      const response = await employeeService.listEmployees({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debouncedSearch,
+        role: selectedRole
+      });
       if (response.success) {
-        setAssociates(response.data);
-        setFilteredAssociates(response.data);
-        setTotalItems(response.totalCount || response.data.length);
-        calculateStats(response.data);
+        setAssociates(response.data || []);
+        setTotalItems(response.totalCount ?? (response.data ? response.data.length : 0));
       }
     } catch (error) {
       console.error('Error fetching associates:', error);
@@ -76,19 +97,30 @@ const AssociatesManagement = () => {
     }
   };
 
+  const fetchStats = async () => {
+    try {
+      const response = await employeeService.listEmployees({ page: 1, limit: 10000 });
+      if (response.success && response.data) {
+        calculateStats(response.data, response.totalCount);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
   const fetchRoles = async () => {
     try {
       const response = await designationService.listDesignations('');
       if (response.success) {
-        setRoles(response.data);
+        setRoles(response.data || []);
       }
     } catch (error) {
       console.error('Error fetching roles:', error);
     }
   };
 
-  const calculateStats = (data) => {
-    const total = data.length;
+  const calculateStats = (data, totalCountFromApi) => {
+    const total = totalCountFromApi || data.length;
     const active = data.filter(a => a.status === 'active').length;
     const inactive = data.filter(a => a.status === 'inactive').length;
     const tenDaysAgo = new Date();
@@ -98,18 +130,7 @@ const AssociatesManagement = () => {
   };
 
   useEffect(() => {
-    let filtered = associates;
-
-    if (searchTerm) {
-      filtered = filtered.filter(a => 
-        a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        a.code.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (selectedRole) {
-      filtered = filtered.filter(a => a.role?._id === selectedRole);
-    }
+    let filtered = [...associates];
 
     if (selectedDate) {
       filtered = filtered.filter(a => {
@@ -119,15 +140,14 @@ const AssociatesManagement = () => {
       });
     }
 
-    filtered = [...filtered].sort((a, b) => {
+    filtered.sort((a, b) => {
       const dateA = a.doj ? new Date(a.doj) : new Date(0);
       const dateB = b.doj ? new Date(b.doj) : new Date(0);
       return dojSort === 'desc' ? dateB - dateA : dateA - dateB;
     });
 
     setFilteredAssociates(filtered);
-    setTotalItems(filtered.length);
-  }, [searchTerm, selectedRole, selectedDate, associates, dojSort]);
+  }, [selectedDate, associates, dojSort]);
 
   return (
     <div style={{ padding: '24px' }}>
@@ -417,9 +437,7 @@ const AssociatesManagement = () => {
                   <td colSpan="8" style={{ textAlign: 'center', padding: '40px' }}>No associates found</td>
                 </tr>
               ) : (
-                filteredAssociates
-                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-                  .map((assoc) => (
+                filteredAssociates.map((assoc) => (
                   <tr key={assoc._id}>
                     <td>{assoc.code}</td>
                     <td>{assoc.name}</td>

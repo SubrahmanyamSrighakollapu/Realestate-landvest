@@ -11,29 +11,56 @@ const DirectoryManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [directoryData, setDirectoryData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [nameFilter, setNameFilter] = useState('');
+  const [debouncedNameFilter, setDebouncedNameFilter] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [roles, setRoles] = useState([]);
 
   useEffect(() => {
-    fetchEmployees();
     fetchRoles();
   }, []);
 
   useEffect(() => {
-    applyFilters();
-  }, [searchTerm, nameFilter, selectedRole, selectedStatus, directoryData]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedNameFilter(nameFilter);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [nameFilter]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, debouncedNameFilter, selectedRole, selectedStatus]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [currentPage, itemsPerPage, debouncedSearch, debouncedNameFilter, selectedRole, selectedStatus]);
 
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      const response = await employeeService.listEmployees('');
+      const querySearch = debouncedSearch || debouncedNameFilter || '';
+      const response = await employeeService.listEmployees({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: querySearch,
+        role: selectedRole,
+        status: selectedStatus
+      });
       if (response.success) {
         setDirectoryData(response.data || []);
+        setTotalItems(response.totalCount ?? (response.data ? response.data.length : 0));
       }
     } catch (error) {
       toastService.error('Failed to fetch employees');
@@ -51,33 +78,6 @@ const DirectoryManagement = () => {
     } catch (error) {
       console.error('Error fetching roles:', error);
     }
-  };
-
-  const applyFilters = () => {
-    let filtered = directoryData;
-
-    if (searchTerm) {
-      filtered = filtered.filter(item => 
-        item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.code?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    if (nameFilter) {
-      filtered = filtered.filter(item => 
-        item.name?.toLowerCase().includes(nameFilter.toLowerCase())
-      );
-    }
-
-    if (selectedRole) {
-      filtered = filtered.filter(item => item.role?._id === selectedRole);
-    }
-
-    if (selectedStatus) {
-      filtered = filtered.filter(item => item.status === selectedStatus);
-    }
-
-    setFilteredData(filtered);
   };
 
 
@@ -295,12 +295,12 @@ const DirectoryManagement = () => {
                 <tr>
                   <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>Loading...</td>
                 </tr>
-              ) : filteredData.length === 0 ? (
+              ) : directoryData.length === 0 ? (
                 <tr>
                   <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>No employees found</td>
                 </tr>
               ) : (
-                filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item, idx) => (
+                directoryData.map((item, idx) => (
                   <tr key={idx}>
                     <td>
                       <div style={{ fontWeight: '500' }}>{item.name || 'N/A'}</div>
@@ -328,7 +328,7 @@ const DirectoryManagement = () => {
         {/* Pagination */}
         <Pagination
           currentPage={currentPage}
-          totalItems={filteredData.length}
+          totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={setItemsPerPage}

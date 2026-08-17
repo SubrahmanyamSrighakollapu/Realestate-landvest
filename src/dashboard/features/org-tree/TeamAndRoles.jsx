@@ -13,8 +13,9 @@ const TeamAndRoles = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredMembers, setFilteredMembers] = useState([]);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [stats, setStats] = useState({
     totalSales: 0,
@@ -25,7 +26,6 @@ const TeamAndRoles = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchEmployees();
     fetchTransactionReport();
     const employeeInfo = authService.getEmployeeData();
     if (employeeInfo && employeeInfo.role && employeeInfo.role.name === 'Admin') {
@@ -34,22 +34,30 @@ const TeamAndRoles = () => {
   }, []);
 
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = teamMembers.filter(member => 
-        member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.code?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredMembers(filtered);
-    } else {
-      setFilteredMembers(teamMembers);
-    }
-  }, [searchTerm, teamMembers]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, [currentPage, itemsPerPage, debouncedSearch]);
 
   const fetchEmployees = async () => {
     try {
-      const response = await employeeService.listEmployees();
+      const response = await employeeService.listEmployees({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debouncedSearch
+      });
       if (response.success) {
-        setTeamMembers(response.data);
+        setTeamMembers(response.data || []);
+        setTotalItems(response.totalCount ?? (response.data ? response.data.length : 0));
       }
     } catch (error) {
       toastService.error('Failed to load employees');
@@ -259,12 +267,12 @@ const TeamAndRoles = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredMembers.length === 0 ? (
+              {teamMembers.length === 0 ? (
                 <tr>
                   <td colSpan={isAdmin ? "5" : "4"} style={{ textAlign: 'center', padding: '40px' }}>No employees found</td>
                 </tr>
               ) : (
-                filteredMembers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((member) => (
+                teamMembers.map((member) => (
                 <tr key={member._id}>
                   <td>{member.name}</td>
                   <td>{member.role?.name || 'N/A'}</td>
@@ -316,7 +324,7 @@ const TeamAndRoles = () => {
 
         <Pagination
           currentPage={currentPage}
-          totalItems={filteredMembers.length}
+          totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={setItemsPerPage}

@@ -105,7 +105,7 @@ const Hero = () => {
         </div>
       </div>
 
-      <div
+      {/* <div
         style={{
           backgroundColor: colors.background,
           padding: '1.5rem',
@@ -199,7 +199,7 @@ const Hero = () => {
             Search Plots
           </button>
         </div>
-      </div>
+      </div> */}
 
       <style>{`
         @media (min-width: 768px) {

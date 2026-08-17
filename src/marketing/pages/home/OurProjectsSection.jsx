@@ -18,7 +18,7 @@ const OurProjectsSection = () => {
       const response = await publicProjectService.getProjects();
       if (response.success) {
         const filteredProjects = response.data
-          .filter(p => ['upcoming', 'ongoing', 'completed'].includes(p.status))
+          .filter(p => ['upcoming', 'ongoing', 'completed', 'active'].includes(p.status))
           .slice(0, 6);
         setProjects(filteredProjects);
       }
@@ -72,113 +72,113 @@ const OurProjectsSection = () => {
             <p style={{ textAlign: 'center', gridColumn: '1 / -1' }}>No projects available</p>
           ) : (
             projects.map((project) => (
-            <div
-              key={project._id}
-              className="project-card"
-              style={{
-                backgroundColor: '#fff',
-                borderRadius: '14px',
-                overflow: 'hidden',
-                boxShadow: '0 6px 18px rgba(0,0,0,0.07)',
-                cursor: 'pointer',
-              }}
-              onClick={() => navigate(`/projects/${project.status}/${project._id}`)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.boxShadow = '0 14px 32px rgba(0,0,0,0.12)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.07)';
-              }}
-            >
-              <div style={{ height: '250px', overflow: 'hidden' }}>
-                <img
-                  src={`https://api.landvestinfra.com${project.thumbnnailImage}`}
-                  alt={project.title}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                />
-              </div>
-
-              <div style={{ padding: '1.4rem 1.6rem 1.6rem' }}>
-                <h3
-                  style={{
-                    fontSize: '1.25rem',
-                    fontWeight: '600',
-                    color: colors.text,
-                    marginBottom: '0.35rem',
-                  }}
-                >
-                  {project.title}
-                </h3>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    color: colors.textLight,
-                    fontSize: '0.95rem',
-                    marginBottom: '0.75rem',
-                  }}
-                >
-                  <MapPin size={15} />
-                  {project.location}
+              <div
+                key={project._id}
+                className="project-card"
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  boxShadow: '0 6px 18px rgba(0,0,0,0.07)',
+                  cursor: 'pointer',
+                }}
+                onClick={() => navigate(`/projects/${project.status}/${project._id}`)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-6px)';
+                  e.currentTarget.style.boxShadow = '0 14px 32px rgba(0,0,0,0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.07)';
+                }}
+              >
+                <div style={{ height: '250px', overflow: 'hidden' }}>
+                  <img
+                    src={`https://api.landvestinfra.com${project.thumbnnailImage}`}
+                    alt={project.title}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
                 </div>
 
-                <div
-                  style={{
-                    fontSize: '0.9rem',
-                    color: '#6b7280',
-                    marginBottom: '1.2rem',
-                  }}
-                >
-                  {project.approvedBy} | {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <div
+                <div style={{ padding: '1.4rem 1.6rem 1.6rem' }}>
+                  <h3
                     style={{
                       fontSize: '1.25rem',
-                      fontWeight: '700',
-                      color: colors.primary,
+                      fontWeight: '600',
+                      color: colors.text,
+                      marginBottom: '0.35rem',
                     }}
                   >
-                    ₹{project.startingPrice}
+                    {project.title}
+                  </h3>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      color: colors.textLight,
+                      fontSize: '0.95rem',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    <MapPin size={15} />
+                    {project.location}
                   </div>
 
                   <div
                     style={{
-                      width: '42px',
-                      height: '42px',
-                      borderRadius: '50%',
-                      backgroundColor: '#e8f6ef',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      fontSize: '0.9rem',
+                      color: '#6b7280',
+                      marginBottom: '1.2rem',
                     }}
-                    onClick={(e) => { e.stopPropagation(); navigate(`/projects/${project.status}/${project._id}`); }}
                   >
-                    <ArrowUpRight
-                      size={20}
-                      color={colors.primary}
-                      strokeWidth={2}
-                    />
+                    {project.approvedBy} | {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '1.25rem',
+                        fontWeight: '700',
+                        color: colors.primary,
+                      }}
+                    >
+                      ₹{project.startingPrice}
+                    </div>
+
+                    <div
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        borderRadius: '50%',
+                        backgroundColor: '#e8f6ef',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/projects/${project.status}/${project._id}`); }}
+                    >
+                      <ArrowUpRight
+                        size={20}
+                        color={colors.primary}
+                        strokeWidth={2}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))
           )}
         </div>
       </div>

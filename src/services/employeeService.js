@@ -10,8 +10,21 @@ export const employeeService = {
     return response.data;
   },
 
-  listEmployees: async (search = '') => {
-    const response = await apiClient.post('/admin/employees/list', { search });
+  listEmployees: async (params = {}) => {
+    let payload = {};
+    if (typeof params === 'string') {
+      payload = { search: params };
+    } else {
+      payload = {
+        page: params.page,
+        limit: params.limit,
+        search: params.search ?? '',
+        status: params.status ?? '',
+        role: params.role ?? ''
+      };
+      Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+    }
+    const response = await apiClient.post('/admin/employees/list', payload);
     return response.data;
   },
 

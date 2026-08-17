@@ -36,8 +36,21 @@ export const leadService = {
     return response.data;
   },
 
-  listLeads: async (page = 1, limit = 10) => {
-    const response = await apiClient.post('/admin/leads/list', { page, limit });
+  listLeads: async (params = {}) => {
+    let payload = {};
+    if (typeof params === 'number' || typeof params === 'string') {
+      payload = { page: Number(params) || 1, limit: 10 };
+    } else {
+      payload = {
+        page: params.page,
+        limit: params.limit,
+        search: params.search ?? '',
+        status: params.status ?? '',
+        ...params
+      };
+      Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+    }
+    const response = await apiClient.post('/admin/leads/list', payload);
     return response.data;
   },
 
@@ -56,8 +69,16 @@ export const leadService = {
     return response.data;
   },
 
-  getLeadReports: async (data) => {
-    const response = await apiClient.post('/admin/reports/lead', data, {
+  getLeadReports: async (data = {}) => {
+    const payload = {
+      page: data.page,
+      limit: data.limit,
+      search: data.search ?? '',
+      status: data.status ?? '',
+      ...data
+    };
+    Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+    const response = await apiClient.post('/admin/reports/lead', payload, {
       responseType: data.exportExcel === 1 ? 'blob' : 'json'
     });
     return response;

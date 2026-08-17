@@ -9,11 +9,13 @@ const Projects = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [dashboardData, setDashboardData] = useState({
     totalCount: 0,
     activeCount: 0,
@@ -23,9 +25,23 @@ const Projects = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchProjects();
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [currentPage, itemsPerPage, debouncedSearch]);
 
   const fetchDashboardData = async () => {
     try {
@@ -47,11 +63,14 @@ const Projects = () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('authToken');
-      const response = await axios.post('https://api.landvestinfra.com/api/v1/admin/projects/list', {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await axios.post(
+        'https://api.landvestinfra.com/api/v1/admin/projects/list',
+        { page: currentPage, limit: itemsPerPage, search: debouncedSearch },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       if (response.data.success) {
-        setProjects(response.data.data);
+        setProjects(response.data.data || []);
+        setTotalItems(response.data.totalCount ?? (response.data.data ? response.data.data.length : 0));
       }
     } catch (error) {
       console.error('Failed to fetch projects:', error);
@@ -304,7 +323,7 @@ const Projects = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProjects.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((project, index) => (
+            {filteredProjects.map((project, index) => (
               <tr key={project._id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                 <td style={{ padding: '16px', fontSize: '14px', color: '#374151' }}>{project.title}</td>
                 <td style={{ padding: '16px', fontSize: '14px', color: '#6b7280' }}>{project.location}</td>
@@ -361,7 +380,7 @@ const Projects = () => {
       </div>
               <Pagination
           currentPage={currentPage}
-          totalItems={filteredProjects.length}
+          totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={setItemsPerPage}

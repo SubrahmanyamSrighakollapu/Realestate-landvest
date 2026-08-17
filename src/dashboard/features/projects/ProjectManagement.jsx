@@ -13,7 +13,10 @@ const ProjectManagement = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
@@ -26,9 +29,23 @@ const ProjectManagement = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
-    fetchProjects();
     fetchDashboardData();
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, statusFilter]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [currentPage, itemsPerPage, debouncedSearch, statusFilter]);
 
   const fetchDashboardData = async () => {
     try {
@@ -48,10 +65,16 @@ const ProjectManagement = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await projectService.listProjects();
+      const response = await projectService.listProjects({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: debouncedSearch,
+        status: statusFilter !== 'all' ? statusFilter : ''
+      });
       if (response.success) {
-        const activeProjects = response.data.filter(p => p.status !== 'inactive');
+        const activeProjects = (response.data || []).filter(p => p.status !== 'inactive');
         setProjects(activeProjects);
+        setTotalItems(response.totalCount ?? activeProjects.length);
       }
     } catch (error) {
       toastService.error('Failed to load projects');
@@ -92,19 +115,6 @@ const ProjectManagement = () => {
         return dashboardColors.primary;
     }
   };
-
-  // ✅ FILTER LOGIC
-  const filteredProjects =
-    statusFilter === 'all'
-      ? projects
-      : projects.filter(
-          (proj) => proj.status?.toLowerCase() === statusFilter
-        );
-
-  const paginatedProjects = filteredProjects.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   return (
     <div style={{ padding: "24px" }}>
@@ -270,6 +280,8 @@ const ProjectManagement = () => {
             <input
               type="text"
               placeholder="Search by ID, Name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: "70%",
                 padding: "10px 10px 10px 40px",
@@ -351,14 +363,14 @@ const ProjectManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredProjects.length === 0 ? (
+              {projects.length === 0 ? (
                 <tr>
                   <td colSpan="9" style={{ textAlign: 'center', padding: '40px' }}>
                     No projects found
                   </td>
                 </tr>
               ) : (
-                paginatedProjects.map((proj) => (
+                projects.map((proj) => (
                   <tr key={proj._id}>
                     <td>{proj.code}</td>
                     <td>{proj.title}</td>
@@ -423,7 +435,7 @@ const ProjectManagement = () => {
 
         <Pagination
           currentPage={currentPage}
-          totalItems={filteredProjects.length}
+          totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={setItemsPerPage}

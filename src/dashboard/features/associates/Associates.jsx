@@ -21,6 +21,7 @@ const Associates = () => {
   const [endDate, setEndDate] = useState('');
   const [associatesData, setAssociatesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [topPerformersData, setTopPerformersData] = useState([]);
   const [associatesStatusData, setAssociatesStatusData] = useState({ 
     activePercentage: 86, 
@@ -36,7 +37,6 @@ const Associates = () => {
 
   useEffect(() => {
     fetchDashboardData();
-    fetchAssociatesReport();
     fetchTopPerformers();
     fetchAssociatesStatus();
     fetchNewAssociates();
@@ -47,6 +47,10 @@ const Associates = () => {
     console.log('Associates Download Permission:', downloadPermission);
     setCanDownload(downloadPermission);
   }, []);
+
+  useEffect(() => {
+    fetchAssociatesReport();
+  }, [currentPage, itemsPerPage, startDate, endDate]);
 
   const fetchDashboardData = async () => {
     try {
@@ -67,14 +71,15 @@ const Associates = () => {
   const fetchAssociatesReport = async () => {
     try {
       const response = await organizationService.getAssociatesReport(
-        1,
-        1000,
+        currentPage,
+        itemsPerPage,
         startDate,
         endDate,
         0
       );
       if (response.data.success) {
-        setAssociatesData(response.data.data);
+        setAssociatesData(response.data.data || []);
+        setTotalItems(response.data.totalCount ?? (response.data.data ? response.data.data.length : 0));
       }
     } catch (error) {
       toastService.error('Failed to load associates report');
@@ -655,7 +660,7 @@ const Associates = () => {
                 <td colSpan="10" style={{ textAlign: 'center', padding: '40px' }}>No data available</td>
               </tr>
             ) : (
-              associatesData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((associate) => (
+              associatesData.map((associate) => (
                 <tr key={associate._id}>
                   <td>{associate.sno}</td>
                   <td>{associate.code}</td>
@@ -679,7 +684,7 @@ const Associates = () => {
 
         <Pagination
           currentPage={currentPage}
-          totalItems={associatesData.length}
+          totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={setItemsPerPage}

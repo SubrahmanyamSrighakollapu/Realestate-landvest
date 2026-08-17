@@ -50,8 +50,21 @@ export const projectService = {
     return response.data;
   },
 
-  listProjects: async () => {
-    const response = await apiClient.post('/admin/projects/list');
+  listProjects: async (params = {}) => {
+    let payload = {};
+    if (typeof params === 'string') {
+      payload = { search: params };
+    } else {
+      payload = {
+        page: params.page,
+        limit: params.limit,
+        search: params.search ?? '',
+        status: params.status ?? '',
+        ...params
+      };
+      Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+    }
+    const response = await apiClient.post('/admin/projects/list', payload);
     return response.data;
   },
 
