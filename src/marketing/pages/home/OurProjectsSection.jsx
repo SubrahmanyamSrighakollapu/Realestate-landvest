@@ -18,7 +18,7 @@ const OurProjectsSection = () => {
       const response = await publicProjectService.getProjects();
       if (response.success) {
         const filteredProjects = response.data
-          .filter(p => ['upcoming', 'ongoing', 'completed', 'active'].includes(p.status))
+          .filter(p => ['upcoming', 'ongoing', 'completed'].includes(p.status))
           .slice(0, 6);
         setProjects(filteredProjects);
       }
