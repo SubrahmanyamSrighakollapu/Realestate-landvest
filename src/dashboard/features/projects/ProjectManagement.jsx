@@ -72,9 +72,9 @@ const ProjectManagement = () => {
         status: statusFilter !== 'all' ? statusFilter : ''
       });
       if (response.success) {
-        const activeProjects = (response.data || []).filter(p => p.status !== 'inactive');
-        setProjects(activeProjects);
-        setTotalItems(response.totalCount ?? activeProjects.length);
+        const projectList = response.data || [];
+        setProjects(projectList);
+        setTotalItems(response.totalCount ?? projectList.length);
       }
     } catch (error) {
       toastService.error('Failed to load projects');
@@ -111,6 +111,8 @@ const ProjectManagement = () => {
         return '#007BFF';
       case 'upcoming':
         return '#FD7E14';
+      case 'inactive':
+        return '#EF4444';
       default:
         return dashboardColors.primary;
     }
@@ -311,6 +313,7 @@ const ProjectManagement = () => {
             <option value="ongoing">Ongoing</option>
             <option value="upcoming">Upcoming</option>
             <option value="completed">Completed</option>
+            <option value="inactive">Inactive</option>
           </select>
         </div>
       </div>

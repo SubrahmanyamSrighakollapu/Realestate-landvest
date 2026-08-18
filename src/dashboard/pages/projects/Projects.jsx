@@ -86,12 +86,10 @@ const Projects = () => {
     { label: 'New Projects', value: dashboardData.newCount, subtext: 'Recently added' }
   ];
 
-  const filteredProjects = projects
-    .filter(p => ['ongoing', 'completed', 'upcoming'].includes(p.status))
-    .filter(project =>
-      project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.location?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const filteredProjects = projects.filter(project =>
+    project.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.location?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handlePrevious = () => {
     setCarouselIndex(prev => Math.max(0, prev - 3));
@@ -217,16 +215,16 @@ const Projects = () => {
                   <button
                     onClick={() => navigate(`/dashboard/projects/view/${project._id}`)}
                     style={{
-                    width: '100%',
-                    padding: '10px',
-                    backgroundColor: "#C9A24D",
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}>
+                      width: '100%',
+                      padding: '10px',
+                      backgroundColor: "#C9A24D",
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}>
                     View Details
                   </button>
                 </div>
@@ -234,7 +232,7 @@ const Projects = () => {
             ))
           )}
         </div>
-        
+
         {/* Carousel Navigation */}
         {!loading && filteredProjects.length > 3 && (
           <>
@@ -259,7 +257,7 @@ const Projects = () => {
                 opacity: carouselIndex === 0 ? 0.5 : 1
               }}
             >
-              <ChevronLeft size={25} color= {dashboardColors.primary} />
+              <ChevronLeft size={25} color={dashboardColors.primary} />
             </button>
             <button
               onClick={handleNext}
@@ -282,7 +280,7 @@ const Projects = () => {
                 opacity: carouselIndex >= filteredProjects.length - 3 ? 0.5 : 1
               }}
             >
-              <ChevronRight size={20} color= {dashboardColors.primary} />
+              <ChevronRight size={20} color={dashboardColors.primary} />
             </button>
           </>
         )}
@@ -332,43 +330,43 @@ const Projects = () => {
                 <td style={{ padding: '16px', fontSize: '14px', color: '#374151' }}>-</td>
                 <td style={{ padding: '16px', fontSize: '14px', color: '#374151' }}>₹10.5L</td>
                 <td style={{ padding: '16px' }}>
-  <span
-    style={{
-      padding: '6px 12px',
-      borderRadius: '12px',
-      fontSize: '12px',
-      fontWeight: '500',
-      textTransform: 'capitalize',
-      backgroundColor:
-        project.status === 'ongoing'
-          ? '#d1fae5'
-          : project.status === 'upcoming'
-          ? '#fef9c3'
-          : '#fee2e2',
-      color:
-        project.status === 'ongoing'
-          ? '#065f46'
-          : project.status === 'upcoming'
-          ? '#854d0e'
-          : '#991b1b'
-    }}
-  >
-    {project.status}
-  </span>
-</td>
+                  <span
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      textTransform: 'capitalize',
+                      backgroundColor:
+                        project.status === 'ongoing'
+                          ? '#d1fae5'
+                          : project.status === 'upcoming'
+                            ? '#fef9c3'
+                            : '#fee2e2',
+                      color:
+                        project.status === 'ongoing'
+                          ? '#065f46'
+                          : project.status === 'upcoming'
+                            ? '#854d0e'
+                            : '#991b1b'
+                    }}
+                  >
+                    {project.status}
+                  </span>
+                </td>
                 <td style={{ padding: '16px' }}>
                   <button
                     onClick={() => navigate(`/dashboard/projects/view/${project._id}`)}
                     style={{
-                    padding: '6px 16px',
-                    backgroundColor: dashboardColors.primary,
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}>
+                      padding: '6px 16px',
+                      backgroundColor: dashboardColors.primary,
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}>
                     View
                   </button>
                 </td>
@@ -376,15 +374,15 @@ const Projects = () => {
             ))}
           </tbody>
         </table>
-        
+
       </div>
-              <Pagination
-          currentPage={currentPage}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-          onItemsPerPageChange={setItemsPerPage}
-        />
+      <Pagination
+        currentPage={currentPage}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+        onItemsPerPageChange={setItemsPerPage}
+      />
     </div>
   );
 };

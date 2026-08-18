@@ -56,8 +56,8 @@ const WhyInvestUsSection = () => {
   return (
     <section
       style={{
-        marginTop: '8rem',
-        padding: '5rem 0',
+        marginTop: '2rem',
+        padding: '1rem 0',
         backgroundColor: colors.backgroundLight,
         width: '100%',
       }}

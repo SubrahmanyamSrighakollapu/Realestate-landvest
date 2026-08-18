@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Home, Navigation, Lightbulb, Trees, Baby, Droplet, Shield } from 'lucide-react';
 import { publicProjectService } from '../../../services/publicProjectService';
 import PlotLayout from './PlotLayout';
+import comingSoon from '../../../dashboard/assets/coming-soon.png';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -141,9 +142,10 @@ const ProjectDetails = () => {
               <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '24px', lineHeight: '1.6' }}>
                 Click on a plot to view details. Use scroll to zoom and drag to pan the layout.
               </p>
+              {/* <div style={{ textAlign: 'center' }}><img src={comingSoon} alt="Coming Soon" style={{ width: '380px', maxWidth: '100%', borderRadius: '12px' }} /></div> */}
               <PlotLayout project={project} />
             </div>
-          )}
+          )}  
 
           {/* Project Info */}
           {activeTab === 'info' && (
