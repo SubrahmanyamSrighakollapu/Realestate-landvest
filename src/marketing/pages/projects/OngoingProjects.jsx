@@ -73,7 +73,7 @@ const OngoingProjects = () => {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="filter-bar" style={{
+      {/* <div className="filter-bar" style={{
         backgroundColor: '#ffffff',
         padding: '20px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
@@ -169,7 +169,7 @@ const OngoingProjects = () => {
             Search
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Projects Grid */}
       <div style={{
@@ -310,22 +310,22 @@ const OngoingProjects = () => {
                 </div>
 
                 {/* View Details Button */}
-                <button 
+                <button
                   onClick={() => navigate(`/projects/ongoing/${project._id}`)}
                   style={{
-                  width: '100%',
-                  padding: '14px',
-                  backgroundColor: colors.button,
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '10px',
-                  fontSize: '15px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                }}>
+                    width: '100%',
+                    padding: '14px',
+                    backgroundColor: colors.button,
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    fontSize: '15px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                  }}>
                   View Details
                 </button>
               </div>

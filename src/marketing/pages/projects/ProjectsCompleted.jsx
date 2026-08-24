@@ -43,7 +43,7 @@ const ProjectsCompleted = () => {
       </section>
 
       {/* Filter Bar */}
-      <div
+      {/* <div
         className="filter-bar"
         style={{
           backgroundColor: '#ffffff',
@@ -151,7 +151,7 @@ const ProjectsCompleted = () => {
             Search
           </button>
         </div>
-      </div>
+      </div> */}
 
       <section className="projects-grid-section">
         <div className="projects-grid">
@@ -161,137 +161,137 @@ const ProjectsCompleted = () => {
             <p style={{ textAlign: 'center', gridColumn: '1 / -1' }}>No completed projects found</p>
           ) : (
             projects.map(project => (
-            <div key={project._id} className="project-card">
-              <div className="card-image" style={{ position: 'relative', overflow: 'hidden' }}>
-                <img 
-                  src={`https://api.landvestinfra.com${project.thumbnnailImage}`}
-                  alt={project.title}
-                  style={{ width: '100%', height: '240px', objectFit: 'cover' }}
-                />
-                <div style={{
-                  position: 'absolute',
-                  top: '0',
-                  left: '0',
-                  right: '0',
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 50%)',
-                  height: '80px'
-                }} />
-                <span style={{
-                  position: 'absolute',
-                  top: '16px',
-                  left: '16px',
-                  backgroundColor: '#22c55e',
-                  color: '#ffffff',
-                  padding: '8px 16px',
-                  borderRadius: '24px',
-                  fontSize: '12px',
-                  fontWeight: '700',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
-                }}>
-                  Completed
-                </span>
-              </div>
-              
-              <div className="card-content" style={{ padding: '24px' }}>
-                <h3 className="project-name" style={{
-                  fontSize: '20px',
-                  fontWeight: '700',
-                  color: '#1a3c34',
-                  margin: '0 0 8px 0',
-                  lineHeight: '1.3'
-                }}>{project.title}</h3>
-                
-                <div className="project-location" style={{
-                  color: '#666',
-                  margin: '0 0 20px 0',
-                  fontSize: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px'
-                }}>
-                  <span style={{ color: '#1F6F54' }}>📍</span> {project.location}
+              <div key={project._id} className="project-card">
+                <div className="card-image" style={{ position: 'relative', overflow: 'hidden' }}>
+                  <img
+                    src={`https://api.landvestinfra.com${project.thumbnnailImage}`}
+                    alt={project.title}
+                    style={{ width: '100%', height: '240px', objectFit: 'cover' }}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    right: '0',
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 50%)',
+                    height: '80px'
+                  }} />
+                  <span style={{
+                    position: 'absolute',
+                    top: '16px',
+                    left: '16px',
+                    backgroundColor: '#22c55e',
+                    color: '#ffffff',
+                    padding: '8px 16px',
+                    borderRadius: '24px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                  }}>
+                    Completed
+                  </span>
                 </div>
 
-                <div className="project-details" style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '16px',
-                  marginBottom: '24px',
-                  padding: '16px',
-                  backgroundColor: '#f8fafc',
-                  borderRadius: '12px',
-                  border: '1px solid #e2e8f0'
-                }}>
-                  <div className="detail-item">
-                    <span className="label" style={{
-                      display: 'block',
-                      fontSize: '12px',
-                      color: '#777',
-                      fontWeight: '500',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      marginBottom: '4px'
-                    }}>Plot Sizes</span>
-                    <span style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>{project.plotSize}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="label" style={{
-                      display: 'block',
-                      fontSize: '12px',
-                      color: '#777',
-                      fontWeight: '500',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      marginBottom: '4px'
-                    }}>Approval</span>
-                    <span className="approval-badge" style={{
-                      fontSize: '14px',
-                      color: '#22c55e',
-                      fontWeight: '600'
-                    }}>{project.approvedBy}</span>
-                  </div>
-                </div>
+                <div className="card-content" style={{ padding: '24px' }}>
+                  <h3 className="project-name" style={{
+                    fontSize: '20px',
+                    fontWeight: '700',
+                    color: '#1a3c34',
+                    margin: '0 0 8px 0',
+                    lineHeight: '1.3'
+                  }}>{project.title}</h3>
 
-                <div className="price-section" style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginTop: '12px'
-                }}>
-                  <div className="starting-price" style={{ fontSize: '14px' }}>
-                    <span style={{ color: '#777', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Starts From</span>
-                    <strong style={{
-                      display: 'block',
-                      fontSize: '18px',
-                      color: '#e74c3c',
-                      marginTop: '2px',
-                      fontWeight: '700'
-                    }}>₹{project.startingPrice}</strong>
+                  <div className="project-location" style={{
+                    color: '#666',
+                    margin: '0 0 20px 0',
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <span style={{ color: '#1F6F54' }}>📍</span> {project.location}
                   </div>
-                  <button 
-                    style={{
-                      padding: '12px 20px',
-                      backgroundColor: colors.button,
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                    }}
-                    onClick={() => navigate(`/projects/completed/${project._id}`)}
-                  >
-                    View Details
-                  </button>
+
+                  <div className="project-details" style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '16px',
+                    marginBottom: '24px',
+                    padding: '16px',
+                    backgroundColor: '#f8fafc',
+                    borderRadius: '12px',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    <div className="detail-item">
+                      <span className="label" style={{
+                        display: 'block',
+                        fontSize: '12px',
+                        color: '#777',
+                        fontWeight: '500',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        marginBottom: '4px'
+                      }}>Plot Sizes</span>
+                      <span style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>{project.plotSize}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="label" style={{
+                        display: 'block',
+                        fontSize: '12px',
+                        color: '#777',
+                        fontWeight: '500',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        marginBottom: '4px'
+                      }}>Approval</span>
+                      <span className="approval-badge" style={{
+                        fontSize: '14px',
+                        color: '#22c55e',
+                        fontWeight: '600'
+                      }}>{project.approvedBy}</span>
+                    </div>
+                  </div>
+
+                  <div className="price-section" style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: '12px'
+                  }}>
+                    <div className="starting-price" style={{ fontSize: '14px' }}>
+                      <span style={{ color: '#777', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Starts From</span>
+                      <strong style={{
+                        display: 'block',
+                        fontSize: '18px',
+                        color: '#e74c3c',
+                        marginTop: '2px',
+                        fontWeight: '700'
+                      }}>₹{project.startingPrice}</strong>
+                    </div>
+                    <button
+                      style={{
+                        padding: '12px 20px',
+                        backgroundColor: colors.button,
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }}
+                      onClick={() => navigate(`/projects/completed/${project._id}`)}
+                    >
+                      View Details
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))
           )}
         </div>
       </section>

@@ -81,7 +81,7 @@ const UpcomingProjects = () => {
       </div>
 
       {/* Filter Bar */}
-      <div
+      {/* <div
         className="filter-bar"
         style={{
           backgroundColor: '#ffffff',
@@ -189,7 +189,7 @@ const UpcomingProjects = () => {
             Search
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Projects Grid */}
       <div

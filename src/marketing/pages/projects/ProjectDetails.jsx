@@ -140,10 +140,32 @@ const ProjectDetails = () => {
                 Online Plot Availability
               </h2>
               <p style={{ fontSize: '1.05rem', color: '#555', marginBottom: '24px', lineHeight: '1.6' }}>
-                Click on a plot to view details. Use scroll to zoom and drag to pan the layout.
+                Layout plan for {project.title}
               </p>
-              {/* <div style={{ textAlign: 'center' }}><img src={comingSoon} alt="Coming Soon" style={{ width: '380px', maxWidth: '100%', borderRadius: '12px' }} /></div> */}
-              <PlotLayout project={project} />
+              {/* <PlotLayout project={project} /> */}
+              {project.layouts && project.layouts.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                  {project.layouts.map((layout, idx) => (
+                    <img
+                      key={idx}
+                      src={`https://api.landvestinfra.com/${layout.url.startsWith('/') ? layout.url.slice(1) : layout.url}`}
+                      alt={`Layout ${idx + 1}`}
+                      style={{ width: '100%', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      onError={(e) => { e.target.src = 'https://via.placeholder.com/800x600?text=Layout+Image'; }}
+                    />
+                  ))}
+                </div>
+              ) : (
+                (project.contentImage || project.bannerImage) && (
+                  <div style={{ textAlign: 'center' }}>
+                    <img
+                      src={`https://api.landvestinfra.com${project.contentImage || project.bannerImage}`}
+                      alt="Project Layout"
+                      style={{ maxWidth: '100%', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    />
+                  </div>
+                )
+              )}
             </div>
           )}  
 
